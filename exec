@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+LIBRARIES="build/:lib/oomdpdomains.jar:lib/oomdptb.jar"
+
+java -Xmx2500MB -Xss1MB -cp $LIBRARIES $*

@@ -1,0 +1,43 @@
+package edu.umbc.cs.maple.commands.auxiliarytools.sokoban;
+
+import edu.umbc.cs.maple.commands.auxiliarytools.TrajectoryRecorder;
+import edu.umbc.cs.maple.commands.auxiliarytools.sokoban.turkexamples.*;
+import edu.umbc.cs.maple.domain.oomdp.sokoban.SokobanDomain;
+import edu.umbc.cs.maple.domain.oomdp.sokoban.SokobanParser;
+import edu.umbc.cs.maple.domain.oomdp.sokoban.SokobanVisualizer;
+import edu.umbc.cs.maple.oomdp.Domain;
+import edu.umbc.cs.maple.oomdp.StateGenerator;
+import edu.umbc.cs.maple.oomdp.StateParser;
+import edu.umbc.cs.maple.oomdp.visualizer.Visualizer;
+
+public class SokoTRecorder {
+
+	public static void main(String [] args){
+		
+		if(args.length != 1){
+			System.out.println("Incorrect format; use:\n\tpathToDataDirectory");
+			System.exit(0);
+		}
+		
+		//StateGenerator sg = new SokoSimpleStateGen();
+		StateGenerator sg = new Turk6();
+		Domain d = (new SokobanDomain()).generateDomain();
+		StateParser sp = new SokobanParser();
+		Visualizer v = SokobanVisualizer.getVisualizer();
+		
+		String datapath = args[0];
+		
+		TrajectoryRecorder rec = new TrajectoryRecorder();
+		
+		rec.addKeyAction("w", SokobanDomain.ACTIONNORTH);
+		rec.addKeyAction("s", SokobanDomain.ACTIONSOUTH);
+		rec.addKeyAction("d", SokobanDomain.ACTIONEAST);
+		rec.addKeyAction("a", SokobanDomain.ACTIONWEST);
+		
+		//((SokoSimpleStateGen)sg).stateConfig = 1;
+		
+		rec.init(v, d, sp, sg, datapath);
+		
+	}
+	
+}

@@ -1,0 +1,27 @@
+package edu.umbc.cs.maple.commands.auxiliarytools.sokoban.turkexamples;
+
+import edu.umbc.cs.maple.domain.oomdp.sokoban.SokobanDomain;
+import edu.umbc.cs.maple.oomdp.ObjectInstance;
+import edu.umbc.cs.maple.oomdp.State;
+import edu.umbc.cs.maple.oomdp.StateGenerator;
+
+public class Turk4 implements StateGenerator {
+
+	@Override
+	public State generateState() {
+		
+		State st = TurkRoomLayout.getRoomLayout(0);
+		
+		ObjectInstance agent = st.getObject(SokobanDomain.AGENTCLASS + 0);
+		agent.setValue(SokobanDomain.XATTNAME, 8);
+		agent.setValue(SokobanDomain.YATTNAME, 6);
+
+		
+		
+		SokobanDomain.createMap(st);
+		
+		return st;
+		
+	}
+
+}

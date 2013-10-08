@@ -1,0 +1,733 @@
+package commands.model2.em;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import commands.model2.gm.CommandsModelConstructor;
+import commands.model2.gm.IRLModule;
+import commands.model2.gm.MMNLPModule;
+import commands.model2.gm.StateRVValue;
+import commands.model2.gm.TAModule;
+import commands.model2.gm.IRLModule.BehaviorValue;
+import commands.model2.gm.MMNLPModule.StringValue;
+import em.EMModule;
+import generativemodel.GMQuery;
+import generativemodel.GMQueryResult;
+import generativemodel.GenerativeModel;
+import generativemodel.RVariable;
+import generativemodel.RVariableValue;
+import generativemodel.common.MultiNomialRVPI;
+
+public class EMTAModule extends EMModule {
+
+	
+	protected RVariable												hollowRV;
+	protected RVariable												aConstraintRV;
+	protected RVariable												aGoalRV;
+	protected RVariable												goalRV;
+	
+	protected PDataManager											pdManager;
+	
+	protected Map<RVariable, Map<GMQuery, Double>>					jointCounts;
+	protected Map<RVariable, Map<RVariableValue, Double>>			parentCounts;
+	
+	protected Map <MultiVarValIndex, Double>						MGamChi;
+	protected Map <MultiVarValIndex, Double>						MCR;
+	
+	
+	protected boolean												updateAbstractGoal = true;
+	protected boolean												updateAbstractConstraint = true;
+	protected boolean												updateGoal = true;
+	
+	
+	
+	public EMTAModule(PDataManager pdManager) {
+		this.pdManager = pdManager;
+	}
+
+	
+	@Override
+	public void setGenerativeModelSrc(GenerativeModel gm){
+		super.setGenerativeModelSrc(gm);
+		
+		this.hollowRV = gm.getRVarWithName(TAModule.HTNAME);
+		this.aConstraintRV = gm.getRVarWithName(TAModule.ACNAME);
+		this.aGoalRV = gm.getRVarWithName(TAModule.AGNAME);
+		this.goalRV = gm.getRVarWithName(TAModule.GNAME);
+		
+		this.initializeCountDatastructures();
+		
+	}
+	
+	
+	@Override
+	public void runEStep(int dataInstanceId, List<RVariableValue> observables) {
+		
+		this.computeMValues(observables);
+		double pData = this.pdManager.getProbForData(dataInstanceId, observables);
+		
+		this.computeGH(observables, pData);
+		this.computeCH(observables, pData);
+		this.computeGG(observables, pData);
+		
+	}
+
+	@Override
+	public void runMStep() {
+		
+		Map<GMQuery, Double> agJointCounts = jointCounts.get(aGoalRV);
+		Map<GMQuery, Double> acJointCounts = jointCounts.get(aConstraintRV);
+		Map<GMQuery, Double> gJointCounts = jointCounts.get(goalRV);
+		
+		Map <RVariableValue, Double> hCounts = parentCounts.get(aGoalRV);
+		Map <RVariableValue, Double> agCounts = parentCounts.get(goalRV);
+		
+		//update the abstract parameters
+		Iterator <RVariableValue> hIter = this.gm.getRVariableValuesFor(hollowRV);
+		while(hIter.hasNext()){
+			
+			RVariableValue htv = hIter.next();
+			
+			double nH = 0.;
+			Double DnH = hCounts.get(htv);
+			if(DnH != null){
+				nH += DnH;
+			}
+			
+			
+			//set up for abstract goal and goal parameter updates
+			Iterator <RVariableValue> agIter = this.gm.getRVariableValuesFor(aGoalRV);
+			while(agIter.hasNext()){
+				
+				RVariableValue agv = agIter.next();
+				
+				//manage parameter update for abstract goal
+				GMQuery jaghQuery = new GMQuery();
+				jaghQuery.addQuery(htv);
+				jaghQuery.addQuery(agv);
+				
+				double nAGH = 0.;
+				Double DnAGH = agJointCounts.get(jaghQuery);
+				if(DnAGH != null){
+					nAGH += DnAGH;
+				}
+				
+				double newAGParam = 0.;
+				if(nH != 0.){
+					newAGParam = nAGH / nH;
+				}
+				
+				MultiNomialRVPI agIndex = new MultiNomialRVPI(agv);
+				agIndex.addConditional(htv);
+				if(this.updateAbstractGoal){
+					aGoalRV.setParam(agIndex, newAGParam);
+					//System.out.println(htv.toString() + ";" + agv.toString() + " " + newAGParam);
+				}
+				
+				//begin setup for parameter update of goal variable
+				double nAG = 0.;
+				Double DnAG = agCounts.get(agv);
+				if(DnAG != null){
+					//System.out.println("Stored AG: + " + DnAG);
+					nAG += DnAG;
+				}
+				
+				Iterator <RVariableValue> gIter = this.gm.getRVariableValuesFor(goalRV);
+				while(gIter.hasNext()){
+					
+					RVariableValue gv = gIter.next();
+					
+					GMQuery jgagQuery = new GMQuery();
+					jgagQuery.addQuery(agv);
+					jgagQuery.addQuery(gv);
+					
+					double nGAG = 0.;
+					Double DnGAG = gJointCounts.get(jgagQuery);
+					if(DnGAG != null){
+						nGAG += DnGAG;
+					}
+					
+					//System.out.println("New param: " + nGAG + "/" + nAG);
+					double newGParam = 0.;
+					if(nAG != 0.){
+						newGParam = nGAG / nAG;
+					}
+					//System.out.println(agv.toString() + ";" + gv.toString() + " " + newGParam);
+					
+					MultiNomialRVPI gIndex = new MultiNomialRVPI(gv);
+					gIndex.addConditional(agv);
+					if(this.updateGoal){
+						goalRV.setParam(gIndex, newGParam);
+					}
+					
+				}
+				
+				
+				
+			}
+			
+			
+			
+			//setup for abstract constraint parameters
+			Iterator<RVariableValue> acIter = this.gm.getRVariableValuesFor(aConstraintRV);
+			while(acIter.hasNext()){
+				
+				RVariableValue acv = acIter.next();
+				
+				GMQuery jachQuery = new GMQuery();
+				jachQuery.addQuery(htv);
+				jachQuery.addQuery(acv);
+				
+				double nACH = 0.;
+				Double DnACH = acJointCounts.get(jachQuery);
+				if(DnACH != null){
+					nACH += DnACH;
+				}
+				
+				double newACParam = 0.;
+				if(nH != 0.){
+					newACParam = nACH / nH;
+				}
+				
+				MultiNomialRVPI acIndex = new MultiNomialRVPI(acv);
+				acIndex.addConditional(htv);
+				if(this.updateAbstractConstraint){
+					aConstraintRV.setParam(acIndex, newACParam);
+				}
+				
+			}
+			
+			
+			
+		}
+		
+		
+		this.initializeCountDatastructures(); //setup datastructures for next E pass
+	}
+	
+	
+	
+	
+	
+	protected void initializeCountDatastructures(){
+		jointCounts = new HashMap<RVariable, Map<GMQuery,Double>>();
+		parentCounts = new HashMap<RVariable, Map<RVariableValue,Double>>();
+		
+		jointCounts.put(aConstraintRV, new HashMap<GMQuery, Double>());
+		parentCounts.put(aConstraintRV, new HashMap<RVariableValue, Double>());
+		
+		jointCounts.put(aGoalRV, new HashMap<GMQuery, Double>());
+		parentCounts.put(aGoalRV, new HashMap<RVariableValue, Double>());
+		
+		jointCounts.put(goalRV, new HashMap<GMQuery, Double>());
+		parentCounts.put(goalRV, new HashMap<RVariableValue, Double>());
+		
+	}
+	
+	
+	
+
+	
+	
+	protected void computeGH(List <RVariableValue> observables, double pData){
+		
+		Map<GMQuery, Double> gJointCounts = jointCounts.get(aGoalRV);
+		Map<RVariableValue, Double> gParentCount = parentCounts.get(aGoalRV);
+		
+		
+		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
+		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
+		
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srvv);
+		
+		
+		//iterate hollow task
+		Iterator<GMQueryResult> htIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			RVariableValue htv = hres.getSingleQueryVar();
+			List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+			hsConds.add(srvv);
+			hsConds.add(htv);
+			
+			double sumH = 0.;
+			//iterate abstract goal
+			Iterator<GMQueryResult> abGIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+			while(abGIterRes.hasNext()){
+				GMQueryResult abgRes = abGIterRes.next();
+			
+			
+				double sumMarg = 0.;
+				//iterte absctract constraint
+				Iterator<GMQueryResult> abConIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+				while(abConIterRes.hasNext()){
+					GMQueryResult abcRes = abConIterRes.next();
+					
+					MultiVarValIndex mInd = new MultiVarValIndex();
+					mInd.addVal(abcRes.getSingleQueryVar());
+					mInd.addVal(abgRes.getSingleQueryVar());
+	
+					Double m = MGamChi.get(mInd);
+					sumMarg += hres.probability * abcRes.probability * abgRes.probability * m;
+					
+				}
+				
+				sumH += sumMarg;
+				
+				double numVal = sumMarg / pData;
+				GMQuery jointIndex = new GMQuery();
+				jointIndex.addQuery(htv);
+				jointIndex.addQuery(abgRes.getSingleQueryVar());
+				this.accumulateJoint(numVal, jointIndex, gJointCounts);
+				
+				
+			}
+			
+			double parentInc = sumH / pData;
+			this.accumulateParent(parentInc, htv, gParentCount);
+			
+			
+		}
+		
+
+		
+	}
+	
+	
+	
+	
+	protected void computeCH(List <RVariableValue> observables, double pData){
+		
+		Map<GMQuery, Double> cJointCounts = jointCounts.get(aConstraintRV);
+		Map<RVariableValue, Double> cParentCount = parentCounts.get(aConstraintRV);
+		
+		
+		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
+		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
+		
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srvv);
+		
+		
+		//iterate hollow task
+		Iterator<GMQueryResult> htIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			RVariableValue htv = hres.getSingleQueryVar();
+			List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+			hsConds.add(srvv);
+			hsConds.add(htv);
+			
+			double sumH = 0.;
+			//iterte absctract constraint
+			Iterator<GMQueryResult> abConIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+			while(abConIterRes.hasNext()){
+				GMQueryResult abcRes = abConIterRes.next();
+
+				
+				double sumMarg = 0.;
+				//iterate abstract goal
+				Iterator<GMQueryResult> abGIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+				while(abGIterRes.hasNext()){
+					GMQueryResult abgRes = abGIterRes.next();
+					
+					MultiVarValIndex mInd = new MultiVarValIndex();
+					mInd.addVal(abcRes.getSingleQueryVar());
+					mInd.addVal(abgRes.getSingleQueryVar());
+	
+					sumMarg += hres.probability * abcRes.probability * abgRes.probability * MGamChi.get(mInd);
+					
+					
+				}
+				
+					sumH += sumMarg;
+				
+				double numVal = sumMarg / pData;
+				GMQuery jointIndex = new GMQuery();
+				jointIndex.addQuery(htv);
+				jointIndex.addQuery(abcRes.getSingleQueryVar());
+				this.accumulateJoint(numVal, jointIndex, cJointCounts);
+				
+				
+				
+			}
+			
+			double parentInc = sumH / pData;
+			this.accumulateParent(parentInc, htv, cParentCount);
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+	
+	protected void computeGG(List <RVariableValue> observables, double pData){
+		
+		Map<GMQuery, Double> gJointCounts = jointCounts.get(goalRV);
+		Map<RVariableValue, Double> gParentCount = parentCounts.get(goalRV);
+		
+		
+		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
+		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
+		
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srvv);
+		
+		
+		//iterate hollow task
+		Iterator<GMQueryResult> htIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			RVariableValue htv = hres.getSingleQueryVar();
+			List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+			hsConds.add(srvv);
+			hsConds.add(htv);
+			
+			//iterate abstract goal
+			Iterator<GMQueryResult> abGIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+			while(abGIterRes.hasNext()){
+				GMQueryResult abgRes = abGIterRes.next();
+			
+			
+				double sumAG = 0.;
+				//iterte absctract constraint
+				Iterator<GMQueryResult> abConIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+				while(abConIterRes.hasNext()){
+					GMQueryResult abcRes = abConIterRes.next();
+					
+					MultiVarValIndex mInd = new MultiVarValIndex();
+					mInd.addVal(abcRes.getSingleQueryVar());
+					mInd.addVal(abgRes.getSingleQueryVar());
+	
+					sumAG += hres.probability * abcRes.probability * abgRes.probability * MGamChi.get(mInd);
+					
+					
+					
+					
+					List <RVariableValue> abConds = new ArrayList<RVariableValue>();
+					abConds.add(abcRes.getSingleQueryVar());
+					abConds.add(abgRes.getSingleQueryVar());
+					abConds.add(srvv);
+					
+					//iterate constraints
+					Iterator<GMQueryResult> cIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.CNAME), abConds, true);
+					while(cIterRes.hasNext()){
+						GMQueryResult cRes = cIterRes.next();
+						
+						//iterate goals
+						Iterator<GMQueryResult> gIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.GNAME), abConds, true);
+						while(gIterRes.hasNext()){
+							GMQueryResult gRes = gIterRes.next();
+							
+							MultiVarValIndex MCRInd = new MultiVarValIndex();
+							MCRInd.addVal(cRes.getSingleQueryVar());
+							MCRInd.addVal(gRes.getSingleQueryVar());
+							double numVal = (hres.probability * abcRes.probability * abgRes.probability * cRes.probability * gRes.probability * MCR.get(MCRInd)) / pData;
+							
+							GMQuery jointIndex = new GMQuery();
+							jointIndex.addQuery(abgRes.getSingleQueryVar());
+							jointIndex.addQuery(gRes.getSingleQueryVar());
+							this.accumulateJoint(numVal, jointIndex, gJointCounts);
+							
+						}
+						
+						
+					}
+					
+					
+					
+				}
+				
+				double parInc = sumAG / pData;
+				this.accumulateParent(parInc, abgRes.getSingleQueryVar(), gParentCount);
+				
+				
+			}
+			
+			
+			
+			
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	protected void accumulateJoint(double v, GMQuery query, Map <GMQuery, Double> index){
+		Double curD = index.get(query);
+		double cur = 0.;
+		if(curD != null){
+			cur = curD;
+		}
+		index.put(query, cur+v);
+		
+	}
+	
+	protected void accumulateParent(double v, RVariableValue query, Map <RVariableValue, Double> index){
+		Double curD = index.get(query);
+		double cur = 0.;
+		if(curD != null){
+			cur = curD;
+		}
+		index.put(query, cur+v);
+		
+	}
+	
+	protected void computeMValues(List<RVariableValue> observables){
+		
+		
+		MGamChi = new HashMap<MultiVarValIndex, Double>();
+		MCR = new HashMap<MultiVarValIndex, Double>();
+		
+		StringValue command = (StringValue)this.getCommandValue(observables);
+		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
+		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srvv);
+		
+		
+		//iterate hollow task
+		Iterator<GMQueryResult> htIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			RVariableValue htv = hres.getSingleQueryVar();
+			List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+			hsConds.add(srvv);
+			hsConds.add(htv);
+			
+			//iterte absctract constraint
+			Iterator<GMQueryResult> abConIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+			while(abConIterRes.hasNext()){
+				GMQueryResult abcRes = abConIterRes.next();
+
+				//iterate abstract goal
+				Iterator<GMQueryResult> abGIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+				while(abGIterRes.hasNext()){
+					GMQueryResult abgRes = abGIterRes.next();
+
+					
+					List <RVariableValue> abConds = new ArrayList<RVariableValue>();
+					abConds.add(abcRes.getSingleQueryVar());
+					abConds.add(abgRes.getSingleQueryVar());
+					abConds.add(srvv);
+					
+					
+					
+					double sumMGoalConstraint = 0.;
+					
+					//iterate constraint
+					Iterator<GMQueryResult> cIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.CNAME), abConds, true);
+					while(cIterRes.hasNext()){
+						GMQueryResult cRes = cIterRes.next();
+						
+						
+						
+						//iterate goal
+						Iterator<GMQueryResult> gIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.GNAME), abConds, true);
+						while(gIterRes.hasNext()){
+							GMQueryResult gRes = gIterRes.next();
+							
+							double jp = cRes.probability*gRes.probability;
+							
+							List <RVariableValue> taskConds = new ArrayList<RVariableValue>();
+							taskConds.add(cRes.getSingleQueryVar());
+							taskConds.add(gRes.getSingleQueryVar());
+							taskConds.add(srvv);
+							
+							GMQuery commandQuery = new GMQuery();
+							commandQuery.addQuery(command);
+							commandQuery.setConditions(taskConds);
+							
+							GMQueryResult commandRes = this.gm.getProb(commandQuery, true);
+							
+							
+							double sumRB = 0.;
+							Iterator<GMQueryResult> rIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.RNAME), taskConds, true);
+							while(rIterRes.hasNext()){
+								GMQueryResult rRes = rIterRes.next();
+								
+								GMQuery bQuery = new GMQuery();
+								bQuery.addQuery(behavior);
+								bQuery.addCondition(rRes.getSingleQueryVar());
+								bQuery.addCondition(srvv);
+								
+								GMQueryResult bRes = this.gm.getProb(bQuery, true);
+								sumRB += rRes.probability*bRes.probability;
+								
+							}
+							
+							double mcr = commandRes.probability*sumRB;
+							MultiVarValIndex mcrindex = new MultiVarValIndex();
+							mcrindex.addVal(cRes.getSingleQueryVar());
+							mcrindex.addVal(gRes.getSingleQueryVar());
+							
+							MCR.put(mcrindex, mcr);
+							
+							
+							
+							sumMGoalConstraint += jp*mcr;
+							
+							
+							
+						}//end goal iter
+						
+						
+					}//end constraint iter
+					
+					MultiVarValIndex mgamchiindex = new MultiVarValIndex();
+					mgamchiindex.addVal(abcRes.getSingleQueryVar());
+					mgamchiindex.addVal(abgRes.getSingleQueryVar());
+					
+					MGamChi.put(mgamchiindex, sumMGoalConstraint);
+					
+				}
+				
+				
+			}
+						
+			
+		}
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	public RVariableValue getCommandValue(List<RVariableValue> observables){
+		RVariable command = gm.getRVarWithName(MMNLPModule.CNAME);
+		
+		for(RVariableValue rv : observables){
+			if(rv.isValueFor(command)){
+				return rv;
+			}
+		}
+		
+		return null;
+		
+	}
+	
+	public RVariableValue getBehaviorValue(List<RVariableValue> observables){
+		RVariable behavior = gm.getRVarWithName(IRLModule.BNAME);
+		
+		for(RVariableValue rv : observables){
+			if(rv.isValueFor(behavior)){
+				return rv;
+			}
+		}
+		
+		return null;
+		
+	}
+	
+	
+
+	
+	
+	
+	
+	
+	
+	class MultiVarValIndex{
+		
+		List <RVariableValue>		els;
+		boolean 					needsToComputeHashCode;
+		int 						hashCode;
+		
+		public MultiVarValIndex(){
+			els = new ArrayList<RVariableValue>();
+			needsToComputeHashCode = true;
+		}
+		
+		public void addVal(RVariableValue val){
+			els.add(val);
+			needsToComputeHashCode = true;
+		}
+		
+		@Override
+		public boolean equals(Object o){
+			if(this == o){
+				return true;
+			}
+			if(!(o instanceof MultiVarValIndex)){
+				return false;
+			}
+			
+			MultiVarValIndex that = (MultiVarValIndex)o;
+			
+			for(RVariableValue v : els){
+				boolean foundMatch = false;
+				for(RVariableValue v2 : that.els){
+					if(v.equals(v2)){
+						foundMatch = true;
+						break;
+					}
+				}
+				if(!foundMatch){
+					return false;
+				}
+			}
+			
+			return true;
+			
+			
+		}
+		
+		@Override
+		public int hashCode(){
+			if(needsToComputeHashCode){
+				this.computeHashCode();
+			}
+			return hashCode;
+		}
+		
+		@Override
+		public String toString(){
+			List <String> sReps = new ArrayList<String>();
+			
+			for(RVariableValue v : els){
+				sReps.add(v.toString());
+			}
+			
+			Collections.sort(sReps);
+			
+			String joinDelim = "&&^^";
+			StringBuffer buf = new StringBuffer();
+			for(String s : sReps){
+				buf.append(s).append(joinDelim);
+			}
+			
+			return buf.toString();
+		}
+		
+		protected void computeHashCode(){
+			
+			this.hashCode = this.toString().hashCode();
+			
+			
+		}
+		
+		
+	}
+	
+	
+}
