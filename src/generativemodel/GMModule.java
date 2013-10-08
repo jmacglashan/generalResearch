@@ -59,6 +59,12 @@ public abstract class GMModule {
 		
 	}
 	
+	public GMQueryResult getLogProb(GMQuery query){
+		GMQueryResult pRes = this.getProb(query);
+		pRes.probability = Math.log(pRes.probability);
+		return pRes;
+	}
+	
 	
 	public final RVariableValue extractValueForVariableFromConditions(RVariable var, Collection <RVariableValue> conditions){
 		for(RVariableValue rv : conditions){
