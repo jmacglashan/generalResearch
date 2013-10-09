@@ -162,11 +162,11 @@ public class DTVisualizer {
 			
 			dogImages = new BufferedImage[5];
 			try{
-				dogImages[0] = ImageIO.read(new File("Resources/dogimages/dognorth.png"));
-				dogImages[1] = ImageIO.read(new File("Resources/dogimages/dogsouth.png"));
-				dogImages[2] = ImageIO.read(new File("Resources/dogimages/dogeast.png"));
-				dogImages[3] = ImageIO.read(new File("Resources/dogimages/dogwest.png"));
-				dogImages[4] = ImageIO.read(new File("Resources/dogimages/dogwait.png"));
+				dogImages[0] = ImageIO.read(new File("dataFiles/Resources/dogimages/dognorth.png"));
+				dogImages[1] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogsouth.png"));
+				dogImages[2] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogeast.png"));
+				dogImages[3] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogwest.png"));
+				dogImages[4] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogwait.png"));
 			}catch(Exception e){
 				System.out.println(e);
 			}

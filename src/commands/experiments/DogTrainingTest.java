@@ -21,8 +21,8 @@ import domain.singleagent.dogtraining.DogTraining;
 public class DogTrainingTest {
 
 	
-	//public static String 						DATASETTESTPATH = "commands/dogTrainingData";
-	public static String 						DATASETTESTPATH = "commands/dogTrainingData2";
+	//public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData";
+	public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData2";
 
 	
 	protected String							datasetPath;

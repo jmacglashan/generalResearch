@@ -126,7 +126,7 @@ public class InteractiveCommandsGUI extends JFrame implements StateVisualizingGU
 	
 	public static void main(String [] args){
 		
-		DogTrainingTest dtcommands = new DogTrainingTest("commands/dogTrainingData2");
+		DogTrainingTest dtcommands = new DogTrainingTest("dataFiles/commands/dogTrainingData2");
 		dtcommands.driver.initializeGMandEM();
 		dtcommands.driver.runEM(5);
 		

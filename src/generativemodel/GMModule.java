@@ -60,7 +60,6 @@ public abstract class GMModule {
 	}
 	
 	public GMQueryResult getLogProb(GMQuery query){
-		//comment
 		GMQueryResult pRes = this.getProb(query);
 		pRes.probability = Math.log(pRes.probability);
 		return pRes;
