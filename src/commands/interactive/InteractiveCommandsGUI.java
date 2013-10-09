@@ -15,10 +15,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import commands.experiments.DogTrainingTest;
-import commands.model2.CommandsLearningDriver;
-import commands.model2.CommandsLearningDriver.RFTFPair;
-
 import auxiliary.DynamicVisualFeedbackEnvironment;
 import auxiliary.StateVisualizingGUI;
 import burlap.behavior.singleagent.Policy;
@@ -27,6 +23,11 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.visualizer.Visualizer;
+
+import commands.experiments.DogTrainingTest;
+import commands.model2.CommandsLearningDriver;
+import commands.model2.CommandsLearningDriver.RFTFPair;
+
 import domain.singleagent.dogtraining.DTVisualizer;
 import domain.singleagent.dogtraining.DogTraining;
 
