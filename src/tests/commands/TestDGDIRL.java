@@ -46,7 +46,7 @@ public class TestDGDIRL {
 		TrainingElementParser teparser = new TrainingElementParser(d, sp);
 		
 		//get dataset
-		String path = "commands/sokoDataForEM";
+		String path = "dataFiles/commands/sokoDataForEM";
 		//String path = "code/turkTrajectories";
 		List<TrainingElement> dataset = teparser.getTrainingElementDataset(path, ".txt");
 		

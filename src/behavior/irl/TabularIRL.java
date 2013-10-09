@@ -90,10 +90,34 @@ public class TabularIRL {
 		return probs;
 	}
 	
+	public double [] getBehaviorLogProbabilities(EpisodeAnalysis t, List<TaskCondition> conds){
+		
+		if(this.useTerminateAction){
+			t = this.getTerminateAugmentedTrajectory(t);
+		}
+		
+		double [] logProbs = new double[conds.size()];
+		for(int i = 0; i < conds.size(); i++){
+			
+			TaskCondition cond = conds.get(i);
+			logProbs[i] = this.getBehaviorLogProbabilityHelper(t, cond, true);
+			
+		}
+		
+		return logProbs;
+	}
+	
 	
 	public double getBehaviorProbability(EpisodeAnalysis t, TaskCondition cond){
 		
-		return this.getBehaviorProbabilityHelper(t, cond, false);
+		//return this.getBehaviorProbabilityHelper(t, cond, false);
+		return Math.exp(this.getBehaviorLogProbabilityHelper(t, cond, false));
+		
+	}
+	
+	public double getBehaviorLogProbability(EpisodeAnalysis t, TaskCondition cond){
+		
+		return this.getBehaviorLogProbabilityHelper(t, cond, false);
 		
 	}
 	
@@ -108,24 +132,7 @@ public class TabularIRL {
 			}
 		}
 		
-		plannerFactory.changeGoal(cond.rf, cond.tf);
-		ValueFunctionPlanner planner = plannerFactory.generatePlanner();
-		
-		/*StateHashFactory hashingFactory = planner.getHashingFactory();
-		if(hashingFactory instanceof DiscreteStateHashFactory){
-			//((DiscreteStateHashFactory) hashingFactory).addAttributeForClass(TERMINATECLASSNAME, terminateAttribute);
-		}*/
-		
-		//compute v value for all neighbor states along the trajectory
-		for(int i = 0; i < t.numTimeSteps(); i++){
-			State s = t.getState(i);
-			List <State> neighbors = this.getAllNeighbors(s);
-			for(State n : neighbors){
-				planner.planFromState(n);
-			}
-		}
-		
-		policy.setPlanner(planner);
+		this.setupPolicy(t, cond);
 		
 		//compute the probability of the trajectory
 		double p = 1.;
@@ -139,6 +146,51 @@ public class TabularIRL {
 		
 		return p;
 	}
+	
+	
+	protected double getBehaviorLogProbabilityHelper(EpisodeAnalysis t, TaskCondition cond, boolean trajectoryConverted){
+		if(this.useTerminateAction){
+			TerminalFunction tf = new TFTerminalAction();
+			RewardFunction rf = new RFTerminalActionWrapper(cond.rf);
+			cond = new TaskCondition(rf, tf);
+			if(!trajectoryConverted){
+				t = this.getTerminateAugmentedTrajectory(t);
+			}
+		}
+		
+		this.setupPolicy(t, cond);
+		
+		//compute the probability of the trajectory
+		double logsum = 0.;
+		for(int i = 0; i < t.numTimeSteps()-1; i++){
+			State s = t.getState(i);
+			GroundedAction ga = t.getAction(i);
+			double actionP = ((Policy)policy).getProbOfAction(s, ga);
+			logsum += Math.log(actionP);
+			
+		}
+		
+		return logsum;
+	}
+	
+	
+	
+	protected void setupPolicy(EpisodeAnalysis t, TaskCondition cond){
+		plannerFactory.changeGoal(cond.rf, cond.tf);
+		ValueFunctionPlanner planner = plannerFactory.generatePlanner();
+		
+		//compute v value for all neighbor states along the trajectory
+		for(int i = 0; i < t.numTimeSteps(); i++){
+			State s = t.getState(i);
+			List <State> neighbors = this.getAllNeighbors(s);
+			for(State n : neighbors){
+				planner.planFromState(n);
+			}
+		}
+		
+		this.policy.setPlanner(planner);
+	}
+	
 	
 
 	
