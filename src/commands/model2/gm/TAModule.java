@@ -59,12 +59,6 @@ public class TAModule extends MNPEMModule {
 	
 	
 	
-	public static void main(String [] args){
-		
-		System.out.println(get0PaddedBinary(127, 8));
-		
-	}
-	
 	
 	
 	public TAModule(String name, RVariable stateInput, Domain oomdpDomain, List <HollowTaskValue> hollowTasks, List <String> constraintPFClasses, List <AbstractConditionsValue> goalConditionValues) {
@@ -165,6 +159,38 @@ public class TAModule extends MNPEMModule {
 		//first do abstract constraints
 		List <List <RVariableValue>> permissibleCValuesForHTs = new ArrayList<List<RVariableValue>>(hollowTasks.size());
 		List <List <RVariableValue>> immissibleCValuesForHTs = new ArrayList<List<RVariableValue>>(hollowTasks.size());
+		this.populatePermissibleAndImmisibleForAbstractParams(permissibleCValuesForHTs, immissibleCValuesForHTs, iter);
+		
+		for(int i = 0; i < hollowTasks.size(); i++){
+			
+			HollowTaskValue htv = hollowTasks.get(i);
+			
+			List <RVariableValue> pset = permissibleCValuesForHTs.get(i);
+			double param = 1. / (double)pset.size();
+			for(RVariableValue v : pset){
+				MultiNomialRVPI pi = new MultiNomialRVPI(v);
+				pi.addConditional(htv);
+				
+				var.setParam(pi, param);
+			}
+			
+			
+			
+			List <RVariableValue> iset = immissibleCValuesForHTs.get(i);
+			for(RVariableValue v : iset){
+				MultiNomialRVPI pi = new MultiNomialRVPI(v);
+				pi.addConditional(htv);
+				
+				var.setParam(pi, 0.);
+			}
+			
+		}
+		
+		
+	}
+	
+	
+	protected void populatePermissibleAndImmisibleForAbstractParams(List <List <RVariableValue>> permissibleCValuesForHTs, List <List <RVariableValue>> immissibleCValuesForHTs, Iterator<RVariableValue> iter){
 		for(int i = 0; i < hollowTasks.size(); i++){
 			List <RVariableValue> set = new ArrayList<RVariableValue>();
 			permissibleCValuesForHTs.add(set);
@@ -194,33 +220,6 @@ public class TAModule extends MNPEMModule {
 				}
 			}
 		}
-		
-		for(int i = 0; i < hollowTasks.size(); i++){
-			
-			HollowTaskValue htv = hollowTasks.get(i);
-			
-			List <RVariableValue> pset = permissibleCValuesForHTs.get(i);
-			double param = 1. / (double)pset.size();
-			for(RVariableValue v : pset){
-				MultiNomialRVPI pi = new MultiNomialRVPI(v);
-				pi.addConditional(htv);
-				
-				var.setParam(pi, param);
-			}
-			
-			
-			
-			List <RVariableValue> iset = immissibleCValuesForHTs.get(i);
-			for(RVariableValue v : iset){
-				MultiNomialRVPI pi = new MultiNomialRVPI(v);
-				pi.addConditional(htv);
-				
-				var.setParam(pi, 0.);
-			}
-			
-		}
-		
-		
 	}
 	
 	
@@ -861,7 +860,7 @@ public class TAModule extends MNPEMModule {
 	
 	public class TaskDescriptionValue extends RVariableValue{
 
-		List <GroundedProp> props;
+		public List <GroundedProp> props;
 		
 		public TaskDescriptionValue(){
 			this.props = new ArrayList<GroundedProp>();
@@ -1082,7 +1081,7 @@ public class TAModule extends MNPEMModule {
 	
 	
 	
-	class AbstractGoalConditionIterator implements Iterator<RVariableValue>{
+	public class AbstractGoalConditionIterator implements Iterator<RVariableValue>{
 
 		Iterator<AbstractConditionsValue> iter;
 		
@@ -1117,7 +1116,7 @@ public class TAModule extends MNPEMModule {
 	 * @author James MacGlashan
 	 *
 	 */
-	class AbstractConstraintSinglePFVarIterator implements Iterator<RVariableValue>{
+	public class AbstractConstraintSinglePFVarIterator implements Iterator<RVariableValue>{
 
 		Iterator<HollowTaskValue>		htIterator;
 		Iterator<RVariableValue>		condIter;
@@ -1204,7 +1203,7 @@ public class TAModule extends MNPEMModule {
 	
 	
 	
-	class AbstractConstraintSinglePFVarConditionedIterator implements Iterator<RVariableValue>{
+	public class AbstractConstraintSinglePFVarConditionedIterator implements Iterator<RVariableValue>{
 
 		
 		List <AbstractCondition>		allPossibleConditionsForHT;
@@ -1279,7 +1278,7 @@ public class TAModule extends MNPEMModule {
 	
 	
 	
-	class TaskDescriptionIterator implements Iterator <RVariableValue>{
+	public class TaskDescriptionIterator implements Iterator <RVariableValue>{
 
 		RVariable										varToIterate;
 		Iterator <RVariableValue>						parentIterator;

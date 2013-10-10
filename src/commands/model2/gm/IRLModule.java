@@ -41,6 +41,7 @@ public class IRLModule extends GMModule {
 	
 	protected boolean										useIRLCache;
 	protected Map<GMQuery, Double>							cachedResults;
+	protected Map<GMQuery, Double>							cachedLogResults;
 	
 	
 	public IRLModule(String name, RVariable stateRV, RVariable rewardRV, Domain oomdpDomain, TabularIRLPlannerFactory irlPlanFactory, boolean addTerminateAction, boolean useCache) {
@@ -66,6 +67,7 @@ public class IRLModule extends GMModule {
 		
 		
 		cachedResults = new HashMap<GMQuery, Double>();
+		cachedLogResults = new HashMap<GMQuery, Double>();
 		
 		
 	}
@@ -103,6 +105,57 @@ public class IRLModule extends GMModule {
 		
 		return new GMQueryResult(query, p);
 	}
+	
+	
+	@Override
+	public GMQueryResult getLogProb(GMQuery query){
+		
+		GMQueryResult cachedResult = owner.getCachedLoggedResultForQuery(query);
+		if(cachedResult != null){
+			return cachedResult;
+		}
+		
+		return this.computeLogProb(query);
+	}
+	
+
+	public GMQueryResult computeLogProb(GMQuery query){
+		
+		BehaviorValue bval = (BehaviorValue)query.getSingleQueryVar();
+		
+		Set <RVariableValue> conditions = query.getConditionValues();
+		RFConVariableValue rval = (RFConVariableValue)this.extractValueForVariableFromConditions(rewardRV, conditions);
+		
+		double p;
+		
+		Double cachedP = this.cachedLogResults.get(query);
+		if(cachedP != null){
+			p = cachedP;
+		}
+		else{
+			ConjunctiveGroundedPropTF tf = new ConjunctiveGroundedPropTF(rval.rf);
+			TaskCondition tc = new TaskCondition(rval.rf, tf);
+			
+			p = irl.getBehaviorLogProbability(bval.t.convertToZeroRewardEpisodeAnalysis(), tc);
+			
+			if(this.useIRLCache){
+				this.cachedLogResults.put(query, p);
+			}
+			
+			//System.out.println(rval.toString() + ": " + p);
+			
+			
+		}
+		
+		
+		
+		return new GMQueryResult(query, p);
+		
+	}
+	
+	
+	
+	
 
 	@Override
 	public ModelTrackedVarIterator getNonZeroProbIterator(RVariable queryVar, List<RVariableValue> conditions) {

@@ -17,6 +17,7 @@ public class GenerativeModel {
 	protected List <RVariable>					inputVariables;
 	protected Map<RVariable, GMModule>			variableOwnerResolver;
 	protected Map<GMQuery, GMQueryResult>		queryCache;
+	protected Map<GMQuery, GMQueryResult>		logQueryCache;
 	
 	
 	
@@ -26,6 +27,7 @@ public class GenerativeModel {
 		this.inputVariables = new ArrayList<RVariable>();
 		this.variableOwnerResolver = new HashMap<RVariable, GMModule>();
 		this.queryCache = new HashMap<GMQuery, GMQueryResult>();
+		this.logQueryCache = new HashMap<GMQuery, GMQueryResult>();
 	}
 	
 	public GenerativeModel(List<RVariable> inputVariables){
@@ -34,6 +36,7 @@ public class GenerativeModel {
 		this.moduleMap = new HashMap<String, GMModule>();
 		this.variableOwnerResolver = new HashMap<RVariable, GMModule>();
 		this.queryCache = new HashMap<GMQuery, GMQueryResult>();
+		this.logQueryCache = new HashMap<GMQuery, GMQueryResult>();
 	}
 	
 	
@@ -63,6 +66,7 @@ public class GenerativeModel {
 	 */
 	public void emptyCache(){
 		this.queryCache.clear();
+		this.logQueryCache.clear();
 	}
 	
 	
@@ -90,14 +94,26 @@ public class GenerativeModel {
 	
 	
 	/**
-	 * Will return whatever the cached probability for a query is. If there is no cache etnry for the provided query
+	 * Will return whatever the cached probability for a query is. If there is no cache entry for the provided query
 	 * then it will return null.
-	 * @param query the query for which to return the probabiltiy
+	 * @param query the query for which to return the probability
 	 * @return the cached query result if it exists, null otherwise.
 	 */
 	public GMQueryResult getCachedResultForQuery(GMQuery query){
 		return this.queryCache.get(query);
 	}
+	
+	
+	/**
+	 * Will return whatever the cached log probability for a query is. If there is no cache entry for the provided query
+	 * then it will return null.
+	 * @param query the query for which to return the probability
+	 * @return the cached query result if it exists, null otherwise.
+	 */
+	public GMQueryResult getCachedLoggedResultForQuery(GMQuery query){
+		return this.logQueryCache.get(query);
+	}
+	
 	
 	/**
 	 * Will return the probability of a given query. Currently, this method only supports
@@ -131,9 +147,43 @@ public class GenerativeModel {
 	}
 	
 	/**
+	 * Will return the log probability of a given query. Currently, this method only supports
+	 * computation queries for single variables, but multi-var queries
+	 * may be returned if they exist in the cache
+	 * @param query the probability query to make
+	 * @param cache whether to cache this result if it is queried again the future
+	 * @return the probability of this query
+	 */
+	public GMQueryResult getLogProb(GMQuery query, boolean cache){
+		
+		if(query.getNumQueryVars() > 1){
+			GMQueryResult cachedRes = this.logQueryCache.get(query);
+			if(cachedRes != null){
+				return cachedRes;
+			}
+			else{
+				throw new RuntimeErrorException(new Error("log probabilities for multiple query variables cannot be computed, only returned from cache"));
+			}
+		}
+		
+		//note that cached check for single vars is performed at the module level (provides consistency for caching iterators)
+		RVariable queryVar = query.getSingleQueryVar().owner;
+		GMModule module = variableOwnerResolver.get(queryVar);
+		GMQueryResult computedResult = module.getLogProb(query);
+		if(cache){
+			this.logQueryCache.put(query, computedResult);
+		}
+		
+		return computedResult;
+	}
+	
+	
+	
+	
+	/**
 	 * Gets an iterator of possible variable values (and their probability) that have a non-zero probability.
 	 * @param queryVar The variable over which to iterate
-	 * @param conditions the condinitional varaible values
+	 * @param conditions the conditional variable values
 	 * @param cache whether to save the computed probabilities for each iterated variable to the cache
 	 * @return an iterator of possible variable values (and their probability) that have a non-zero probability.
 	 */
@@ -149,8 +199,27 @@ public class GenerativeModel {
 	
 	
 	/**
+	 * Gets an iterator of possible variable values (and their probability) that have a non-zero probability.
+	 * @param queryVar The variable over which to iterate
+	 * @param conditions the conditional variable values
+	 * @param cache whether to save the computed probabilities for each iterated variable to the cache
+	 * @return an iterator of possible variable values (and their probability) that have a non-zero probability.
+	 */
+	public Iterator<GMQueryResult> getNonInfiniteLogProbIterator(RVariable queryVar, List <RVariableValue> conditions, boolean cache){
+		
+		GMModule module = variableOwnerResolver.get(queryVar);
+		ModelTrackedVarIterator iter = module.getNonInfiniteLogProbIterator(queryVar, conditions);
+		iter.GMIniter(this, cache);
+		
+		return iter;
+		
+	}
+	
+	
+	
+	/**
 	 * Will return an iterator over all possible variable values for a given random variable
-	 * @param queryVar The varaible over which to iterate
+	 * @param queryVar The variable over which to iterate
 	 * @return
 	 */
 	public Iterator<RVariableValue> getRVariableValuesFor(RVariable queryVar){
@@ -160,10 +229,19 @@ public class GenerativeModel {
 	
 	/**
 	 * Will store a computation result in the generative models cache for future queries
-	 * @param result the computed probability to store in the cachce
+	 * @param result the computed probability to store in the cache
 	 */
 	public void manualCache(GMQueryResult result){
 		this.queryCache.put(new GMQuery(result), result);
+	}
+	
+	
+	/**
+	 * Will store a computation result in the generative models cache for future queries
+	 * @param result the computed probability to store in the cache
+	 */
+	public void manualLogCache(GMQueryResult result){
+		this.logQueryCache.put(new GMQuery(result), result);
 	}
 	
 	

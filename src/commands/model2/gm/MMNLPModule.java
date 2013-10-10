@@ -120,6 +120,16 @@ public class MMNLPModule extends MNPEMModule {
 		}
 		vocab = new ArrayList<String>(vocabSet);
 		
+		this.initializeWordParameters();
+		
+		
+		
+	}
+	
+	
+	
+	protected void initializeWordParameters(){
+		
 		double uniVocab = 1./(double)vocab.size();
 		System.out.println("Uniform: " + uniVocab);
 		
@@ -138,7 +148,6 @@ public class MMNLPModule extends MNPEMModule {
 				
 			}
 		}
-		
 		
 	}
 
@@ -176,7 +185,7 @@ public class MMNLPModule extends MNPEMModule {
 		if(queryVar.equals(propRV)){
 			RVariableValue constraints = this.extractValueForVariableFromConditions(constraintRV, conditions);
 			RVariableValue goals = this.extractValueForVariableFromConditions(goalRV, conditions);
-			Iterator<RVariableValue> condIter = new ConditionedPFVarIter((TaskDescriptionValue)constraints, (TaskDescriptionValue)goals);
+			Iterator<RVariableValue> condIter = new ConditionedPFVarIter(propRV, (TaskDescriptionValue)constraints, (TaskDescriptionValue)goals);
 			
 			return new P0RejectQRIterator(condIter, conditions, this.owner);
 		}
@@ -293,12 +302,6 @@ public class MMNLPModule extends MNPEMModule {
 			p *= Math.pow(this.probWGivenProps(pfNames, wVal), counts.get(wVal));
 		}
 		
-		if(p == 0){
-			p = 1.;
-			for(StringValue wVal : counts.keySet()){
-				p *= Math.pow(this.probWGivenProps(pfNames, wVal), counts.get(wVal));
-			}
-		}
 		
 		
 		return p;
@@ -407,10 +410,10 @@ public class MMNLPModule extends MNPEMModule {
 	
 	
 	
-	class StringVarIter implements Iterator<RVariableValue>{
+	public static class StringVarIter implements Iterator<RVariableValue>{
 
-		Iterator<String>	sIter;
-		RVariable			owner;
+		protected Iterator<String>	sIter;
+		protected RVariable			owner;
 		
 		
 		public StringVarIter(List <String> values, RVariable owner){		
@@ -439,12 +442,14 @@ public class MMNLPModule extends MNPEMModule {
 	}
 	
 	
-	class ConditionedPFVarIter implements Iterator<RVariableValue>{
+	public static class ConditionedPFVarIter implements Iterator<RVariableValue>{
 
-		Iterator<String> sIter;
+		protected Iterator<String> sIter;
+		protected RVariable propRV;
 		
-		
-		public ConditionedPFVarIter(TaskDescriptionValue constraints, TaskDescriptionValue goals){
+		public ConditionedPFVarIter(RVariable propRV, TaskDescriptionValue constraints, TaskDescriptionValue goals){
+			
+			this.propRV = propRV;
 			
 			Set <String> pfNames = new HashSet<String>();
 			for(GroundedProp gp : constraints.props){

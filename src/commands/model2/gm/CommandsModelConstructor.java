@@ -1,13 +1,11 @@
 package commands.model2.gm;
 
-import domain.singleagent.sokoban.SokobanDomain;
 import em.Dataset;
 import generativemodel.GenerativeModel;
 import generativemodel.RVariable;
 import generativemodel.RVariableValue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +13,7 @@ import java.util.Set;
 
 import behavior.irl.DGDIRLFactory;
 import behavior.irl.TabularIRLPlannerFactory;
-import behavior.vfa.heterogenousafd.stateenumerators.HashingFactoryEnumerator;
-import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
-import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.PropositionalFunction;
 
@@ -28,6 +23,8 @@ import commands.model2.gm.MMNLPModule.StringValue;
 import commands.model2.gm.TAModule.AbstractCondition;
 import commands.model2.gm.TAModule.AbstractConditionsValue;
 import commands.model2.gm.TAModule.HollowTaskValue;
+import commands.model2.gm.logparameters.MMNLPLogModule;
+import commands.model2.gm.logparameters.TALogModule;
 
 public class CommandsModelConstructor {
 
@@ -64,6 +61,37 @@ public class CommandsModelConstructor {
 		List <String> commands = extractCommands(dataset);
 		List <String> pfNames = getAllPossiblePFNames(oomdpDomain, constraintPFClasses, goalConditionValues);
 		MMNLPModule nlp = new MMNLPModule(NLPMODNAME, commandLenRV, ta.constraintRV, ta.goalRV, pfNames, commands);
+		gm.addGMModule(nlp);
+		
+		
+		return gm;
+	}
+	
+	
+	public static GenerativeModel generateLogModel(Domain oomdpDomain, List <HollowTaskValue> hollowTasks, List <String> constraintPFClasses, List <AbstractConditionsValue> goalConditionValues, List <TrainingElement> dataset, StateHashFactory hashingFactory, boolean useTerminateAction){
+		
+		RVariable stateRV = new RVariable(STATERVNAME);
+		RVariable commandLenRV = new RVariable(CLENRVNAME);
+		
+		List<RVariable> inputVariables = new ArrayList<RVariable>(2);
+		inputVariables.add(stateRV);
+		inputVariables.add(commandLenRV);
+		
+		GenerativeModel gm = new GenerativeModel(inputVariables);
+		
+		TALogModule ta = new TALogModule(TAMODNAME, stateRV, oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues);
+		gm.addGMModule(ta);
+		
+		
+		TabularIRLPlannerFactory irlPlannerFactory = getIRLPlannerFactory(oomdpDomain, hashingFactory);
+		IRLModule irl = new IRLModule(IRLMODNAME, stateRV, gm.getRVarWithName(TAModule.RNAME), oomdpDomain, irlPlannerFactory, useTerminateAction, true);
+		gm.addGMModule(irl);
+		
+		
+		
+		List <String> commands = extractCommands(dataset);
+		List <String> pfNames = getAllPossiblePFNames(oomdpDomain, constraintPFClasses, goalConditionValues);
+		MMNLPLogModule nlp = new MMNLPLogModule(NLPMODNAME, commandLenRV, ta.constraintRV, ta.goalRV, pfNames, commands);
 		gm.addGMModule(nlp);
 		
 		

@@ -86,6 +86,25 @@ public class CommandsLearningDriver {
 		return dataset;
 	}
 	
+	public List <RVariableValue> getGMDataElement(int i){
+		return this.gmDataset.getDataInstance(i);
+	}
+	
+	
+	public GenerativeModel getGenerativeModel(){
+		return this.gm;
+	}
+	
+	
+	public void initializeGM(){
+		this.gm = CommandsModelConstructor.generateModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, commandsDataset, hashingFactory, addTerminateAction);
+		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, commandsDataset);
+	}
+	
+	public void initializeLogGM(){
+		this.gm = CommandsModelConstructor.generateLogModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, commandsDataset, hashingFactory, addTerminateAction);
+		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, commandsDataset);
+	}
 	
 	public void initializeGMandEM(){
 		

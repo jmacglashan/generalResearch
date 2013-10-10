@@ -48,7 +48,7 @@ public abstract class GMModule {
 		}
 	}
 	
-	public final GMQueryResult getProb(GMQuery query){
+	public GMQueryResult getProb(GMQuery query){
 		
 		GMQueryResult cachedResult = owner.queryCache.get(query);
 		if(cachedResult != null){
@@ -59,11 +59,13 @@ public abstract class GMModule {
 		
 	}
 	
+	
 	public GMQueryResult getLogProb(GMQuery query){
 		GMQueryResult pRes = this.getProb(query);
 		pRes.probability = Math.log(pRes.probability);
 		return pRes;
 	}
+	
 	
 	
 	public final RVariableValue extractValueForVariableFromConditions(RVariable var, Collection <RVariableValue> conditions){
@@ -74,6 +76,35 @@ public abstract class GMModule {
 		}
 		
 		return null;
+	}
+	
+	
+	public ModelTrackedVarIterator getNonInfiniteLogProbIterator(RVariable queryVar, List <RVariableValue> conditions){
+		
+		final ModelTrackedVarIterator src = this.getNonZeroProbIterator(queryVar, conditions);
+		
+		ModelTrackedVarIterator iter = new ModelTrackedVarIterator() {
+			
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public boolean hasNext() {
+				return src.hasNext();
+			}
+			
+			@Override
+			public GMQueryResult varSpecificNext() {
+				GMQueryResult nextSrc = src.next();
+				GMQueryResult logged = new GMQueryResult(nextSrc, Math.log(nextSrc.probability));
+				return logged;
+			}
+		};
+		
+		return iter;
+		
 	}
 	
 	

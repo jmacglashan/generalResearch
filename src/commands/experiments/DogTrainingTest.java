@@ -1,5 +1,8 @@
 package commands.experiments;
 
+import generativemodel.GenerativeModel;
+import generativemodel.RVariableValue;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,8 @@ import burlap.oomdp.core.State;
 
 import commands.PFClassTemplate;
 import commands.model2.CommandsLearningDriver;
+import commands.model2.em.PDataManager;
+import commands.model2.em.logmodel.LogPDataManager;
 import commands.model2.gm.TAModule.AbstractCondition;
 import commands.model2.gm.TAModule.AbstractConditionsValue;
 import commands.model2.gm.TAModule.HollowTaskValue;
@@ -42,15 +47,44 @@ public class DogTrainingTest {
 	 */
 	public static void main(String[] args) {
 		
+		//runEMTest();
+		runDataProbTest();
+		
+
+	}
+	
+	
+	public static void runEMTest(){
+		
 		DogTrainingTest tester = new DogTrainingTest(DATASETTESTPATH);
 		
 		tester.driver.initializeGMandEM();
 		tester.driver.runEM(5);
 		tester.driver.printResultsOnTrainingDataset();
-		
-
 	}
 	
+	
+	public static void runDataProbTest(){
+		
+		DogTrainingTest dtOld = new DogTrainingTest(DATASETTESTPATH);
+		DogTrainingTest dtNew = new DogTrainingTest(DATASETTESTPATH);
+		
+		dtOld.driver.initializeGM();
+		dtNew.driver.initializeLogGM();
+		
+		GenerativeModel pModel = dtOld.driver.getGenerativeModel();
+		GenerativeModel lModel = dtNew.driver.getGenerativeModel();
+		
+		PDataManager pdm = new PDataManager(pModel);
+		LogPDataManager ldm = new LogPDataManager(lModel);
+		
+		List <RVariableValue> pd0 = dtOld.driver.getGMDataElement(0);
+		List <RVariableValue> ld0 = dtNew.driver.getGMDataElement(0);
+		
+		System.out.println("Prob model prob: " + pdm.getProbForData(0, pd0));
+		System.out.println("Log model prob: " + Math.exp(ldm.getLogProbForData(0, ld0)));
+		
+	}
 	
 	
 	public DogTrainingTest(String datasetPath){
