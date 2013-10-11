@@ -7,7 +7,6 @@ import generativemodel.RVariable;
 import generativemodel.RVariableValue;
 import generativemodel.common.LPInfRejectQRIterator;
 import generativemodel.common.MultiNomialRVPI;
-import generativemodel.common.P0RejectQRIterator;
 
 import java.util.ArrayList;
 import java.util.Iterator;

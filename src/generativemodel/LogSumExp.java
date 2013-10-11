@@ -22,6 +22,10 @@ public class LogSumExp {
 	
 	public static double logSumOfExponentials(double [] exponentialTerms){
 		
+		if(exponentialTerms.length == 0){
+			return Double.NEGATIVE_INFINITY;
+		}
+		
 		double maxTerm = Double.NEGATIVE_INFINITY;
 		for(double d : exponentialTerms){
 			if(d > maxTerm){
@@ -41,6 +45,10 @@ public class LogSumExp {
 	
 	
 	public static double logSumOfExponentials(List<Double> exponentialTerms){
+		
+		if(exponentialTerms.size() == 0){
+			return Double.NEGATIVE_INFINITY;
+		}
 		
 		double maxTerm = Double.NEGATIVE_INFINITY;
 		for(double d : exponentialTerms){

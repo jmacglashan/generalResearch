@@ -326,7 +326,7 @@ public class EMTAModule extends EMModule {
 			hsConds.add(htv);
 			
 			double sumH = 0.;
-			//iterte absctract constraint
+			//iterate abstract constraint
 			Iterator<GMQueryResult> abConIterRes = gm.getNonZeroIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
 			while(abConIterRes.hasNext()){
 				GMQueryResult abcRes = abConIterRes.next();

@@ -314,7 +314,7 @@ public class EMMMNLPModule extends EMModule {
 	
 	
 	
-	class GoalConstraintPair{
+	protected class GoalConstraintPair{
 		
 		public TaskDescriptionValue			goal;
 		public TaskDescriptionValue			constraint;
@@ -342,7 +342,7 @@ public class EMMMNLPModule extends EMModule {
 	}
 	
 	
-	class GCIterator implements Iterator<GoalConstraintPair>{
+	protected class GCIterator implements Iterator<GoalConstraintPair>{
 
 		List<GoalConstraintPair>		possibleValues;
 		Iterator<GoalConstraintPair>	gcLocalIter;
