@@ -29,7 +29,7 @@ public class SokoEMTest {
 
 		//public static String 						DATASETTESTPATH = "code/sokoDataForEM";
 		//public static String 						DATASETTESTPATH = "code/allTurkTrainLimitedCommand";
-		public static String 						DATASETTESTPATH = "commands/mySimpleSokoData";
+		public static String 						DATASETTESTPATH = "dataFiles/commands/mySimpleSokoData";
 		//public static String 						DATASETTESTPATH = "code/allTurkTrainBlockLimitedCommand";
 		//public static String 						DATASETTESTPATH = "code/allTurkTrainAgentLimitedCommand";
 
@@ -54,8 +54,8 @@ public class SokoEMTest {
 			
 			
 			//hardCodedTests();
-			trainingDataTest();
-			//looTest(args);
+			//trainingDataTest();
+			looTest(args);
 
 		}
 		
@@ -118,7 +118,7 @@ public class SokoEMTest {
 				}
 			}
 			
-			List<LOORewardResult> results = tester.driver.performTrainingDataTest(5, tester.getPossibleGoalFeatures());
+			List<LOORewardResult> results = tester.driver.performTrainingDataTest(10, tester.getPossibleGoalFeatures());
 			
 			int n = 0;
 			int c = 0;

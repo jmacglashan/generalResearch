@@ -5,15 +5,18 @@ import em.EMAlgorithm;
 import generativemodel.GMQuery;
 import generativemodel.GMQueryResult;
 import generativemodel.GenerativeModel;
+import generativemodel.LogSumExp;
 import generativemodel.RVariableValue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.StateParser;
@@ -53,6 +56,7 @@ public class CommandsLearningDriver {
 	protected GenerativeModel					gm;
 	protected EMAlgorithm						em;
 	protected Dataset							gmDataset;
+	protected boolean							useLogModel = false;
 	
 	
 	public CommandsLearningDriver(Domain oomdpDomain, List <HollowTaskValue> hollowTasks, List <String> constraintPFClasses, 
@@ -68,6 +72,15 @@ public class CommandsLearningDriver {
 		this.hashingFactory = hashingFactory;
 		this.addTerminateAction = addTerminateAction;
 		
+		
+	}
+	
+	public CommandsLearningDriver(Domain oomdpDomain, List <HollowTaskValue> hollowTasks, List <String> constraintPFClasses, 
+			List <AbstractConditionsValue> goalConditionValues, String pathToTrainingDataset, StateParser stateParser, 
+			StateHashFactory hashingFactory, boolean addTerminateAction, boolean useLogModel) {
+		
+		this(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, pathToTrainingDataset, stateParser, hashingFactory, addTerminateAction);
+		this.useLogModel = useLogModel;
 		
 	}
 	
@@ -97,6 +110,15 @@ public class CommandsLearningDriver {
 	
 	
 	public void initializeGM(){
+		if(useLogModel){
+			this.initializeLogGM();
+		}
+		else{
+			this.initializePGM();
+		}
+	}
+	
+	public void initializePGM(){
 		this.gm = CommandsModelConstructor.generateModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, commandsDataset, hashingFactory, addTerminateAction);
 		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, commandsDataset);
 	}
@@ -106,11 +128,55 @@ public class CommandsLearningDriver {
 		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, commandsDataset);
 	}
 	
+	
+	
+	public void initializeGM(List <TrainingElement> dataset){
+		if(this.useLogModel){
+			this.initializeLogGM(dataset);
+		}
+		else{
+			this.initializePGM(dataset);
+		}
+	}
+	
+	public void initializePGM(List <TrainingElement> dataset){
+		this.gm = CommandsModelConstructor.generateModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, dataset, hashingFactory, addTerminateAction);
+		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, dataset);
+	}
+	
+	public void initializeLogGM(List <TrainingElement> dataset){
+		this.gm = CommandsModelConstructor.generateLogModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, dataset, hashingFactory, addTerminateAction);
+		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, dataset);
+	}
+	
+	
+	
+	
+	public void initializeEM(){
+		if(this.useLogModel){
+			this.initializeLEM();
+		}
+		else{
+			this.initializePEM();
+		}
+	}
+	
+	
+	public void initializePEM(){
+		this.em = CommandsEMConstructor.getCommandsPEMAlgorithm(this.gm, this.gmDataset);
+	}
+	
+	public void initializeLEM(){
+		this.em = CommandsEMConstructor.getCommandsLogEMAlgorithm(this.gm, this.gmDataset);
+	}
+	
+	
+	
+	
 	public void initializeGMandEM(){
 		
-		this.gm = CommandsModelConstructor.generateModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, commandsDataset, hashingFactory, addTerminateAction);
-		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, commandsDataset);
-		this.em = CommandsEMConstructor.getCommandsEMAlgorithm(this.gm, this.gmDataset);
+		this.initializeGM();
+		this.initializeEM();
 		
 	}
 	
@@ -118,9 +184,8 @@ public class CommandsLearningDriver {
 		List <TrainingElement> looCommandsDataset = new ArrayList<TrainingElement>(commandsDataset);
 		looCommandsDataset.remove(i);
 		
-		this.gm = CommandsModelConstructor.generateModel(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, looCommandsDataset, hashingFactory, addTerminateAction);
-		this.gmDataset = CommandsModelConstructor.convertCommandsDatasetToGMDataset(gm, looCommandsDataset);
-		this.em = CommandsEMConstructor.getCommandsEMAlgorithm(this.gm, this.gmDataset);
+		this.initializeGM(looCommandsDataset);
+		this.initializeEM();
 	}
 	
 	
@@ -232,6 +297,17 @@ public class CommandsLearningDriver {
 	
 	
 	public List <GMQueryResult> getRewardFunctionProbabilityDistributionForCommand(StringValue crv, StateRVValue srv){
+		
+		if(this.useLogModel){
+			return this.getRewardFunctionProbabilityDistributionForCommandUsingLogModel(crv, srv);
+		}
+		return this.getRewardFunctionProbabilityDistributionForCommandUsingProbModel(crv, srv);
+		
+	}
+	
+	
+	
+	protected List <GMQueryResult> getRewardFunctionProbabilityDistributionForCommandUsingProbModel(StringValue crv, StateRVValue srv){
 		
 		Map<RVariableValue, Double> rewardDist = new HashMap<RVariableValue, Double>();
 		double sumCommandProb = 0.;
@@ -374,6 +450,174 @@ public class CommandsLearningDriver {
 		
 	}
 	
+	
+	
+	protected List <GMQueryResult> getRewardFunctionProbabilityDistributionForCommandUsingLogModel(StringValue crv, StateRVValue srv){
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srv);
+		
+		Set <RVariableValue> rfs = this.getPossibleRewardFunctionsForStateUsingLogModel(srv);
+		List <GMQueryResult> result = new ArrayList<GMQueryResult>(rfs.size());
+		
+		for(RVariableValue rv : rfs){
+			
+			List <Double> hTerms = new ArrayList<Double>();
+			Iterator<GMQueryResult> htIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+			while(htIterRes.hasNext()){
+				GMQueryResult hres = htIterRes.next();
+				double hTerm = hres.probability;
+				
+				RVariableValue htv = hres.getSingleQueryVar();
+				List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+				hsConds.add(srv);
+				hsConds.add(htv);
+				
+				List <Double> acTerms = new ArrayList<Double>();
+				Iterator<GMQueryResult> abConIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+				while(abConIterRes.hasNext()){
+					GMQueryResult abcRes = abConIterRes.next();
+					double acTerm = abcRes.probability;
+					
+					List <Double> agTerms = new ArrayList<Double>();
+					Iterator<GMQueryResult> abGIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+					while(abGIterRes.hasNext()){
+						GMQueryResult abgRes = abGIterRes.next();
+						double agTerm = abgRes.probability;
+						
+						List <RVariableValue> abConds = new ArrayList<RVariableValue>();
+						abConds.add(abcRes.getSingleQueryVar());
+						abConds.add(abgRes.getSingleQueryVar());
+						abConds.add(srv);
+						
+						List <Double> cTerms = new ArrayList<Double>();
+						Iterator<GMQueryResult> cIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.CNAME), abConds, true);
+						while(cIterRes.hasNext()){
+							GMQueryResult cRes = cIterRes.next();
+							double cTerm = cRes.probability;
+							
+							List <Double> gTerms = new ArrayList<Double>();
+							Iterator<GMQueryResult> gIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.GNAME), abConds, true);
+							while(gIterRes.hasNext()){
+								GMQueryResult gRes = gIterRes.next();
+								double gTerm = gRes.probability;
+								
+								
+								GMQuery rquery = new GMQuery();
+								rquery.addQuery(rv);
+								rquery.addCondition(cRes.getSingleQueryVar());
+								rquery.addCondition(gRes.getSingleQueryVar());
+								rquery.addCondition(srv);
+								
+								double rlp = this.gm.getLogProb(rquery, true).probability;
+								gTerm += rlp;
+								gTerms.add(gTerm);
+								
+								
+							}//end g iter
+							
+							cTerm += LogSumExp.logSumOfExponentials(gTerms);
+							cTerms.add(cTerm);
+							
+						}//end c iter
+						
+						agTerm += LogSumExp.logSumOfExponentials(cTerms);
+						agTerms.add(agTerm);
+						
+					}// end ag iter
+					
+					acTerm += LogSumExp.logSumOfExponentials(agTerms);
+					acTerms.add(acTerm);
+					
+				}// end ac iter
+				
+				hTerm += LogSumExp.logSumOfExponentials(acTerms);
+				hTerms.add(hTerm);
+				
+			}//end h iter
+			
+			
+			double lp = LogSumExp.logSumOfExponentials(hTerms);
+			GMQueryResult res = new GMQueryResult(Math.exp(lp)); //take exponential to turn back into a log
+			res.addQuery(rv);
+			res.addCondition(srv);
+			res.addCondition(crv);
+			
+			result.add(res);
+			
+		}//end r iter
+		
+		
+		return result;
+		
+	}
+	
+	
+	
+	
+	protected Set<RVariableValue> getPossibleRewardFunctionsForStateUsingLogModel(StateRVValue srv){
+		
+		Set <RVariableValue> rfs = new HashSet<RVariableValue>();
+		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srv);
+		
+		Iterator<GMQueryResult> htIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			
+			RVariableValue htv = hres.getSingleQueryVar();
+			List <RVariableValue> hsConds = new ArrayList<RVariableValue>();
+			hsConds.add(srv);
+			hsConds.add(htv);
+			
+			Iterator<GMQueryResult> abConIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.ACNAME), hsConds, true);
+			while(abConIterRes.hasNext()){
+				GMQueryResult abcRes = abConIterRes.next();
+				
+				Iterator<GMQueryResult> abGIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.AGNAME), hsConds, true);
+				while(abGIterRes.hasNext()){
+					GMQueryResult abgRes = abGIterRes.next();
+					
+					List <RVariableValue> abConds = new ArrayList<RVariableValue>();
+					abConds.add(abcRes.getSingleQueryVar());
+					abConds.add(abgRes.getSingleQueryVar());
+					abConds.add(srv);
+					
+					Iterator<GMQueryResult> cIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.CNAME), abConds, true);
+					while(cIterRes.hasNext()){
+						GMQueryResult cRes = cIterRes.next();
+						
+						Iterator<GMQueryResult> gIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.GNAME), abConds, true);
+						while(gIterRes.hasNext()){
+							GMQueryResult gRes = gIterRes.next();
+							
+							List <RVariableValue> taskConds = new ArrayList<RVariableValue>();
+							taskConds.add(cRes.getSingleQueryVar());
+							taskConds.add(gRes.getSingleQueryVar());
+							taskConds.add(srv);
+							
+							Iterator<GMQueryResult> rIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.RNAME), taskConds, true);
+							while(rIterRes.hasNext()){
+								GMQueryResult rRes = rIterRes.next();
+								rfs.add(rRes.getSingleQueryVar());
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		
+		
+		
+		return rfs;
+	}
 	
 	
 	protected GroundedProp getGoalFeature(Trajectory t, List <GroundedProp> possibleGoalFeatures){

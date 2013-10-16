@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import commands.model2.em.PDataManager;
 import commands.model2.gm.CommandsModelConstructor;
 import commands.model2.gm.IRLModule;
 import commands.model2.gm.IRLModule.BehaviorValue;
@@ -48,6 +49,10 @@ public class EMMMNLPLogModule extends EMModule {
 	
 	protected boolean												updateConstantParams = false;
 	
+	
+	public EMMMNLPLogModule(LogPDataManager lpdManager) {
+		this.lpdManager = lpdManager;
+	}
 	
 	
 	@Override
@@ -282,7 +287,7 @@ public class EMMMNLPLogModule extends EMModule {
 				List <Double> jdTerms = this.jointCounts.get(jointQuery);
 				
 				double nwparam = Double.NEGATIVE_INFINITY;
-				if(jdTerms.size() > 0){
+				if(jdTerms != null){
 					double jdcount = LogSumExp.logSumOfExponentials(jdTerms);
 					nwparam = jdcount - pdcount;
 				}

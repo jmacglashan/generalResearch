@@ -26,8 +26,8 @@ import domain.singleagent.dogtraining.DogTraining;
 public class DogTrainingTest {
 
 	
-	//public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData";
-	public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData2";
+	public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData";
+	//public static String 						DATASETTESTPATH = "dataFiles/commands/dogTrainingData2";
 
 	
 	protected String							datasetPath;
@@ -47,8 +47,8 @@ public class DogTrainingTest {
 	 */
 	public static void main(String[] args) {
 		
-		//runEMTest();
-		runDataProbTest();
+		runEMTest();
+		//runDataProbTest();
 		
 
 	}
@@ -153,7 +153,7 @@ public class DogTrainingTest {
 		this.hashingFactory.addAttributeForClass(DogTraining.CLASSTOY, this.oomdpDomain.getAttribute(DogTraining.ATTY));
 		
 		
-		driver = new CommandsLearningDriver(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, this.datasetPath, stateParser, this.hashingFactory, false);
+		driver = new CommandsLearningDriver(oomdpDomain, hollowTasks, constraintPFClasses, goalConditionValues, this.datasetPath, stateParser, this.hashingFactory, false, true);
 		
 		
 	}

@@ -32,6 +32,7 @@ public class PDataManager {
 	
 	
 	public void resetTrainingDataProbs(){
+		System.out.println("Resetting Training Data probs");
 		this.trainingDataProbs = new HashMap<Integer, Double>();
 	}
 	

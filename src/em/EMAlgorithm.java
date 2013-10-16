@@ -12,6 +12,7 @@ public class EMAlgorithm {
 
 	protected GenerativeModel			generativeModel;
 	protected List<EMModule>			emmodules;
+	protected List <EMAuxiliaryCode>	aux;
 	protected Dataset					dataset;
 	
 	public 	int							debugCode = 8446;
@@ -20,12 +21,14 @@ public class EMAlgorithm {
 	public EMAlgorithm(GenerativeModel gm) {
 		this.generativeModel = gm;
 		this.emmodules = new ArrayList<EMModule>();
+		this.aux = new ArrayList<EMAuxiliaryCode>();
 	}
 	
 	public EMAlgorithm(GenerativeModel gm, Dataset ds) {
 		this.generativeModel = gm;
 		this.emmodules = new ArrayList<EMModule>();
 		this.dataset = ds;
+		this.aux = new ArrayList<EMAuxiliaryCode>();
 	}
 	
 	
@@ -36,6 +39,10 @@ public class EMAlgorithm {
 	public void addEMModule(EMModule m){
 		this.emmodules.add(m);
 		m.setGenerativeModelSrc(generativeModel);
+	}
+	
+	public void addAux(EMAuxiliaryCode ac){
+		this.aux.add(ac);
 	}
 	
 	
@@ -54,6 +61,9 @@ public class EMAlgorithm {
 	
 	
 	public void runEPass(){
+		for(EMAuxiliaryCode ac : this.aux){
+			ac.preEStep();
+		}
 		for(int i = 0; i < dataset.size(); i++){
 			this.runEStep(i, dataset.getDataInstance(i));
 		}
@@ -71,7 +81,7 @@ public class EMAlgorithm {
 		for(EMModule mod : emmodules){
 			mod.runMStep();
 		}
-		this.generativeModel.emptyCache(); //after an M-step everything must be cleared so that new probabiltiies are computed
+		this.generativeModel.emptyCache(); //after an M-step everything must be cleared so that new probabilities are computed
 	}
 	
 

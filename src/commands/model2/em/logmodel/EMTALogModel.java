@@ -128,10 +128,12 @@ public class EMTALogModel extends EMModule {
 				double nagParam = Double.NEGATIVE_INFINITY;
 				
 				List <Double> jaghdval = agJointCounts.get(jaghQuery);
-				if(jaghdval.size() > 0){
+				if(jaghdval != null){
 					double logJAGCount = LogSumExp.logSumOfExponentials(jaghdval);
 					nagParam = logJAGCount - logHCount;
+					System.out.println("ag: " + nagParam);
 				}
+				
 				MultiNomialRVPI agIndex = new MultiNomialRVPI(agv);
 				agIndex.addConditional(htval);
 				if(this.updateAbstractGoal){
@@ -157,9 +159,10 @@ public class EMTALogModel extends EMModule {
 					double ngParam = Double.NEGATIVE_INFINITY;
 					
 					List <Double> jgagdval = gJointCounts.get(jgagQuery);
-					if(jgagdval.size() > 0){
+					if(jgagdval != null){
 						double logJGAGCount = LogSumExp.logSumOfExponentials(jgagdval);
 						ngParam = logJGAGCount - logAGCount;
+						System.out.println("g: " + ngParam);
 					}
 					
 					MultiNomialRVPI gIndex = new MultiNomialRVPI(gv);
@@ -189,9 +192,10 @@ public class EMTALogModel extends EMModule {
 				double nacparam = Double.NEGATIVE_INFINITY;
 				
 				List <Double> jacdval = acJointCounts.get(jachQuery);
-				if(jacdval.size() > 0){
+				if(jacdval != null){
 					double logJACCount = LogSumExp.logSumOfExponentials(jacdval);
 					nacparam = logJACCount - logHCount;
+					System.out.println("ac: " + nacparam);
 				}
 				
 				MultiNomialRVPI acIndex = new MultiNomialRVPI(acv);
