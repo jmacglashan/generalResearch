@@ -23,6 +23,7 @@ import commands.model2.gm.StateRVValue;
 import commands.model2.gm.TAModule;
 import commands.model2.gm.IRLModule.BehaviorValue;
 import commands.model2.gm.MMNLPModule.StringValue;
+import commands.model2.gm.logparameters.MMNLPLogModule;
 
 public class EMTALogModel extends EMModule {
 
@@ -40,14 +41,18 @@ public class EMTALogModel extends EMModule {
 	protected Map <MultiVarValIndex, Double>						MGamChi;
 	protected Map <MultiVarValIndex, Double>						MXR;
 	
+	protected String [] 											varNameOrderMain;
 	
 	protected boolean												updateAbstractGoal = true;
 	protected boolean												updateAbstractConstraint = true;
 	protected boolean												updateGoal = true;
 	
 	
+	
 	public EMTALogModel(LogPDataManager lpdManager) {
 		this.lpdManager = lpdManager;
+		varNameOrderMain = new String[]{TAModule.HTNAME, TAModule.ACNAME, TAModule.AGNAME, TAModule.CNAME, TAModule.GNAME, 
+				MMNLPLogModule.CNAME, TAModule.RNAME, IRLModule.BNAME};
 	}
 
 	@Override
@@ -89,7 +94,7 @@ public class EMTALogModel extends EMModule {
 		
 		
 		this.computeH(observables, lpData);
-		this.computeAGJointAndSingle(observables, lpData);
+		this.computeAGHJointAndSingleAG(observables, lpData);
 		this.computeACJoint(observables, lpData);
 		this.computeGJoint(observables, lpData);
 
@@ -132,6 +137,9 @@ public class EMTALogModel extends EMModule {
 					double logJAGCount = LogSumExp.logSumOfExponentials(jaghdval);
 					nagParam = logJAGCount - logHCount;
 					System.out.println("ag: " + nagParam);
+					if(Double.isNaN(logJAGCount)){
+						System.out.println("NaN Error in AG params");
+					}
 				}
 				
 				MultiNomialRVPI agIndex = new MultiNomialRVPI(agv);
@@ -223,10 +231,32 @@ public class EMTALogModel extends EMModule {
 		Map<RVariableValue, List<Double>> gParentCount = parentCounts.get(aGoalRV);
 		
 		
+		StringValue command = (StringValue)this.getCommandValue(observables);
 		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
 		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
 		
+		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
+		sconds.add(srvv);
 		
+		//iterate hollow task
+		Iterator<GMQueryResult> htIterRes = gm.getNonInfiniteLogProbIterator(gm.getRVarWithName(TAModule.HTNAME), sconds, true);
+		while(htIterRes.hasNext()){
+			GMQueryResult hres = htIterRes.next();
+			RVariableValue htv = hres.getSingleQueryVar();
+			
+			GMQuery hquery = new GMQuery();
+			hquery.addQuery(htv);
+			hquery.addQuery(behavior);
+			hquery.addQuery(command);
+			hquery.addCondition(srvv);
+			
+			GMQueryResult hlpres = this.gm.getJointLogProbWithDiscreteMarginalization(hquery, varNameOrderMain, true);
+			
+			this.addParentDataTerm(hlpres.probability-lpData, htv, gParentCount);
+			
+		}
+		
+		/*
 		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
 		sconds.add(srvv);
 		
@@ -277,17 +307,18 @@ public class EMTALogModel extends EMModule {
 			this.addParentDataTerm(hParentTerm, htv, gParentCount);	
 			
 		}
-		
+		*/
 		
 		
 	}
 	
 	
-	public void computeAGJointAndSingle(List<RVariableValue> observables, double lpData){
+	public void computeAGHJointAndSingleAG(List<RVariableValue> observables, double lpData){
 		
 		Map<GMQuery, List<Double>> gJointCounts = jointCounts.get(aGoalRV);
 		Map<RVariableValue, List<Double>> gParentCount = parentCounts.get(goalRV);
 	
+		StringValue command = (StringValue)this.getCommandValue(observables);
 		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
 		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
 		
@@ -295,7 +326,44 @@ public class EMTALogModel extends EMModule {
 		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
 		sconds.add(srvv);
 		
+		Iterator<RVariableValue> agValIter = this.gm.getRVariableValuesFor(aGoalRV);
+		while(agValIter.hasNext()){
+			RVariableValue agval = agValIter.next();
+			
+			List <Double> hTerms = new ArrayList<Double>();
+			Iterator<GMQueryResult> hIterRes = this.gm.getNonInfiniteLogProbIterator(hollowRV, sconds, true);
+			while(hIterRes.hasNext()){
+				
+				GMQueryResult hRes = hIterRes.next();
+				RVariableValue htv = hRes.getSingleQueryVar();
+				
+				GMQuery hagquery = new GMQuery();
+				hagquery.addQuery(htv);
+				hagquery.addQuery(agval);
+				hagquery.addQuery(behavior);
+				hagquery.addQuery(command);
+				hagquery.addCondition(srvv);
+				
+				GMQueryResult haglpres = this.gm.getJointLogProbWithDiscreteMarginalization(hagquery, varNameOrderMain, true);
+				
+				hTerms.add(haglpres.probability);
+				
+				GMQuery jointIndex = new GMQuery();
+				jointIndex.addQuery(htv);
+				jointIndex.addQuery(agval);
+				this.addJointDataTerm(haglpres.probability-lpData, jointIndex, gJointCounts);
+				
+			}
+			
+			double aglog = LogSumExp.logSumOfExponentials(hTerms) - lpData;
+			this.addParentDataTerm(aglog, agval, gParentCount);
+			
+		}
 		
+		
+		
+		
+		/*
 		Iterator<RVariableValue> agValIter = this.gm.getRVariableValuesFor(aGoalRV);
 		while(agValIter.hasNext()){
 			RVariableValue agval = agValIter.next();
@@ -353,6 +421,7 @@ public class EMTALogModel extends EMModule {
 			
 			
 		}
+		*/
 		
 		
 	}
@@ -360,8 +429,10 @@ public class EMTALogModel extends EMModule {
 	
 	public void computeGJoint(List <RVariableValue> observables, double lpData){
 		
+		
 		Map<GMQuery, List<Double>> gJointCounts = jointCounts.get(goalRV);
 	
+		StringValue command = (StringValue)this.getCommandValue(observables);
 		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
 		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
 		
@@ -370,6 +441,42 @@ public class EMTALogModel extends EMModule {
 		sconds.add(srvv);
 		
 		
+		Iterator<RVariableValue> agValIter = this.gm.getRVariableValuesFor(aGoalRV);
+		while(agValIter.hasNext()){
+			RVariableValue agval = agValIter.next();
+			
+			List <RVariableValue> gConds = new ArrayList<RVariableValue>();
+			gConds.add(agval);
+			
+			Iterator<GMQueryResult> gIter = this.gm.getNonInfiniteLogProbIterator(goalRV, gConds, true);
+			while(gIter.hasNext()){
+				GMQueryResult gRes = gIter.next();
+				RVariableValue gVal = gRes.getSingleQueryVar();
+				
+				GMQuery aggquery = new GMQuery();
+				aggquery.addQuery(gVal);
+				aggquery.addQuery(agval);
+				aggquery.addQuery(behavior);
+				aggquery.addQuery(command);
+				aggquery.addCondition(srvv);
+				
+				GMQueryResult agglpres = this.gm.getJointLogProbWithDiscreteMarginalization(aggquery, varNameOrderMain, true);
+				
+				GMQuery jointQuery = new GMQuery();
+				jointQuery.addQuery(agval);
+				jointQuery.addQuery(gRes.getSingleQueryVar());
+				
+				this.addJointDataTerm(agglpres.probability-lpData, jointQuery, gJointCounts);
+				
+			}
+			
+			
+		}
+		
+		
+		
+		
+		/*
 		Iterator<RVariableValue> agValIter = this.gm.getRVariableValuesFor(aGoalRV);
 		while(agValIter.hasNext()){
 			RVariableValue agval = agValIter.next();
@@ -437,7 +544,7 @@ public class EMTALogModel extends EMModule {
 			}
 			
 		}
-		
+		*/
 		
 	}
 	
@@ -445,8 +552,9 @@ public class EMTALogModel extends EMModule {
 	
 	public void computeACJoint(List<RVariableValue> observables, double lpData){
 		
-		Map<GMQuery, List<Double>> gJointCounts = jointCounts.get(aGoalRV);
+		Map<GMQuery, List<Double>> cJointCounts = jointCounts.get(aConstraintRV);
 	
+		StringValue command = (StringValue)this.getCommandValue(observables);
 		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
 		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
 		
@@ -454,6 +562,36 @@ public class EMTALogModel extends EMModule {
 		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
 		sconds.add(srvv);
 	
+		Iterator<RVariableValue> acValIter = this.gm.getRVariableValuesFor(aConstraintRV);
+		while(acValIter.hasNext()){
+			RVariableValue acval = acValIter.next();
+			
+			
+			Iterator<GMQueryResult> hIterRes = this.gm.getNonInfiniteLogProbIterator(hollowRV, sconds, true);
+			while(hIterRes.hasNext()){
+				GMQueryResult hRes = hIterRes.next();
+				RVariableValue htv = hRes.getSingleQueryVar();
+				
+				GMQuery hacquery = new GMQuery();
+				hacquery.addQuery(htv);
+				hacquery.addQuery(acval);
+				hacquery.addQuery(behavior);
+				hacquery.addQuery(command);
+				hacquery.addCondition(srvv);
+				
+				GMQueryResult haclpres = this.gm.getJointLogProbWithDiscreteMarginalization(hacquery, varNameOrderMain, true);
+				
+				GMQuery jointIndex = new GMQuery();
+				jointIndex.addQuery(htv);
+				jointIndex.addQuery(acval);
+				this.addJointDataTerm(haclpres.probability-lpData, jointIndex, cJointCounts);
+				
+			}
+			
+		}
+		
+		
+		/*
 		Iterator<RVariableValue> acValIter = this.gm.getRVariableValuesFor(aConstraintRV);
 		while(acValIter.hasNext()){
 			RVariableValue acval = acValIter.next();
@@ -495,12 +633,12 @@ public class EMTALogModel extends EMModule {
 				GMQuery jointIndex = new GMQuery();
 				jointIndex.addQuery(hRes.getSingleQueryVar());
 				jointIndex.addQuery(acval);
-				this.addJointDataTerm(jTerm, jointIndex, gJointCounts);
+				this.addJointDataTerm(jTerm, jointIndex, cJointCounts);
 				
 			}
 			
 		}
-		
+		*/
 		
 		
 	}

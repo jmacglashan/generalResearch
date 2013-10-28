@@ -69,7 +69,7 @@ public class MMNLPModule extends MNPEMModule {
 		this.wordRV.addDependency(this.propRV);
 		
 		this.commandRV = new RVariable(CNAME, this);
-		this.commandRV.addDependency(commandLenRV);
+		//this.commandRV.addDependency(commandLenRV);
 		this.commandRV.addDependency(constraintRV);
 		this.commandRV.addDependency(goalRV);
 		
@@ -216,7 +216,7 @@ public class MMNLPModule extends MNPEMModule {
 	
 	
 	
-	private String [] wordsInCommand(String command){
+	public String [] wordsInCommand(String command){
 		List <String> tokens = this.tokenizeString(command, wordDeliminators, 0);
 		return tokens.toArray(new String[tokens.size()]);
 	}

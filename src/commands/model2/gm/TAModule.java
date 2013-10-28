@@ -92,6 +92,7 @@ public class TAModule extends MNPEMModule {
 		
 		rewardRV = new RVariable(RNAME, this);
 		rewardRV.addDependency(goalRV);
+		rewardRV.addDependency(constraintRV);
 		rewardRV.addDependency(stateInput);
 		
 		
@@ -1499,7 +1500,7 @@ public class TAModule extends MNPEMModule {
 				paramOrderGroup[i] = vars.get(i).varName;
 			}
 			
-			List <List <String>> possibleBindings = srv.s.getPossibleBindingsGivenParamOrderGroups(paramClasses, paramOrderGroup, true);
+			List <List <String>> possibleBindings = srv.s.getPossibleBindingsGivenParamOrderGroups(paramClasses, paramOrderGroup);
 			varMappings = new ArrayList<Map<String,String>>();
 			
 			for(List <String> abinding : possibleBindings){

@@ -34,11 +34,13 @@ import commands.model2.gm.CommandsModelConstructor;
 import commands.model2.gm.IRLModule.ConjunctiveGroundedPropTF;
 import commands.model2.gm.MMNLPModule;
 import commands.model2.gm.MMNLPModule.StringValue;
+import commands.model2.gm.IRLModule;
 import commands.model2.gm.StateRVValue;
 import commands.model2.gm.TAModule;
 import commands.model2.gm.TAModule.AbstractConditionsValue;
 import commands.model2.gm.TAModule.HollowTaskValue;
 import commands.model2.gm.TAModule.RFConVariableValue;
+import commands.model2.gm.logparameters.MMNLPLogModule;
 
 public class CommandsLearningDriver {
 
@@ -454,12 +456,48 @@ public class CommandsLearningDriver {
 	
 	protected List <GMQueryResult> getRewardFunctionProbabilityDistributionForCommandUsingLogModel(StringValue crv, StateRVValue srv){
 		
+		String [] rVarNameOrder = new String[]{TAModule.HTNAME, TAModule.ACNAME, TAModule.AGNAME, TAModule.CNAME, TAModule.GNAME, 
+				MMNLPLogModule.CNAME, TAModule.RNAME};
+		
+		String [] cVarNameOrder = new String[]{TAModule.HTNAME, TAModule.ACNAME, TAModule.AGNAME, TAModule.CNAME, TAModule.GNAME, 
+				MMNLPLogModule.CNAME};
+		
+		
 		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
 		sconds.add(srv);
+		
+		
+		GMQuery commandQuery = new GMQuery();
+		commandQuery.addQuery(crv);
+		commandQuery.addCondition(srv);
+		GMQueryResult commandResult = this.gm.getJointLogProbWithDiscreteMarginalization(commandQuery, cVarNameOrder, true);
+		
 		
 		Set <RVariableValue> rfs = this.getPossibleRewardFunctionsForStateUsingLogModel(srv);
 		List <GMQueryResult> result = new ArrayList<GMQueryResult>(rfs.size());
 		
+		for(RVariableValue rv : rfs){
+			
+			GMQuery rQuery = new GMQuery();
+			rQuery.addQuery(rv);
+			rQuery.addQuery(crv);
+			rQuery.addCondition(srv);
+			GMQueryResult rResult = this.gm.getJointLogProbWithDiscreteMarginalization(rQuery, rVarNameOrder, true);
+			
+			double lp  = rResult.probability - commandResult.probability;
+			double p = Math.exp(lp);
+			
+			GMQueryResult res = new GMQueryResult(p); //take exponential to turn back into a log
+			res.addQuery(rv);
+			res.addCondition(srv);
+			res.addCondition(crv);
+			
+			result.add(res);
+			
+		}
+		
+		
+		/*
 		for(RVariableValue rv : rfs){
 			
 			List <Double> hTerms = new ArrayList<Double>();
@@ -546,7 +584,7 @@ public class CommandsLearningDriver {
 			result.add(res);
 			
 		}//end r iter
-		
+		*/
 		
 		return result;
 		

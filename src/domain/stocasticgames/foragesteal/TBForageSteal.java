@@ -2,6 +2,8 @@ package domain.stocasticgames.foragesteal;
 
 import java.util.List;
 
+import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRFWS;
+
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
@@ -10,6 +12,7 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.explorer.TerminalExplorer;
 import burlap.oomdp.stocashticgames.JointActionModel;
+import burlap.oomdp.stocashticgames.JointReward;
 import burlap.oomdp.stocashticgames.SGDomain;
 import burlap.oomdp.stocashticgames.SingleAction;
 import burlap.oomdp.stocashticgames.common.UniversalSingleAction;
@@ -44,18 +47,23 @@ public class TBForageSteal {
 	public static void main(String [] args){
 		
 		SGDomain d = (SGDomain) generateDomain();
-		int nf = NALTS;
+		//int nf = NALTS;
+		int nf = 0;
 		int [] allAlts = new int[nf];
 		for(int i = 0; i < nf; i++){
 			allAlts[i] = i;
 		}
 		
-		State s = getGameStartState(allAlts, 1);
+		State s = getGameStartState(allAlts, 0);
 		
-		JointActionModel jam = new TBFSStandardMechanics();
+		//JointActionModel jam = new TBFSStandardMechanics();
+		JointActionModel jam = new TBFSWhoStartedMechanics();
+		
+		JointReward objectiveRF = new TBFSStandardReward(1, -1, -.1, -2, new double[]{-1, -.5, .5, 1., 1.5});
+		JointReward subjectiveRF = new TBFSSubjectiveRFWS(objectiveRF, new double[]{-1.0, 2.0, -0.4});
 		
 		SGTerminalExplorer exp = new SGTerminalExplorer(d, jam);
-		exp.setTrackingRF(new TBFSStandardReward(1, -1, -.1, -2, new double[]{-1, -.5, .5, 1., 1.5}));
+		exp.setTrackingRF(subjectiveRF);
 		exp.addActionShortHand("n", ACTIONNOP);
 		exp.addActionShortHand("s", ACTIONSTEAL);
 		exp.addActionShortHand("p", ACTIONPUNCH);
@@ -80,8 +88,13 @@ public class TBForageSteal {
 		Attribute pnAtt = new Attribute(DOMAIN, ATTPN, Attribute.AttributeType.DISC);
 		pnAtt.setDiscValuesForRange(0, 1, 1);
 		
+		
+		/*
+		 * default mode: game start, non-aggressive, steal, punch
+		 * who started it: game start, non-aggressive, steal, punch-p1-start, punch-p2-start
+		 */
 		Attribute ptAtt = new Attribute(DOMAIN, ATTPTA, Attribute.AttributeType.DISC);
-		ptAtt.setDiscValuesForRange(0, 3, 1); //game start, non-aggressive, steal, punch
+		ptAtt.setDiscValuesForRange(0, 4, 1); 
 		
 		Attribute pitAtt = new Attribute(DOMAIN, ATTISTURN, Attribute.AttributeType.DISC);
 		pitAtt.setDiscValuesForRange(0, 1, 1);

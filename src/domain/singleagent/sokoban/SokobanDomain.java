@@ -599,8 +599,8 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			}
 		}
 
-		List<ObjectInstance> rooms = st.getObjectsOfClass(ROOMCLASS);
-		List<ObjectInstance> doors = st.getObjectsOfClass(DOORCLASS);
+		List<ObjectInstance> rooms = st.getObjectsOfTrueClass(ROOMCLASS);
+		List<ObjectInstance> doors = st.getObjectsOfTrueClass(DOORCLASS);
 
 		for (int i = 0; i < rooms.size(); i++){
 			ObjectInstance room = rooms.get(i);
@@ -665,8 +665,8 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 	 */
 	public static void move(State st, int x, int y){
 
-		ObjectInstance agent = st.getObjectsOfClass(AGENTCLASS).get(0);
-		List<ObjectInstance> blocks = st.getObjectsOfClass(BLOCKCLASS);
+		ObjectInstance agent = st.getObjectsOfTrueClass(AGENTCLASS).get(0);
+		List<ObjectInstance> blocks = st.getObjectsOfTrueClass(BLOCKCLASS);
 		int curX = agent.getDiscValForAttribute(XATTNAME);
 		int curY = agent.getDiscValForAttribute(YATTNAME);
 		int nx = curX + x;
@@ -710,7 +710,7 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 
 		int curX = block.getDiscValForAttribute(XATTNAME);
 		int curY = block.getDiscValForAttribute(YATTNAME);
-		List<ObjectInstance> blocks = st.getObjectsOfClass(BLOCKCLASS);
+		List<ObjectInstance> blocks = st.getObjectsOfTrueClass(BLOCKCLASS);
 		int nx = x;
 		int ny = y;
 
@@ -1046,10 +1046,10 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 	 */
 	public String stateToString(State s) {
 		String output = "";
-		List<ObjectInstance> rooms = s.getObjectsOfClass(ROOMCLASS);
-		List<ObjectInstance> doors = s.getObjectsOfClass(DOORCLASS);
-		List<ObjectInstance> blocks = s.getObjectsOfClass(BLOCKCLASS);
-		List<ObjectInstance> agents = s.getObjectsOfClass(AGENTCLASS);
+		List<ObjectInstance> rooms = s.getObjectsOfTrueClass(ROOMCLASS);
+		List<ObjectInstance> doors = s.getObjectsOfTrueClass(DOORCLASS);
+		List<ObjectInstance> blocks = s.getObjectsOfTrueClass(BLOCKCLASS);
+		List<ObjectInstance> agents = s.getObjectsOfTrueClass(AGENTCLASS);
 
 		for (int i = 0; i < rooms.size(); i++){
 			output += "room,";
@@ -1175,7 +1175,7 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 	}
 
 	public static int getMaxX(State st){
-		List<ObjectInstance> rooms = st.getObjectsOfClass(ROOMCLASS);
+		List<ObjectInstance> rooms = st.getObjectsOfTrueClass(ROOMCLASS);
 		int x = 0;
 		for (int i = 0; i < rooms.size(); i++){
 			ObjectInstance room = rooms.get(i); 
@@ -1187,7 +1187,7 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 	}
 
 	public static int getMaxY(State st){
-		List<ObjectInstance> rooms = st.getObjectsOfClass(ROOMCLASS);
+		List<ObjectInstance> rooms = st.getObjectsOfTrueClass(ROOMCLASS);
 		int y = 0;
 		for (int i = 0; i < rooms.size(); i++){
 			ObjectInstance room = rooms.get(i); 
@@ -1283,8 +1283,8 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 		public static int getStateId(State s){
 			int col = getMaxX(s);
 			int rows = getMaxY(s);
-			List<ObjectInstance> blocks = s.getObjectsOfClass(BLOCKCLASS);
-			ObjectInstance agent = s.getObjectsOfClass(AGENTCLASS).get(0);
+			List<ObjectInstance> blocks = s.getObjectsOfTrueClass(BLOCKCLASS);
+			ObjectInstance agent = s.getObjectsOfTrueClass(AGENTCLASS).get(0);
 			int stateID = agent.getDiscValForAttribute(XATTNAME) + agent.getDiscValForAttribute(YATTNAME) * col;
 
 			for (int i = 0; i < blocks.size(); i++){
@@ -1302,7 +1302,7 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 
 		public static State getStateFromId(int id, State referenceState){
 			State st = new State(referenceState);
-			List<ObjectInstance> blocks = referenceState.getObjectsOfClass(BLOCKCLASS);
+			List<ObjectInstance> blocks = referenceState.getObjectsOfTrueClass(BLOCKCLASS);
 			int cols = getMaxX(referenceState);
 			int rows = getMaxY(referenceState);
 			int x, y;

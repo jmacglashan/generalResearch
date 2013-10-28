@@ -570,7 +570,7 @@ private static final long serialVersionUID = 1L;
 		List <PropositionalFunction> props = domain.getPropFunctions();
 		StringBuffer buf = new StringBuffer();
 		for(PropositionalFunction pf : props){
-			List <List <String>> bindings = s.getPossibleBindingsGivenParamOrderGroups(pf.getParameterClasses(), pf.getParameterOrderGroups(), true);
+			List <List <String>> bindings = s.getPossibleBindingsGivenParamOrderGroups(pf.getParameterClasses(), pf.getParameterOrderGroups());
 			for(List <String> b : bindings){
 				if(pf.isTrue(s, (String [])b.toArray(new String[b.size()]))){
 					buf.append(this.getPropStringRep(pf, b));

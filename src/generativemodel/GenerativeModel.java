@@ -1,10 +1,13 @@
 package generativemodel;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.RuntimeErrorException;
 
@@ -180,6 +183,211 @@ public class GenerativeModel {
 	
 	
 	
+	public GMQueryResult getJointProbWithDiscreteMarginalization(GMQuery query, String [] varNameOrder, boolean cache){
+		
+		RVariable [] varOrder = this.convertVarNamesArrayToVarArray(varNameOrder);
+		return this.getJointProbWithDiscreteMarginalization(query, varOrder, cache);
+	}
+	
+	protected RVariable [] convertVarNamesArrayToVarArray(String [] varNameOrder){
+		RVariable [] varOrder = new RVariable[varNameOrder.length];
+		for(int i = 0; i < varOrder.length; i++){
+			varOrder[i] = this.getRVarWithName(varNameOrder[i]);
+		}
+		return varOrder;
+	}
+	
+	public GMQueryResult getJointProbWithDiscreteMarginalization(GMQuery query, RVariable [] varOrder, boolean cache){
+		
+		GMQueryResult cachedRes = this.queryCache.get(query);
+		if(cachedRes != null){
+			return cachedRes;
+		}
+		
+		
+		double p = this.getJointProbWithDiscreteMarginalizationHelper(query, varOrder, 0, cache);
+		GMQueryResult result = new GMQueryResult(query, p);
+		
+		if(cache){
+			this.queryCache.put(query, result);
+		}
+		
+		return result;
+	}
+	
+	
+	
+	public double getJointProbWithDiscreteMarginalizationHelper(GMQuery query, RVariable [] varOrder, int varIndex, boolean cache){
+		
+		RVariable curVar = varOrder[varIndex];
+		
+		double pVal = 0.;
+		
+		//do we need to marginalize over this variable?
+		RVariableValue curVarValue = query.getQueryForVariable(curVar);
+		if(curVarValue != null){
+			//create a single query for this var
+			GMQuery sQuery = this.getSingleQueryWithOnlyParentConditionals(curVarValue, query.getConditionValues());
+			pVal = this.getProb(sQuery, cache).probability;
+			
+			if(varIndex < varOrder.length - 1){
+				//add this query as a conditional for subsequent CPTs that will pull from it
+				GMQuery nextQuery = new GMQuery(query);
+				nextQuery.addCondition(curVarValue);
+				//nextQuery.removeQuery(curVarValue);
+				double nextProb = this.getJointProbWithDiscreteMarginalizationHelper(nextQuery, varOrder, varIndex+1, cache);
+				
+				pVal *= nextProb;
+			}
+			
+			
+			
+		}
+		else{ //otherwise marginalize
+			
+			Iterator <GMQueryResult> varIter = this.getNonZeroIterator(curVar, this.onlyParentConditionals(curVar, query.getConditionValues()), cache);
+			while(varIter.hasNext()){
+				GMQueryResult iterRes = varIter.next();
+				double mTerm = iterRes.probability;
+				
+				if(varIndex < varOrder.length - 1){
+					GMQuery nextQuery = new GMQuery(query);
+					nextQuery.addCondition(iterRes.getSingleQueryVar());
+					double nextProb = this.getJointProbWithDiscreteMarginalizationHelper(nextQuery, varOrder, varIndex+1, cache);
+					
+					mTerm *= nextProb;
+				}
+				pVal += mTerm;
+			}			
+			
+		}
+		
+		
+		return pVal;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public GMQueryResult getJointLogProbWithDiscreteMarginalization(GMQuery query, String [] varNameOrder, boolean cache){
+		
+		RVariable [] varOrder = this.convertVarNamesArrayToVarArray(varNameOrder);
+		return this.getJointLogProbWithDiscreteMarginalization(query, varOrder, cache);
+	}
+	
+	public GMQueryResult getJointLogProbWithDiscreteMarginalization(GMQuery query, RVariable [] varOrder, boolean cache){
+		
+		GMQueryResult cachedRes = this.logQueryCache.get(query);
+		if(cachedRes != null){
+			return cachedRes;
+		}
+		
+		
+		double lp = this.getJointLogProbWithDiscreteMarginalizationHelper(query, varOrder, 0, cache);
+		GMQueryResult result = new GMQueryResult(query, lp);
+		
+		if(cache){
+			this.logQueryCache.put(query, result);
+		}
+		
+		return result;
+	}
+	
+	
+	public double getJointLogProbWithDiscreteMarginalizationHelper(GMQuery query, RVariable [] varOrder, int varIndex, boolean cache){
+		
+		RVariable curVar = varOrder[varIndex];
+		
+		double logVal = 0.;
+		
+		//do we need to marginalize over this variable?
+		RVariableValue curVarValue = query.getQueryForVariable(curVar);
+		if(curVarValue != null){
+			//create a single query for this var
+			GMQuery sQuery = this.getSingleQueryWithOnlyParentConditionals(curVarValue, query.getConditionValues());
+			logVal = this.getLogProb(sQuery, cache).probability;
+			if(Double.isNaN(logVal)){
+				System.out.println("Nan Error in joint prob");
+			}
+			if(varIndex < varOrder.length - 1){
+				//add this query as a conditional for subsequent CPTs that will pull from it
+				GMQuery nextQuery = new GMQuery(query);
+				nextQuery.addCondition(curVarValue);
+				//nextQuery.removeQuery(curVarValue);
+				double nextLog = this.getJointLogProbWithDiscreteMarginalizationHelper(nextQuery, varOrder, varIndex+1, cache);
+				if(Double.isNaN(nextLog)){
+					System.out.println("Nan Error in joint prob");
+				}
+				logVal += nextLog;
+			}
+			
+			if(Double.isNaN(logVal)){
+				System.out.println("Nan Error in joint prob");
+			}
+			
+		}
+		else{ //otherwise marginalize
+			
+			List <Double> margTerms = new ArrayList<Double>();
+			Iterator <GMQueryResult> varIter = this.getNonInfiniteLogProbIterator(curVar, this.onlyParentConditionals(curVar, query.getConditionValues()), cache);
+			while(varIter.hasNext()){
+				GMQueryResult iterRes = varIter.next();
+				double mTerm = iterRes.probability;
+				if(Double.isNaN(mTerm)){
+					System.out.println("Nan Error in joint prob");
+				}
+				if(varIndex < varOrder.length - 1){
+					GMQuery nextQuery = new GMQuery(query);
+					nextQuery.addCondition(iterRes.getSingleQueryVar());
+					double nextLog = this.getJointLogProbWithDiscreteMarginalizationHelper(nextQuery, varOrder, varIndex+1, cache);
+					if(Double.isNaN(nextLog)){
+						System.out.println("Nan Error in joint prob");
+					}
+					mTerm += nextLog;
+				}
+				margTerms.add(mTerm);
+			}
+			
+			logVal = LogSumExp.logSumOfExponentials(margTerms);
+			
+			if(Double.isNaN(logVal)){
+				System.out.println("Nan Error in joint prob");
+			}
+			
+		}
+		
+		
+		return logVal;
+	}
+	
+	protected GMQuery getSingleQueryWithOnlyParentConditionals(RVariableValue val, Collection <RVariableValue> conditions){
+		GMQuery query = new GMQuery();
+		query.addQuery(val);
+		for(RVariableValue c : conditions){
+			if(val.owner.isDependentOn(c.owner)){
+				query.addCondition(c);
+			}
+		}
+		
+		return query;
+	}
+	
+	protected List <RVariableValue> onlyParentConditionals(RVariable var, Collection <RVariableValue> srcConditions){
+		List <RVariableValue> conditions = new ArrayList<RVariableValue>(srcConditions.size());
+		for(RVariableValue c : srcConditions){
+			if(var.isDependentOn(c.owner)){
+				conditions.add(c);
+			}
+		}
+		return conditions;
+	}
+	
+	
 	/**
 	 * Gets an iterator of possible variable values (and their probability) that have a non-zero probability.
 	 * @param queryVar The variable over which to iterate
@@ -226,6 +434,29 @@ public class GenerativeModel {
 		GMModule module = variableOwnerResolver.get(queryVar);
 		return module.getRVariableValuesFor(queryVar);
 	}
+	
+	
+	
+	public Set <RVariableValue> getNonInfiniteVariableValues(RVariable var, List <RVariableValue> conditions, String [] varNameOrder){
+		RVariable [] varOrder = this.convertVarNamesArrayToVarArray(varNameOrder);
+		return this.getNonInfiniteVariableValues(var, conditions, varOrder);
+	}
+	
+	public Set <RVariableValue> getNonInfiniteVariableValues(RVariable var, List <RVariableValue> conditions, RVariable [] varOrder){
+		Set <RVariableValue> result = new HashSet<RVariableValue>();
+		List <RVariableValue> nConditions = new ArrayList<RVariableValue>(conditions);
+		this.getNonInfiniteVariableValuesHelper(var, nConditions, varOrder, result, 0);
+		
+		return result;
+	}
+	
+	public void getNonInfiniteVariableValuesHelper(RVariable var, List <RVariableValue> conditions, RVariable[] varOrder, Set <RVariableValue> unique, int varIndex){
+		
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Will store a computation result in the generative models cache for future queries

@@ -29,10 +29,16 @@ public class ESSS {
 	 */
 	public static void main(String[] args) {
 		
+		if(args.length != 1){
+			System.out.println("Format:\n\tpathToCacheFile");
+			System.exit(0);
+		}
+		
+		
 		double [] params = new double[] {0.0, 1.5, 0.0};
 		OptVariables ov = new OptVariables(params);
 		
-		ESSS esss = new ESSS("ethics/Results/cacheRes/cachelr5.txt");
+		ESSS esss = new ESSS(args[0]);
 		
 		
 		/*

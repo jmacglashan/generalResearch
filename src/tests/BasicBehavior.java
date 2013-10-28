@@ -1,8 +1,18 @@
 package tests;
 
+import java.awt.Color;
+import java.util.List;
+
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.auxiliary.StateReachability;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.ArrowActionGlyph;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.LandmarkColorBlendInterpolation;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.PolicyGlyphPainter2D;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.StateValuePainter2D;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.PolicyGlyphPainter2D.PolicyGlyphRenderStyle;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.actorcritic.ActorCritic;
 import burlap.behavior.singleagent.learning.actorcritic.actor.BoltzmannActor;
@@ -13,6 +23,7 @@ import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.StateConditionTest;
+import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner;
 import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
@@ -32,6 +43,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.common.SinglePFTF;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 import burlap.oomdp.visualizer.Visualizer;
@@ -66,7 +78,7 @@ public class BasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		example.QLearningExample(outputPath);
+		//example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
 		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
@@ -76,8 +88,12 @@ public class BasicBehavior {
 		
 		
 		//run the visualizer
-		example.visualize(outputPath);
+		//example.visualize(outputPath);
 
+		
+		//example.valueIterationAndVisualizeValueFunction();
+		example.qLearningAndVisualizeValueFunction();
+		
 	}
 	
 	
@@ -275,6 +291,58 @@ public class BasicBehavior {
 		//record the plan results to a file
 		p.evaluateBehavior(initialState, rf, tf).writeToFile(outputPath + "planResult", sp);
 		
+	}
+	
+	
+	public void valueIterationAndVisualizeValueFunction(){
+		
+		//Value iteration computing for discount=0.99 with stopping criteria either being a maximum change in value less then 0.001 or 100 passes over the state space (which ever comes first)
+		ValueIteration planner = new ValueIteration(domain, rf, tf, 0.99, hashingFactory, 0.001, 100);
+		planner.planFromState(initialState);
+		this.valueFunctionVisualize(planner);
+		
+		
+	}
+	
+	public void qLearningAndVisualizeValueFunction(){
+		
+		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.9
+		LearningAgent agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0., 0.9);
+		
+		//run learning for 100 episodes
+		for(int i = 0; i < 200; i++){
+			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState); //run learning episode
+			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
+		}
+		
+		this.valueFunctionVisualize((QComputablePlanner)agent);
+		
+	}
+	
+	
+	public void valueFunctionVisualize(QComputablePlanner planner){
+		Policy p = new BoltzmannQPolicy(planner, 0.1);
+		List <State> allStates = StateReachability.getReachableStates(initialState, (SADomain)domain, hashingFactory);
+		LandmarkColorBlendInterpolation rb = new LandmarkColorBlendInterpolation();
+		rb.addNextLandMark(0., Color.RED);
+		rb.addNextLandMark(1., Color.BLUE);
+		
+		StateValuePainter2D svp = new StateValuePainter2D(rb);
+		svp.setXYAttByObjectClass(GridWorldDomain.CLASSAGENT, GridWorldDomain.ATTX, GridWorldDomain.CLASSAGENT, GridWorldDomain.ATTY);
+		
+		PolicyGlyphPainter2D spp = new PolicyGlyphPainter2D();
+		spp.setXYAttByObjectClass(GridWorldDomain.CLASSAGENT, GridWorldDomain.ATTX, GridWorldDomain.CLASSAGENT, GridWorldDomain.ATTY);
+		spp.setActionNameGlyphPainter(GridWorldDomain.ACTIONNORTH, new ArrowActionGlyph(0));
+		spp.setActionNameGlyphPainter(GridWorldDomain.ACTIONSOUTH, new ArrowActionGlyph(1));
+		spp.setActionNameGlyphPainter(GridWorldDomain.ACTIONEAST, new ArrowActionGlyph(2));
+		spp.setActionNameGlyphPainter(GridWorldDomain.ACTIONWEST, new ArrowActionGlyph(3));
+		spp.setRenderStyle(PolicyGlyphRenderStyle.DISTSCALED);
+		
+		ValueFunctionVisualizerGUI gui = new ValueFunctionVisualizerGUI(allStates, svp, planner);
+		gui.setSpp(spp);
+		gui.setPolicy(p);
+		gui.setBgColor(Color.GRAY);
+		gui.initGUI();
 	}
 	
 	

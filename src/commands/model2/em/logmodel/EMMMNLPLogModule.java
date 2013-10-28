@@ -46,12 +46,16 @@ public class EMMMNLPLogModule extends EMModule {
 	protected Map<GMQuery, List <Double>>							jointCounts;
 	protected Map<RVariableValue, List<Double>>						pfCounts;
 	
+	protected String [] 											varNameOrderForWord;
+	
 	
 	protected boolean												updateConstantParams = false;
 	
 	
 	public EMMMNLPLogModule(LogPDataManager lpdManager) {
 		this.lpdManager = lpdManager;
+		varNameOrderForWord = new String[]{TAModule.HTNAME, TAModule.ACNAME, TAModule.AGNAME, TAModule.CNAME, TAModule.GNAME, 
+				MMNLPLogModule.PNAME, MMNLPLogModule.WNAME, MMNLPLogModule.CNAME, TAModule.RNAME, IRLModule.BNAME};
 	}
 	
 	
@@ -98,6 +102,47 @@ public class EMMMNLPLogModule extends EMModule {
 		List <RVariableValue> sconds = new ArrayList<RVariableValue>();
 		sconds.add(srvv);
 		
+		Iterator<RVariableValue> propIter = this.gm.getRVariableValuesFor(this.gm.getRVarWithName(MMNLPLogModule.PNAME));
+		while(propIter.hasNext()){
+			RVariableValue propVal = propIter.next();
+			
+			List <Double> propTerms = new ArrayList<Double>();
+			
+			for(Map.Entry<StringValue, Integer> wordEntries : commandWordCount.entrySet()){
+				
+				StringValue word = wordEntries.getKey();
+				StringValue commndMinusW = this.getCommandMinusWord(command, word);
+				int count = commandWordCount.get(word);
+				
+				GMQuery jointQuery = new GMQuery();
+				jointQuery.addQuery(behavior);
+				jointQuery.addQuery(propVal);
+				jointQuery.addQuery(word);
+				jointQuery.addQuery(commndMinusW);
+				jointQuery.addCondition(srvv);
+				
+				GMQueryResult jResult = this.gm.getJointLogProbWithDiscreteMarginalization(jointQuery, varNameOrderForWord, true);
+				
+				double term = Math.log(count) + jResult.probability;
+				propTerms.add(term);
+				
+				double ljc = term - lpData;
+				GMQuery jointCountIndex = new GMQuery();
+				jointCountIndex.addQuery(word);
+				jointCountIndex.addQuery(propVal);
+				this.addJointDataTerm(ljc, jointCountIndex, this.jointCounts);
+				
+			}
+			
+			double lsum = LogSumExp.logSumOfExponentials(propTerms);
+			double lcprop = lsum - lpData;
+			this.addParentDataTerm(lcprop, propVal, this.pfCounts);
+			
+		}
+		
+		
+		
+		/*
 		Iterator<RVariableValue> propIter = this.gm.getRVariableValuesFor(this.gm.getRVarWithName(MMNLPLogModule.PNAME));
 		while(propIter.hasNext()){
 			RVariableValue propVal = propIter.next();
@@ -255,10 +300,40 @@ public class EMMMNLPLogModule extends EMModule {
 			this.addParentDataTerm(parentVal, propVal, this.pfCounts);
 			
 		}
-		
+		*/
 		
 		
 
+	}
+	
+	
+	protected StringValue getCommandMinusWord(StringValue command, StringValue word){
+		
+		String [] ccomps = this.gmNLPMod.wordsInCommand(command.s);
+		StringBuffer buf = new StringBuffer(command.s.length());
+		boolean skippedOne = false;
+		boolean appended = false;
+		for(int i = 0; i < ccomps.length; i++){
+			if(!skippedOne && ccomps[i].equals(word.s)){
+				skippedOne = true;
+			}
+			else{
+				if(appended){
+					buf.append(" ");
+				}
+				else{
+					appended = true;
+				}
+				buf.append(ccomps[i]);
+			}
+			
+		}
+		
+		String ncommandstr = buf.toString();
+		StringValue ncommand = new StringValue(ncommandstr, this.gm.getRVarWithName(MMNLPModule.CNAME));
+		
+		
+		return ncommand;
 	}
 
 	@Override
@@ -290,6 +365,9 @@ public class EMMMNLPLogModule extends EMModule {
 				if(jdTerms != null){
 					double jdcount = LogSumExp.logSumOfExponentials(jdTerms);
 					nwparam = jdcount - pdcount;
+					if(Double.isNaN(nwparam)){
+						System.out.println("Error in word param update to NaN");
+					}
 				}
 				
 				MultiNomialRVPI paramIndex = new MultiNomialRVPI(wv);

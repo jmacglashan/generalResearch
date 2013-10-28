@@ -221,7 +221,9 @@ public class DogTraining implements DomainGenerator {
 	
 	
 	
+	
 	@Override
+	@SuppressWarnings("all")
 	public Domain generateDomain() {
 		
 		Domain DOMAIN = new SADomain();

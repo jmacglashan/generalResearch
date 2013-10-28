@@ -194,6 +194,9 @@ public class MMNLPLogModule extends MMNLPModule {
 			double param = wordRV.getParameter(index); //param is logged param
 			
 			termsForExponential[i] = propLogP + param;
+			if(Double.isNaN(termsForExponential[i]) || termsForExponential[i] == 0.){
+				System.out.println("error in command prob calc");
+			}
 			
 			i++;
 		}

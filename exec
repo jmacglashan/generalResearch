@@ -1,6 +1,6 @@
 #!/bin/bash
 
 
-LIBRARIES="build/:lib/oomdpdomains.jar:lib/oomdptb.jar"
+LIBRARIES="build/:lib/burlap.jar:lib/commons-math3-3.2.jar"
 
 java -Xmx2500MB -Xss1MB -cp $LIBRARIES $*

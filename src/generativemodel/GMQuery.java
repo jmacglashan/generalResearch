@@ -40,6 +40,16 @@ public class GMQuery {
 		needsToRecomputeHash = true;
 	}
 	
+	public void removeQuery(RVariableValue query){
+		this.queryValues.remove(query);
+		needsToRecomputeHash = true;
+	}
+	
+	public void removeCondition(RVariableValue cond){
+		this.condValues.remove(cond);
+		needsToRecomputeHash = true;
+	}
+	
 	public void setConditions(Collection <RVariableValue> conds){
 		this.condValues = new HashSet<RVariableValue>(conds);
 		needsToRecomputeHash = true;

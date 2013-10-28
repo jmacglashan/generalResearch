@@ -24,10 +24,12 @@ import burlap.oomdp.stocashticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.TBFSAlternatingTurnSG;
 import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
+import domain.stocasticgames.foragesteal.TBFSWhoStartedMechanics;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import ethics.ParameterizedRFFactory;
 import ethics.experiments.tbforagesteal.aux.TBFSSubRFFactory;
+import ethics.experiments.tbforagesteal.aux.TBFSSubRFWSFactory;
 
 public class MatchCaching {
 
@@ -55,8 +57,9 @@ public class MatchCaching {
 	public static void main(String[] args) {
 		
 		
-		if(args.length != 2){
-			System.out.println("Wrong format. Use:\n\tpathToCacheOutput learningRate");
+		if(args.length != 2 && args.length != 3){
+			System.out.println("Wrong format. For full cache use:\n\tpathToCacheOutput learningRate\nFor row cache use:\n\t" +
+								"pathToOutputDirectory learningRate cacheMatrixRow");
 			System.exit(-1);
 		}
 		
@@ -69,7 +72,13 @@ public class MatchCaching {
 		MatchCaching mc = new MatchCaching(lr);
 		
 		System.out.println("Beginning");
-		mc.cacheAll(outputFile);
+		if(args.length == 2){
+			mc.cacheAll(outputFile);
+		}
+		else{
+			int row = Integer.parseInt(args[2]);
+			mc.cacheRow(outputFile, row);
+		}
 	
 
 	}
@@ -79,6 +88,15 @@ public class MatchCaching {
 	
 	
 	public MatchCaching(double learningRate){
+		
+		//this.standardGameMechanicsInit(learningRate);
+		this.whoStartedItMechanicsInit(learningRate);
+		
+		
+	}
+	
+	
+	protected void standardGameMechanicsInit(double learningRate){
 		
 		rfParamSet = getPossibleRFParams(-1.5, 0.5, 9);
 		
@@ -101,6 +119,31 @@ public class MatchCaching {
 		
 		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		
+		
+	}
+	
+	protected void whoStartedItMechanicsInit(double learningRate){
+		
+		rfParamSet = getPossibleRFParams(-1.5, 0.5, 9);
+		
+		objectiveReward = new TBFSStandardReward();
+		this.nTries =  25;
+		this.nGames = 1000;
+		this.rewardFactory = new TBFSSubRFWSFactory(objectiveReward);
+		
+		SGDomain domain = (SGDomain) TBForageSteal.generateDomain();
+		
+		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
+		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
+		
+		double discount = 0.99;
+		
+		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		
+		worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveReward, 
+				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+		
+		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		
 	}
 	
@@ -158,6 +201,42 @@ public class MatchCaching {
 			System.exit(-1);
 		}
 		
+		
+	}
+	
+	protected void cacheRow(String outputDirectoryPath, int row){
+		
+		if(!outputDirectoryPath.endsWith("/")){
+			outputDirectoryPath = outputDirectoryPath + "/";
+		}
+		
+		String pathName = outputDirectoryPath + row + ".txt";
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new FileWriter(pathName));
+			
+			System.out.println("beginning row comparisons for " + row);
+			OptVariables v1 = this.rfParamSet.get(row);
+			for(int j = row; j < this.rfParamSet.size(); j++){
+				System.out.println("comparing against " + j);
+				OptVariables v2 = this.rfParamSet.get(j);
+				String res = this.getMatchResultString(v1, v2);
+				out.write(res);
+				out.write("\n");
+				
+			}
+				
+			
+			
+			System.out.println("Finished.");
+			
+			
+			out.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		
 	}
 	

@@ -14,10 +14,12 @@ import java.util.Map;
 
 import commands.model2.em.PDataManager;
 import commands.model2.gm.CommandsModelConstructor;
+import commands.model2.gm.IRLModule;
 import commands.model2.gm.StateRVValue;
 import commands.model2.gm.TAModule;
 import commands.model2.gm.IRLModule.BehaviorValue;
 import commands.model2.gm.MMNLPModule.StringValue;
+import commands.model2.gm.logparameters.MMNLPLogModule;
 
 public class LogPDataManager extends PDataManager{
 	
@@ -28,7 +30,36 @@ public class LogPDataManager extends PDataManager{
 		this.trainingDataLogProbs = new HashMap<Integer, Double>();
 	}
 	
+	
 	public double getLogProbForData(int dataInstanceId, List<RVariableValue> observables){
+		
+		Double cached = trainingDataLogProbs.get(dataInstanceId);
+		if(cached != null){
+			return cached;
+		}
+		
+		//if not already cached then we need to compute it
+		StringValue command = (StringValue)this.getCommandValue(observables);
+		BehaviorValue behavior = (BehaviorValue)this.getBehaviorValue(observables);
+		StateRVValue srvv = new StateRVValue(behavior.t.getState(0), gm.getRVarWithName(CommandsModelConstructor.STATERVNAME));
+		
+		GMQuery query = new GMQuery();
+		query.addQuery(behavior);
+		query.addQuery(command);
+		query.addCondition(srvv);
+		
+		String [] varNameOrder = new String[]{TAModule.HTNAME, TAModule.ACNAME, TAModule.AGNAME, TAModule.CNAME, TAModule.GNAME, 
+				MMNLPLogModule.CNAME, TAModule.RNAME, IRLModule.BNAME};
+		
+		GMQueryResult res = this.gm.getJointLogProbWithDiscreteMarginalization(query, varNameOrder, true);
+		double lp = res.probability;
+		trainingDataProbs.put(dataInstanceId, lp);
+		
+		return lp;
+		
+	}
+	
+	public double getLogProbForDataOLD(int dataInstanceId, List<RVariableValue> observables){
 		
 		Double cached = trainingDataLogProbs.get(dataInstanceId);
 		if(cached != null){
@@ -160,7 +191,12 @@ public class LogPDataManager extends PDataManager{
 		}
 		
 		
-		return LogSumExp.logSumOfExponentials(hExpTerms);
+		double lp = LogSumExp.logSumOfExponentials(hExpTerms);
+		trainingDataProbs.put(dataInstanceId, lp);
+		
+		return lp;
+		
+		
 	}
 	
 }

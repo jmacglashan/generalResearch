@@ -59,7 +59,7 @@ public class DogTrainingTest {
 		DogTrainingTest tester = new DogTrainingTest(DATASETTESTPATH);
 		
 		tester.driver.initializeGMandEM();
-		tester.driver.runEM(5);
+		//tester.driver.runEM(5);
 		tester.driver.printResultsOnTrainingDataset();
 	}
 	
@@ -69,7 +69,7 @@ public class DogTrainingTest {
 		DogTrainingTest dtOld = new DogTrainingTest(DATASETTESTPATH);
 		DogTrainingTest dtNew = new DogTrainingTest(DATASETTESTPATH);
 		
-		dtOld.driver.initializeGM();
+		dtOld.driver.initializePGM();
 		dtNew.driver.initializeLogGM();
 		
 		GenerativeModel pModel = dtOld.driver.getGenerativeModel();

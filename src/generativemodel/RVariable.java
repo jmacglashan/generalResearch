@@ -89,6 +89,15 @@ public class RVariable {
 		this.parameters.put(paramInd, val);
 	}
 	
+	public boolean isDependentOn(RVariable r){
+		for(RVariable d : this.dependencies){
+			if(r.equals(d)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
 	
 	@Override
