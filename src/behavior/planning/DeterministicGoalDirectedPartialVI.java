@@ -27,7 +27,7 @@ public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
 	protected Map <StateHashTuple, Integer>							distanceFunction;
 
 	public DeterministicGoalDirectedPartialVI(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory){
-		this.PlannerInit(domain, rf, tf, gamma, hashingFactory);
+		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
 		this.distanceFunction = new HashMap<StateHashTuple, Integer>();
 	}
 	

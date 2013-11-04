@@ -82,17 +82,17 @@ public class BasicBehavior {
 		//example.SarsaLearningExample(outputPath);
 		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
-		//example.AStarExample(outputPath);
+		example.AStarExample(outputPath);
 		//example.ValueIterationExample(outputPath);
 		//example.ACLearningExample(outputPath);
 		
 		
 		//run the visualizer
-		//example.visualize(outputPath);
+		example.visualize(outputPath);
 
 		
 		//example.valueIterationAndVisualizeValueFunction();
-		example.qLearningAndVisualizeValueFunction();
+		//example.qLearningAndVisualizeValueFunction();
 		
 	}
 	

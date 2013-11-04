@@ -28,7 +28,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 			StateHashFactory hashingFactory, double minDelta) {
 		
 		//calls the abstract super classes init method so that this object will know about the domain, reward function, terminal function, and hashing function
-		this.PlannerInit(domain, rf, tf, gamma, hashingFactory);
+		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
 		
 		//initialize our values
 		this.v = new HashMap<StateHashTuple, Double>();

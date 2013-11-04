@@ -39,7 +39,7 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 	public PartialReinforcementLearning(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory, 
 			PreferenceModifiablePolicy prefPolicy) {
 		
-		this.PlannerInit(domain, rf, tf, gamma, hashingFactory);
+		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
 		
 		this.policy = prefPolicy;
 		this.trainerModel = new MTPositiveSPNegativeSA(this.hashingFactory);

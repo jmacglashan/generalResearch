@@ -58,10 +58,13 @@ public class RelationalPlanningTest {
 		String outputPath = "output"; //directory to record results
 		
 		//rpt.BFSExample(outputPath);
-		//rpt.ValueIterationExample(outputPath);
+		rpt.ValueIterationExample(outputPath);
 		//rpt.QLearningExample(outputPath);
-		//rpt.visualize(outputPath);
-		rpt.efficiencyTest();
+		
+		rpt.visualize(outputPath);
+		
+		
+		//rpt.efficiencyTest();
 
 	}
 	
@@ -168,7 +171,65 @@ public class RelationalPlanningTest {
 	}
 	
 	
+	
 	public void efficiencyTest(){
+		
+		Set <StateHashTuple> reachability;
+		MyTimer timer = new MyTimer();
+		
+		System.out.println("Starting");
+		
+		timer.start();
+		reachability = StateReachability.getReachableHashedStates(initialState, (SADomain)domain, hashingFactory);
+		timer.stop();
+		
+		System.out.println("Reachability Time: " +  timer.getTime() + "; n states: " + reachability.size());
+		
+		Set <StateHashTuple> copiedSet = new HashSet<StateHashTuple>(reachability.size());
+		timer.start();
+		for(StateHashTuple sh : reachability){
+			StateHashTuple nsh = this.hashingFactory.hashState(sh.s.copy());
+			copiedSet.add(nsh);
+		}
+		timer.stop();
+		System.out.println("Set Copy Time: " + timer.getTime() + "; n states: " + copiedSet.size());
+		
+		List<State> flatList = new ArrayList<State>();
+		timer.start();
+		for(StateHashTuple sh : reachability){
+			State ns = sh.s.copy();
+			flatList.add(ns);
+		}
+		timer.stop();
+		System.out.println("Flat List Time: " + timer.getTime() + "; n states: " + flatList.size());
+		
+		timer.start();
+		for(StateHashTuple sh : reachability){
+			StateHashTuple nsh = this.hashingFactory.hashState(sh.s.copy());
+			nsh.hashCode(); //forces hashCode value compute
+		}
+		timer.stop();
+		System.out.println("Hash Time: " + timer.getTime() + "; n states: " + copiedSet.size());
+		
+		Set <Integer> hashCodes = new HashSet<Integer>();
+		timer.start();
+		for(StateHashTuple sh : reachability){
+			StateHashTuple nsh = this.hashingFactory.hashState(sh.s.copy());
+			int hc = nsh.hashCode(); //forces hashCode value compute
+			hashCodes.add(hc);
+		}
+		timer.stop();
+		System.out.println("Hash Code Index Time: " + timer.getTime() + "; n hash codes: " + hashCodes.size());
+		
+		/*for(int hc : hashCodes){
+			System.out.println(hc);
+		}*/
+		
+		
+	}
+	
+	
+	public void efficiencyTest2(){
 		
 		Set <StateHashTuple> reachability;
 		MyTimer timer = new MyTimer();
@@ -187,11 +248,11 @@ public class RelationalPlanningTest {
 	
 	public void efficiencyTest1(){
 		
-		int n = 4000;
+		int n = 24306;
 		MyTimer timer = new MyTimer();
 		
 		
-		List<StateHashTuple> shList = new ArrayList<StateHashTuple>(n);
+		List<StateHashTuple> shList = new ArrayList<StateHashTuple>();
 		timer.start();
 		for(int i = 0; i < n; i++){
 			State s = initialState.copy();
@@ -202,8 +263,9 @@ public class RelationalPlanningTest {
 		
 		timer.stop();
 		System.out.println("List time: " + timer.getTime());
+		System.out.println(shList.size());
 		
-		Set<StateHashTuple> shSet = new HashSet<StateHashTuple>(n);
+		Set<StateHashTuple> shSet = new HashSet<StateHashTuple>();
 		timer.start();
 		for(int i = 0; i < n; i++){
 			State s = initialState.copy();
@@ -213,6 +275,7 @@ public class RelationalPlanningTest {
 		
 		timer.stop();
 		System.out.println("Set time: " + timer.getTime());
+		System.out.println(shSet.size());
 		
 	}
 	

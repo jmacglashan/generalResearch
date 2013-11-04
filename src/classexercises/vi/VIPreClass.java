@@ -26,7 +26,7 @@ public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 	protected double									minDelta;
 	
 	public VIPreClass(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory, double minDelta) {
-		this.PlannerInit(domain, rf, tf, gamma, hashingFactory);
+		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
 		this.v = new HashMap<StateHashTuple, Double>();
 		this.minDelta = minDelta;
 	}

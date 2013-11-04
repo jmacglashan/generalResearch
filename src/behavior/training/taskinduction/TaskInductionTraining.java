@@ -36,7 +36,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	
 	public TaskInductionTraining(Domain domain, RewardFunction rf, TerminalFunction tf, StateHashFactory hashingFactory, List <TaskDescription> tasks) {
 		
-		this.PlannerInit(domain, rf, tf, 1., hashingFactory);
+		this.plannerInit(domain, rf, tf, 1., hashingFactory);
 		this.possibleTasks = tasks;
 		
 		this.priorsToUse = new ArrayList<Double>(tasks.size());
