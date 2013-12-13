@@ -27,8 +27,13 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 	protected Visualizer									painter;
 	protected DynamicVisualFeedbackEnvironment				env;
 	
-	int														cWidth = 800;
-	int														cHeight = 800;
+	protected int											cWidth = 800;
+	protected int											cHeight = 800;
+	
+	
+	protected char punishKey = 'a';
+	protected char rewardKey = 'd';
+	protected char temrinateKey = 's';
 	
 	public DynamicFeedbackGUI(Visualizer v, DynamicVisualFeedbackEnvironment env) {
 		this.painter = v;
@@ -59,7 +64,7 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 			}
 		};
 		punishB.addActionListener(punishAct);
-		punishB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('a'), "punish");
+		punishB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(this.punishKey), "punish");
 		punishB.getActionMap().put("punish", punishAct);
 
 		c.gridx = 0;
@@ -78,7 +83,7 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 			}
 		};
 		rewardB.addActionListener(rewardAct);
-		rewardB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('d'), "reward");
+		rewardB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(this.rewardKey), "reward");
 		rewardB.getActionMap().put("reward", rewardAct);
 		c.gridx = 2;
 		c.gridy = 0;
@@ -96,7 +101,7 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 			}
 		};
 		terminateB.addActionListener(terminateAct);
-		terminateB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('s'), "terminate");
+		terminateB.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(this.temrinateKey), "terminate");
 		terminateB.getActionMap().put("terminate", terminateAct);
 		c.gridx = 1;
 		c.gridy = 1;
@@ -104,12 +109,13 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 		controlContainer.add(terminateB, c);
 		
 		
+
 		
-		
-		
+	}
+	
+	public void launch(){
 		pack();
 		setVisible(true);
-		
 	}
 
 

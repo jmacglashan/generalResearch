@@ -24,7 +24,7 @@ import optimization.infinitega.modules.RatioKillWorst;
 import optimization.optmodules.ContinuousBoundedVarGen;
 import optimization.optmodules.DiscStepVarClamp;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.JointReward;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
 import ethics.ParameterizedRF;
 import ethics.ParameterizedRFFactory;
@@ -130,11 +130,10 @@ public class TBFSOptimizerExp {
 		double selectSize = Double.parseDouble(args[1]);
 		double mutation = Double.parseDouble(args[2]);
 		String cacheFileInput = args[3];
-		String outputDir = args[4];
+		String outputPath = args[4];
 		
-		runInfinteGA(nGAGen, selectSize, mutation, cacheFileInput, outputDir);
+		runInfinteGA(nGAGen, selectSize, mutation, cacheFileInput, outputPath);
 		
-		//runFullyCachedFullGenomeOptimizer(nGAGen, softMax, mutation, cacheFileInput, outputDir);
 		
 	}
 	
@@ -231,6 +230,7 @@ public class TBFSOptimizerExp {
 		System.out.println("Finished Parsing CacheFile and starting GA");
 		
 		RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1, 2, 1., 3);
 		
 		InfiniteGA ga = new InfiniteGA(eval, new InfGARepDoubleWithUniMutate(selectSize, mutation), new RatioKillWorst(), rfenum.allRFs, nGenerations);
 		eval.setInfGA(ga);

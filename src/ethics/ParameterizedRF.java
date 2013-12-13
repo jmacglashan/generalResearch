@@ -1,6 +1,6 @@
 package ethics;
 
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.JointReward;
 
 public interface ParameterizedRF extends JointReward {
 

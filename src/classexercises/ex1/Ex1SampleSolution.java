@@ -55,6 +55,11 @@ public class Ex1SampleSolution {
 			public GroundedAction getAction(State s) {
 				return new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), ""); //always select action north, which is a parameter-less action (hence the empty quotes)
 			}
+			
+			@Override
+			public boolean isDefinedFor(State s) {
+				return true;
+			}
 		};
 		
 		s = GridWorldDomain.getOneAgentNLocationState(domain, 0); //get a state for us that consists of an agent object instance and 0 location object instances

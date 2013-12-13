@@ -57,8 +57,14 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 		this.numPlanningPasses = numPlanningPasses;
 	}
 
+	
 	@Override
 	public EpisodeAnalysis runLearningEpisodeFrom(State initialState) {
+		return this.runLearningEpisodeFrom(initialState, maxEpisodeSize);
+	}
+	
+	@Override
+	public EpisodeAnalysis runLearningEpisodeFrom(State initialState, int maxSteps) {
 
 		EpisodeAnalysis ea = new EpisodeAnalysis(initialState);
 		
@@ -70,7 +76,7 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 
 		
 		int timeStep = 0;
-		while(!this.tf.isTerminal(curState) && timeStep < this.maxEpisodeSize){
+		while(!this.tf.isTerminal(curState) && timeStep < maxSteps){
 			
 			GroundedAction ga = this.policy.getAction(curState);
 			State nextState = ga.executeIn(curState);
@@ -155,7 +161,7 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 		
 		
 		SarsaLam planner = new SarsaLam(this.planningDomain, localRF, lcoalTF, 0.99, this.hashingFactory, 0.2, 0.1, 1000, 0.9);
-		planner.setMaxEpisodesForPlanning(200);
+		planner.setMaximumEpisodesForPlanning(200);
 		planner.setMaxQChangeForPlanningTerminaiton(0.0001);
 		Policy p = new BoltzmannQPolicy(planner, 0.002);
 		//Policy p = new GreedyQPolicy(planner);

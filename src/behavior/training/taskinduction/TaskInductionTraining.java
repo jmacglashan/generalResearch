@@ -11,9 +11,11 @@ import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
@@ -34,6 +36,8 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	protected List <Double>							priorsToUse;
 	protected boolean								initializedPriors = false;
 	
+	protected Action								noopAction = null;
+	
 	public TaskInductionTraining(Domain domain, RewardFunction rf, TerminalFunction tf, StateHashFactory hashingFactory, List <TaskDescription> tasks) {
 		
 		this.plannerInit(domain, rf, tf, 1., hashingFactory);
@@ -46,11 +50,32 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		}
 		
 		episodeHistory = new LinkedList<EpisodeAnalysis>();
+		this.policy = new MixtureModelPolicy();
+		
+	}
+	
+	public TaskInductionTraining(Domain domain, RewardFunction rf, TerminalFunction tf, StateHashFactory hashingFactory, List <TaskDescription> tasks, MixtureModelPolicy policy) {
+		
+		this.plannerInit(domain, rf, tf, 1., hashingFactory);
+		this.possibleTasks = tasks;
+		
+		this.priorsToUse = new ArrayList<Double>(tasks.size());
+		double u = 1. / (double)tasks.size();
+		for(int i = 0; i < tasks.size(); i++){
+			priorsToUse.add(u);
+		}
+		
+		episodeHistory = new LinkedList<EpisodeAnalysis>();
+		this.policy = policy;
 		
 	}
 	
 	public void useSeperatePlanningDomain(Domain d){
 		this.planningDomain = d;
+	}
+	
+	public void setNoopAction(Action noop){
+		this.noopAction = noop;
 	}
 	
 	public void setProbFor(int taskId, double p){
@@ -60,6 +85,14 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		else{
 			this.posteriors.setProbFor(taskId, p);
 		}
+	}
+	
+	public List <TaskDescription> getTasks(){
+		return new ArrayList<TaskDescription>(this.possibleTasks);
+	}
+	
+	public TaskPosterior getPosteriors(){
+		return this.posteriors;
 	}
 	
 	public void planPossibleTasksFromSeedState(State s){
@@ -72,26 +105,32 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		for(int i = 0; i < this.possibleTasks.size(); i++){
 			TaskDescription td = this.possibleTasks.get(i);
 			double prior = this.priorsToUse.get(i);
-			ValueIteration planner = new ValueIteration(planningDomain, td.rf, td.tf, 0.99, hashingFactory, 0.001, 100);
+			ValueIteration planner = new ValueIteration(planningDomain, td.rf, new NullTermination(), 0.99, hashingFactory, 0.001, 100);
 			planner.planFromState(s);
-			Policy p = new BoltzmannQPolicy(planner, 0.002);
+			Policy p = new NoopOnTermPolicy(noopAction, td.tf, new BoltzmannQPolicy(planner, 0.002));
 			taskProbs.add(new TaskProb(td, p, prior));
 		}
 		
 		posteriors = new TaskPosterior(taskProbs, false);
-		policy = new MixtureModelPolicy(posteriors);
+		policy.setPosteriors(posteriors);
 		
 		this.initializedPriors = true;
 	}
 
 	@Override
 	public EpisodeAnalysis runLearningEpisodeFrom(State initialState) {
+		return this.runLearningEpisodeFrom(initialState, maxEpisodeSize);
+	}
+	
+	
+	@Override
+	public EpisodeAnalysis runLearningEpisodeFrom(State initialState, int maxSteps) {
 		
 		EpisodeAnalysis ea = new EpisodeAnalysis(initialState);
 		
 		State curState = initialState;
 		int timeStep = 0;
-		while(!this.tf.isTerminal(curState) && timeStep < this.maxEpisodeSize){
+		while(!this.tf.isTerminal(curState) && timeStep < maxSteps){
 		//while(timeStep < this.maxEpisodeSize){
 			GroundedAction ga = this.worldAction(curState, this.policy.getAction(curState));
 			State nextState = ga.executeIn(curState);

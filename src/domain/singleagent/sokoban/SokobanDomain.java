@@ -224,21 +224,21 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			room.setValue(TOPYATTNAME, 8);
 			room.setValue(BOTTOMXATTNAME, 4);
 			room.setValue(BOTTOMYATTNAME, 4);
-			room.setValue(COLORATTNAME, "yellow");
+			room.setValue(COLORATTNAME, "red");
 
 			ObjectInstance room2 = st.getObject(ROOMCLASS + 1);
 			room2.setValue(TOPXATTNAME, 4);
 			room2.setValue(TOPYATTNAME, 8);
 			room2.setValue(BOTTOMXATTNAME, 8);
 			room2.setValue(BOTTOMYATTNAME, 4);
-			room2.setValue(COLORATTNAME, "blue");
+			room2.setValue(COLORATTNAME, "green");
 
 			ObjectInstance room3 = st.getObject(ROOMCLASS + 2);
 			room3.setValue(TOPXATTNAME, 0);
 			room3.setValue(TOPYATTNAME, 4);
 			room3.setValue(BOTTOMXATTNAME, 8);
 			room3.setValue(BOTTOMYATTNAME, 0);
-			room3.setValue(COLORATTNAME, "orange");
+			room3.setValue(COLORATTNAME, "blue");
 
 			ObjectInstance door = st.getObject(DOORCLASS + 0);
 			door.setValue(TOPXATTNAME, 2);

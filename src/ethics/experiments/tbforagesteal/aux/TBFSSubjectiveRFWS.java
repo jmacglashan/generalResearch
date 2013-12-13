@@ -4,13 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import domain.stocasticgames.foragesteal.ForageSteal;
-import domain.stocasticgames.foragesteal.TBForageSteal;
-
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.JointReward;
+import domain.stocasticgames.foragesteal.TBForageSteal;
 import ethics.ParameterizedRF;
 
 public class TBFSSubjectiveRFWS implements ParameterizedRF {
@@ -36,7 +34,21 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		
 		List <String> agents = ja.getAgentNames();
 		String a1name = agents.get(0);
-		String a2name = agents.get(1);
+		String a2name = null;
+		
+		if(agents.size() > 1){
+			a2name = agents.get(1);
+		}
+		else{
+		
+			List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+			for(ObjectInstance aob : agentObs){
+				if(!aob.getName().equals(a1name)){
+					a2name = aob.getName();
+					break;
+				}
+			}
+		}
 		
 		ObjectInstance a1Ob = s.getObject(a1name);
 		ObjectInstance a2Ob = s.getObject(a2name);
@@ -44,7 +56,10 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		Map <String, Double> orewards = objectiveRewardFunction.reward(s, ja, sp);
 		
 		double a1or = orewards.get(a1name);
-		double a2or = orewards.get(a2name);
+		double a2or = 0.;
+		if(agents.size() > 1){
+			a2or = orewards.get(a2name);
+		}
 		
 		int a1pn = a1Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
 		int a2pn = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
@@ -53,7 +68,10 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		int a2pa = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPTA);
 		
 		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a1pn, a2pa);
-		double a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a2pn, a1pa);
+		double a2sr = 0.;
+		if(agents.size() > 1){
+			a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a2pn, a1pa);
+		}
 		
 		
 		Map <String, Double> srewards = new HashMap<String, Double>();

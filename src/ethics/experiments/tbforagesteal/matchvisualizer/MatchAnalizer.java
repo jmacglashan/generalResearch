@@ -10,20 +10,21 @@ import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQValue;
 import burlap.debugtools.DPrint;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.common.SinglePFTF;
-import burlap.oomdp.stocashticgames.AgentFactory;
-import burlap.oomdp.stocashticgames.AgentType;
-import burlap.oomdp.stocashticgames.GroundedSingleAction;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.JointReward;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.World;
-import burlap.oomdp.stocashticgames.WorldGenerator;
-import burlap.oomdp.stocashticgames.common.AgentFactoryWithSubjectiveReward;
-import burlap.oomdp.stocashticgames.tournament.common.ConstantWorldGenerator;
+import burlap.oomdp.stochasticgames.AgentFactory;
+import burlap.oomdp.stochasticgames.AgentType;
+import burlap.oomdp.stochasticgames.GroundedSingleAction;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.JointReward;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.World;
+import burlap.oomdp.stochasticgames.WorldGenerator;
+import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
+import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.TBFSAlternatingTurnSG;
 import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
@@ -50,8 +51,8 @@ public class MatchAnalizer {
 	
 	public static void main(String [] args){
 		
-		
-		SGDomain domain = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		SGDomain domain = (SGDomain) gen.generateDomain();
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
@@ -65,7 +66,7 @@ public class MatchAnalizer {
 		JointReward rf = new TBFSStandardReward();
 		JointReward punchFavored = new TBFSSubjectiveRF(rf, new double[]{0.0, 2.0, -2.0});
 		
-		WorldGenerator worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), rf, new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+		WorldGenerator worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), rf, new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
 		
 		AgentType at = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		
@@ -80,8 +81,8 @@ public class MatchAnalizer {
 		
 		
 		String [] anames = new String []{agent0.getAgentName(), agent1.getAgentName()};
-		List <State> agent0QueryStates = getQueryStates(anames, 0);
-		List <State> agent1QueryStates = getQueryStates(anames, 1);
+		List <State> agent0QueryStates = getQueryStates(domain, anames, 0);
+		List <State> agent1QueryStates = getQueryStates(domain, anames, 1);
 		
 		
 		
@@ -99,7 +100,7 @@ public class MatchAnalizer {
 	}
 	
 	
-	public static List <State> getQueryStates(String [] anames, int forAgent){
+	public static List <State> getQueryStates(Domain domain, String [] anames, int forAgent){
 		
 		List <State> res = new ArrayList<State>();
 		
@@ -113,7 +114,7 @@ public class MatchAnalizer {
 			arrayFA[i] = i;
 		}
 		
-		State s0 = TBForageSteal.getGameStartState(arrayFA, forAgent);
+		State s0 = TBForageSteal.getGameStartState(domain, arrayFA, forAgent);
 		List <ObjectInstance> agentObs = s0.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
 		s0.renameObject(agentObs.get(0), anames[0]);
 		s0.renameObject(agentObs.get(1), anames[1]);

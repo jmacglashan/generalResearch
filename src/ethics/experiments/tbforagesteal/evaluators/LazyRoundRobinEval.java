@@ -10,16 +10,16 @@ import optimization.VarEvaluaiton;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.oomdp.singleagent.common.SinglePFTF;
-import burlap.oomdp.stocashticgames.AgentFactory;
-import burlap.oomdp.stocashticgames.AgentType;
-import burlap.oomdp.stocashticgames.JointReward;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.WorldGenerator;
-import burlap.oomdp.stocashticgames.common.AgentFactoryWithSubjectiveReward;
-import burlap.oomdp.stocashticgames.tournament.MatchSelector;
-import burlap.oomdp.stocashticgames.tournament.Tournament;
-import burlap.oomdp.stocashticgames.tournament.common.AllPairWiseSameTypeMS;
-import burlap.oomdp.stocashticgames.tournament.common.ConstantWorldGenerator;
+import burlap.oomdp.stochasticgames.AgentFactory;
+import burlap.oomdp.stochasticgames.AgentType;
+import burlap.oomdp.stochasticgames.JointReward;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.WorldGenerator;
+import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
+import burlap.oomdp.stochasticgames.tournament.MatchSelector;
+import burlap.oomdp.stochasticgames.tournament.Tournament;
+import burlap.oomdp.stochasticgames.tournament.common.AllPairWiseSameTypeMS;
+import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.TBFSAlternatingTurnSG;
 import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBForageSteal;
@@ -49,7 +49,8 @@ public class LazyRoundRobinEval implements VarEvaluaiton {
 		this.rewardFactory = rewardFactory;
 		this.objectiveReward = objectiveReward;
 		
-		SGDomain domain = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		SGDomain domain = (SGDomain) gen.generateDomain();
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
@@ -59,7 +60,7 @@ public class LazyRoundRobinEval implements VarEvaluaiton {
 		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveReward, 
-				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
 		
 		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		

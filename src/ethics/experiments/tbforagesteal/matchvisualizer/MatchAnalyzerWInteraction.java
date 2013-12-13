@@ -7,10 +7,10 @@ import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.stocashticgames.GroundedSingleAction;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.World;
+import burlap.oomdp.stochasticgames.GroundedSingleAction;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.World;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import ethics.ParameterizedRF;
 
@@ -39,7 +39,8 @@ public class MatchAnalyzerWInteraction extends MatchAnalizer {
 	public String getCSVStringUsingSubRF(){
 		
 
-		SGDomain d = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		SGDomain d = (SGDomain) gen.generateDomain();
 		
 		ParameterizedRF a0rf = (ParameterizedRF)agent0.getInternalRewardFunction();
 		ParameterizedRF a1rf = (ParameterizedRF)agent1.getInternalRewardFunction();

@@ -1,6 +1,6 @@
 package ethics.experiments.tbforagesteal.aux;
 
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.JointReward;
 import ethics.ParameterizedRF;
 import ethics.ParameterizedRFFactory;
 

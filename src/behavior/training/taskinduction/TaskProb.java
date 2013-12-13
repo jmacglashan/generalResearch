@@ -69,6 +69,8 @@ public class TaskProb {
 		this.prob = prob;
 	}
 
-	
+	public TaskDescription getTask(){
+		return this.task;
+	}
 	
 }

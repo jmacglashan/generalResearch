@@ -41,6 +41,18 @@ public class TaskPosterior {
 		this.tasks.get(i).prob = p;
 	}
 	
+	public TaskProb getMostLikelyTask(){
+		TaskProb mxTP = null;
+		double mx = 0.;
+		for(TaskProb tp : this.tasks){
+			if(tp.prob > mx){
+				mxTP = tp;
+				mx = tp.prob;
+			}
+		}
+		return mxTP;
+	}
+	
 	
 	public void updateWithSingleStateFeedback(State s, GroundedAction ga, double feedback){
 		double [] liklihoodpriors = new double [tasks.size()];

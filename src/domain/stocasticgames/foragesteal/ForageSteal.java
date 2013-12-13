@@ -5,9 +5,9 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.SingleAction;
-import burlap.oomdp.stocashticgames.common.UniversalSingleAction;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.SingleAction;
+import burlap.oomdp.stochasticgames.common.UniversalSingleAction;
 
 public class ForageSteal {
 

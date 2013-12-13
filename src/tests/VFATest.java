@@ -16,7 +16,9 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.common.SinglePFTF;
+import burlap.oomdp.singleagent.common.VisualActionObserver;
 import burlap.oomdp.visualizer.Visualizer;
 
 public class VFATest {
@@ -37,8 +39,8 @@ public class VFATest {
 		VFATest example = new VFATest();
 		String outputPath = "outputVFA"; //directory to record results
 		
-		//example.runCMACVFA(outputPath);
-		example.visualize(outputPath);
+		example.runCMACVFA(outputPath);
+		//example.visualize(outputPath);
 
 	}
 	
@@ -51,7 +53,7 @@ public class VFATest {
 		tf = new SinglePFTF(domain.getPropFunction(LunarLanderDomain.PFONPAD));
 		sp = new LLStateParser(domain);
 		
-		initialState = LunarLanderDomain.getCleanState(domain, 1);
+		initialState = LunarLanderDomain.getCleanState(domain, 0);
 		LunarLanderDomain.setAgent(initialState, 0., 5.0, 0.0);
 		LunarLanderDomain.setPad(initialState, 75., 95., 0., 10.);
 		
@@ -69,6 +71,10 @@ public class VFATest {
 		if(!outputPath.endsWith("/")){
 			outputPath = outputPath + "/";
 		}
+		
+		//VisualActionObserver observer = new VisualActionObserver(domain, LLVisualizer.getVisualizer(lld));
+		//((SADomain)domain).setActionObserverForAllAction(observer);
+		//observer.initGUI();
 		
 		int nTilings = 5;
 		CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings, TilingArrangement.RANDOMJITTER);

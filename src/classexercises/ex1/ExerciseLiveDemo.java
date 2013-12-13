@@ -78,6 +78,11 @@ public class ExerciseLiveDemo {
 			public GroundedAction getAction(State s) {
 				return new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), "");
 			}
+			
+			@Override
+			public boolean isDefinedFor(State s) {
+				return true;
+			}
 		};
 		
 		State s = GridWorldDomain.getOneAgentNLocationState(domain, 0);
@@ -114,6 +119,11 @@ public class ExerciseLiveDemo {
 			@Override
 			public GroundedAction getAction(State s) {
 				return new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), "");
+			}
+			
+			@Override
+			public boolean isDefinedFor(State s) {
+				return true;
 			}
 		};
 		

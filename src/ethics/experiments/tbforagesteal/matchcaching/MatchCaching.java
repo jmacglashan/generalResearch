@@ -11,16 +11,16 @@ import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.singleagent.common.SinglePFTF;
-import burlap.oomdp.stocashticgames.AgentFactory;
-import burlap.oomdp.stocashticgames.AgentType;
-import burlap.oomdp.stocashticgames.JointReward;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.WorldGenerator;
-import burlap.oomdp.stocashticgames.common.AgentFactoryWithSubjectiveReward;
-import burlap.oomdp.stocashticgames.tournament.MatchSelector;
-import burlap.oomdp.stocashticgames.tournament.Tournament;
-import burlap.oomdp.stocashticgames.tournament.common.AllPairWiseSameTypeMS;
-import burlap.oomdp.stocashticgames.tournament.common.ConstantWorldGenerator;
+import burlap.oomdp.stochasticgames.AgentFactory;
+import burlap.oomdp.stochasticgames.AgentType;
+import burlap.oomdp.stochasticgames.JointReward;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.WorldGenerator;
+import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
+import burlap.oomdp.stochasticgames.tournament.MatchSelector;
+import burlap.oomdp.stochasticgames.tournament.Tournament;
+import burlap.oomdp.stochasticgames.tournament.common.AllPairWiseSameTypeMS;
+import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.TBFSAlternatingTurnSG;
 import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
@@ -28,8 +28,10 @@ import domain.stocasticgames.foragesteal.TBFSWhoStartedMechanics;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import ethics.ParameterizedRFFactory;
+import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
 import ethics.experiments.tbforagesteal.aux.TBFSSubRFFactory;
 import ethics.experiments.tbforagesteal.aux.TBFSSubRFWSFactory;
+import ethics.experiments.tbforagesteal.aux.TBFSSubRFWSFactory4P;
 
 public class MatchCaching {
 
@@ -90,7 +92,8 @@ public class MatchCaching {
 	public MatchCaching(double learningRate){
 		
 		//this.standardGameMechanicsInit(learningRate);
-		this.whoStartedItMechanicsInit(learningRate);
+		//this.whoStartedItMechanicsInit(learningRate);
+		this.whoStartedItMechanicsAltInit(learningRate);
 		
 		
 	}
@@ -105,7 +108,8 @@ public class MatchCaching {
 		this.nGames = 1000;
 		this.rewardFactory = new TBFSSubRFFactory(objectiveReward);
 		
-		SGDomain domain = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		SGDomain domain = (SGDomain) gen.generateDomain();
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
@@ -115,7 +119,7 @@ public class MatchCaching {
 		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveReward, 
-				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
 		
 		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		
@@ -124,14 +128,17 @@ public class MatchCaching {
 	
 	protected void whoStartedItMechanicsInit(double learningRate){
 		
-		rfParamSet = getPossibleRFParams(-1.5, 0.5, 9);
+		//rfParamSet = getPossibleRFParams(-1.5, 0.5, 9);
+		rfParamSet = (new RFParamVarEnumerator(-1, 3, 1., 4)).allRFs;
 		
 		objectiveReward = new TBFSStandardReward();
 		this.nTries =  25;
 		this.nGames = 1000;
-		this.rewardFactory = new TBFSSubRFWSFactory(objectiveReward);
+		//this.rewardFactory = new TBFSSubRFWSFactory(objectiveReward);
+		this.rewardFactory = new TBFSSubRFWSFactory4P(objectiveReward);
 		
-		SGDomain domain = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		SGDomain domain = (SGDomain) gen.generateDomain();
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
@@ -141,7 +148,37 @@ public class MatchCaching {
 		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveReward, 
-				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
+		
+		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
+		
+	}
+	
+	
+	protected void whoStartedItMechanicsAltInit(double learningRate){
+		
+		rfParamSet = getPossibleRFParams(-1.5, 0.5, 9);
+		//rfParamSet = (new RFParamVarEnumerator(-1, 3, 1., 4)).allRFs;
+		
+		objectiveReward = new TBFSStandardReward(1, -1, -.1, -2, new double[]{-2, 0, 2, 0, 0});
+		this.nTries =  25;
+		this.nGames = 1000;
+		this.rewardFactory = new TBFSSubRFWSFactory(objectiveReward);
+		//this.rewardFactory = new TBFSSubRFWSFactory4P(objectiveReward);
+		
+		TBForageSteal gen = new TBForageSteal();
+		gen.setNoopInFirstState(false);
+		SGDomain domain = (SGDomain) gen.generateDomain();
+		
+		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
+		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
+		
+		double discount = 0.99;
+		
+		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		
+		worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveReward, 
+				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain, new double[]{1., 0.5, 0.5, 0., 0.}));
 		
 		fsAgentType = new AgentType("default", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		

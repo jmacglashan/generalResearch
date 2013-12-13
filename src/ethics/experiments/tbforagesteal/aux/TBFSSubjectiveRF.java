@@ -6,8 +6,8 @@ import java.util.Map;
 
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.JointReward;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import ethics.ParameterizedRF;
 
@@ -35,18 +35,40 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 		
 		List <String> agents = ja.getAgentNames();
 		String a1name = agents.get(0);
-		String a2name = agents.get(1);
+		String a2name = null;
+		
+		if(agents.size() > 1){
+			a2name = agents.get(1);
+		}
+		else{
+		
+			List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+			for(ObjectInstance aob : agentObs){
+				if(!aob.getName().equals(a1name)){
+					a2name = aob.getName();
+					break;
+				}
+			}
+		}
+		
+	
 		
 		Map <String, Double> orewards = objectiveRewardFunction.reward(s, ja, sp);
 		
 		double a1or = orewards.get(a1name);
-		double a2or = orewards.get(a2name);
+		double a2or = 0.;
+		if(agents.size() > 1){
+			a2or = orewards.get(a2name);
+		}
 		
 		int a1pa = this.getPreviousTurnAction(a1name, s);
 		int a2pa = this.getPreviousTurnAction(a2name, s);
 		
 		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a2pa);
-		double a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a1pa);
+		double a2sr = 0.;
+		if(agents.size() > 1){
+			a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a1pa);
+		}
 		
 		
 		Map <String, Double> srewards = new HashMap<String, Double>();

@@ -8,6 +8,10 @@ public class TaskDescription{
 	public RewardFunction rf;
 	public TerminalFunction tf;
 	
+	public TaskDescription(){
+		
+	}
+	
 	public TaskDescription(RewardFunction rf, TerminalFunction tf){
 		this.rf = rf;
 		this.tf = tf;

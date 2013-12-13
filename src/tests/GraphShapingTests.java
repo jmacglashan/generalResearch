@@ -269,6 +269,11 @@ public class GraphShapingTests {
 			return false;
 		}
 		
+		@Override
+		public boolean isDefinedFor(State s) {
+			return true;
+		}
+		
 
 	}
 	

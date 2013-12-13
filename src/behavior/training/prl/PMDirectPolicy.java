@@ -189,7 +189,10 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 		return true;
 	}
 	
-
+	@Override
+	public boolean isDefinedFor(State s) {
+		return true;
+	}
 	
 	
 	protected ActionPreference getMatchingPreference(StateHashTuple sh, GroundedAction ga, PolicyNode node){
@@ -255,6 +258,9 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 		}
 		
 	}
+
+
+	
 	
 
 }

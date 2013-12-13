@@ -13,6 +13,7 @@ import behavior.training.act.EarliestStatePropagationUpdate;
 import behavior.training.act.SimulatedTrainerRF;
 import behavior.training.prl.PMDirectPolicy;
 import behavior.training.prl.PartialReinforcementLearning;
+import behavior.training.taskinduction.MAPMixtureModelPolicy;
 import behavior.training.taskinduction.TaskDescription;
 import behavior.training.taskinduction.TaskInductionTraining;
 import burlap.behavior.singleagent.EpisodeAnalysis;
@@ -146,10 +147,14 @@ public class GridWorldTrainingTest {
 		DynamicFeedbackGUI gui = new DynamicFeedbackGUI(v, env);
 		env.setGUI(gui);
 		
-		//List <TaskDescription> tasks = this.getFourCornersTasks();
-		List <TaskDescription> tasks = this.getCornerDoorCenterTasks();
-		TaskInductionTraining agent = new TaskInductionTraining(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, tasks);
+		List <TaskDescription> tasks = this.getFourCornersTasks();
+		//List <TaskDescription> tasks = this.getCornerDoorCenterTasks();
+		TaskInductionTraining agent = new TaskInductionTraining(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, tasks, new MAPMixtureModelPolicy());
 		//set priors
+		for(int i = 0; i < tasks.size(); i++){
+			agent.setProbFor(i, 1./(double)tasks.size());
+		}
+		/*
 		for(int i = 0; i < 4; i++){
 			agent.setProbFor(i, 10./52.);
 		}
@@ -159,6 +164,7 @@ public class GridWorldTrainingTest {
 		for(int i = 8; i < 12; i++){
 			agent.setProbFor(i, 1./52.);
 		}
+		*/
 		
 		agent.useSeperatePlanningDomain(domain);
 		agent.planPossibleTasksFromSeedState(initialState);
@@ -170,6 +176,7 @@ public class GridWorldTrainingTest {
 			if(!hasInitedGUI){
 				hasInitedGUI = true;
 				gui.initGUI();
+				gui.launch();
 			}
 			
 			try {

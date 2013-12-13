@@ -278,7 +278,12 @@ public class MultiStateBanditTrainingTest {
 			return false;
 		}
 		
-	
+		@Override
+		public boolean isDefinedFor(State s) {
+			return true;
+		}
+		
+		
 	}
 	
 	

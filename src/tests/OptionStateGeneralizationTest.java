@@ -11,11 +11,10 @@ import behavior.vfa.heterogenousafd.stateenumerators.StateConditionEnumerator;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.Policy;
-import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.learning.tdmethods.vfa.GradientDescentSarsaLam;
-import burlap.behavior.singleagent.options.SubgoalOption;
+import burlap.behavior.singleagent.options.DeterminisitcTerminationOption;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.StateConditionTestIterable;
@@ -141,7 +140,7 @@ public class OptionStateGeneralizationTest {
 		
 		if(addOptions > 0){
 			
-			List <SubgoalOption> sops = null;
+			List <DeterminisitcTerminationOption> sops = null;
 			if(domainType == 0){
 				sops = this.getStandard4RoomsOptions();
 			}
@@ -196,50 +195,50 @@ public class OptionStateGeneralizationTest {
 	
 	
 	
-	public void addRoomsOptionsToPlannerWithAbstractOptionFeatures(OOMDPPlanner planner, List<SubgoalOption> sops){
+	public void addRoomsOptionsToPlannerWithAbstractOptionFeatures(OOMDPPlanner planner, List<DeterminisitcTerminationOption> sops){
 		
 		
-		for(SubgoalOption sop : sops){
+		for(DeterminisitcTerminationOption sop : sops){
 			this.addSubgoalIniitationToActionFDAndPlanner(planner, sop);
 		}
 		
 		
 	}
 	
-	public void addRoomsOptionsToPlannerWithFullState(OOMDPPlanner planner, List<SubgoalOption> sops){
+	public void addRoomsOptionsToPlannerWithFullState(OOMDPPlanner planner, List<DeterminisitcTerminationOption> sops){
 		
-		for(SubgoalOption sop : sops){
+		for(DeterminisitcTerminationOption sop : sops){
 			this.addSubgoalFullStateToActionFDAndPlanner(planner, sop);
 		}
 		
 	}
 	
 	
-	public List<SubgoalOption> getStandard4RoomsOptions(){
+	public List<DeterminisitcTerminationOption> getStandard4RoomsOptions(){
 		
-		List <SubgoalOption> sops = new ArrayList<SubgoalOption>(8);
+		List <DeterminisitcTerminationOption> sops = new ArrayList<DeterminisitcTerminationOption>(8);
 		
-		SubgoalOption blt = this.getRoomOption("blt", 0, 4, 0, 4, 1, 5);
-		SubgoalOption blr = this.getRoomOption("blr", 0, 4, 0, 4, 5, 1);
+		DeterminisitcTerminationOption blt = this.getRoomOption("blt", 0, 4, 0, 4, 1, 5);
+		DeterminisitcTerminationOption blr = this.getRoomOption("blr", 0, 4, 0, 4, 5, 1);
 		sops.add(blt);
 		sops.add(blr);
 		
 		
-		SubgoalOption tlr = this.getRoomOption("tlr", 0, 4, 6, 10, 5, 8);		
-		SubgoalOption tlb = this.getRoomOption("tlb", 0, 4, 6, 10, 1, 5);
+		DeterminisitcTerminationOption tlr = this.getRoomOption("tlr", 0, 4, 6, 10, 5, 8);		
+		DeterminisitcTerminationOption tlb = this.getRoomOption("tlb", 0, 4, 6, 10, 1, 5);
 		sops.add(tlr);
 		sops.add(tlb);
 		
 		
-		SubgoalOption trb = this.getRoomOption("trb", 6, 10, 5, 10, 8, 4);
-		SubgoalOption trl = this.getRoomOption("trl", 6, 10, 5, 10, 5, 8);
+		DeterminisitcTerminationOption trb = this.getRoomOption("trb", 6, 10, 5, 10, 8, 4);
+		DeterminisitcTerminationOption trl = this.getRoomOption("trl", 6, 10, 5, 10, 5, 8);
 		sops.add(trb);
 		sops.add(trl);
 		
 		
 		
-		SubgoalOption brt = this.getRoomOption("brt", 6, 10, 0, 3, 8, 4);		
-		SubgoalOption brl = this.getRoomOption("brl", 6, 10, 6, 3, 5, 1);
+		DeterminisitcTerminationOption brt = this.getRoomOption("brt", 6, 10, 0, 3, 8, 4);		
+		DeterminisitcTerminationOption brl = this.getRoomOption("brl", 6, 10, 6, 3, 5, 1);
 		sops.add(brt);
 		sops.add(brl);
 
@@ -247,31 +246,31 @@ public class OptionStateGeneralizationTest {
 		return sops;
 	}
 	
-	public List<SubgoalOption> getLarge4RoomsOptions(){
+	public List<DeterminisitcTerminationOption> getLarge4RoomsOptions(){
 		
-		List <SubgoalOption> sops = new ArrayList<SubgoalOption>(8);
+		List <DeterminisitcTerminationOption> sops = new ArrayList<DeterminisitcTerminationOption>(8);
 		
-		SubgoalOption blt = this.getRoomOption("blt", 0, 54, 0, 49, 10, 50);
-		SubgoalOption blr = this.getRoomOption("blr", 0, 54, 0, 49, 55, 10);
+		DeterminisitcTerminationOption blt = this.getRoomOption("blt", 0, 54, 0, 49, 10, 50);
+		DeterminisitcTerminationOption blr = this.getRoomOption("blr", 0, 54, 0, 49, 55, 10);
 		sops.add(blt);
 		sops.add(blr);
 		
 		
-		SubgoalOption tlr = this.getRoomOption("tlr", 0, 54, 51, 99, 55, 71);		
-		SubgoalOption tlb = this.getRoomOption("tlb", 0, 54, 51, 99, 10, 50);
+		DeterminisitcTerminationOption tlr = this.getRoomOption("tlr", 0, 54, 51, 99, 55, 71);		
+		DeterminisitcTerminationOption tlb = this.getRoomOption("tlb", 0, 54, 51, 99, 10, 50);
 		sops.add(tlr);
 		sops.add(tlb);
 		
 		
-		SubgoalOption trb = this.getRoomOption("trb", 56, 99, 51, 99, 71, 40);
-		SubgoalOption trl = this.getRoomOption("trl", 56, 99, 51, 99, 55, 71);
+		DeterminisitcTerminationOption trb = this.getRoomOption("trb", 56, 99, 51, 99, 71, 40);
+		DeterminisitcTerminationOption trl = this.getRoomOption("trl", 56, 99, 51, 99, 55, 71);
 		//sops.add(trb);
 		//sops.add(trl);
 		
 		
 		
-		SubgoalOption brt = this.getRoomOption("brt", 56, 99, 0, 3, 71, 40);		
-		SubgoalOption brl = this.getRoomOption("brl", 56, 99, 0, 3, 55, 10);
+		DeterminisitcTerminationOption brt = this.getRoomOption("brt", 56, 99, 0, 3, 71, 40);		
+		DeterminisitcTerminationOption brl = this.getRoomOption("brl", 56, 99, 0, 3, 55, 10);
 		sops.add(brt);
 		sops.add(brl);
 
@@ -280,7 +279,7 @@ public class OptionStateGeneralizationTest {
 	}
 	
 	
-	public SubgoalOption getRoomOption(String name, int leftBound, int rightBound, int bottomBound, int topBound, int hx, int hy){
+	public DeterminisitcTerminationOption getRoomOption(String name, int leftBound, int rightBound, int bottomBound, int topBound, int hx, int hy){
 		
 		StateConditionTestIterable inRoom = new InRoomStateCheck(leftBound, rightBound, bottomBound, topBound);
 		StateConditionTest atHallway = new AtPositionStateCheck(hx, hy);
@@ -294,20 +293,20 @@ public class OptionStateGeneralizationTest {
 		//OOMDPPlanner planner = new ValueIteration(domain, new LocalSubgoalRF(inRoom, atHallway), new LocalSubgoalTF(inRoom, atHallway), 0.99, hashingFactory, 0.001, 200);
 		//PlannerDerivedPolicy p = new GreedyDeterministicQPolicy();
 	
-		//return new SubgoalOption(name, inRoom, atHallway, planner, p);
+		//return new DeterminisitcTerminationOption(name, inRoom, atHallway, planner, p);
 		
-		return new SubgoalOption(name, new HardCodedLocationOptionPolicy(hx, hy), inRoom, atHallway);
+		return new DeterminisitcTerminationOption(name, new HardCodedLocationOptionPolicy(hx, hy), inRoom, atHallway);
 		
 	}
 	
-	protected void addSubgoalIniitationToActionFDAndPlanner(OOMDPPlanner planner, SubgoalOption sop){
+	protected void addSubgoalIniitationToActionFDAndPlanner(OOMDPPlanner planner, DeterminisitcTerminationOption sop){
 		StateConditionEnumerator sce = new StateConditionEnumerator();
 		sce.addStateCondition(sop.getInitiationTest());
 		featureDatabase.addFDForAction(sop.getName(), new EnumeratedFeatureDatabase(sce));
 		planner.addNonDomainReferencedAction(sop);
 	}
 	
-	protected void addSubgoalFullStateToActionFDAndPlanner(OOMDPPlanner planner, SubgoalOption sop){
+	protected void addSubgoalFullStateToActionFDAndPlanner(OOMDPPlanner planner, DeterminisitcTerminationOption sop){
 		featureDatabase.addFDForAction(sop.getName(), hashEnumDB);
 		planner.addNonDomainReferencedAction(sop);
 	}
@@ -486,6 +485,11 @@ public class OptionStateGeneralizationTest {
 		@Override
 		public boolean isStochastic() {
 			return false;
+		}
+
+		@Override
+		public boolean isDefinedFor(State s) {
+			return true;
 		}
 		
 		

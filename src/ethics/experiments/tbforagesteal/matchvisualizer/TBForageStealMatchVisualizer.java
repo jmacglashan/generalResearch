@@ -27,26 +27,26 @@ import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
 import burlap.debugtools.DPrint;
-import burlap.debugtools.RandomFactory;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.common.SinglePFTF;
-import burlap.oomdp.stocashticgames.AgentFactory;
-import burlap.oomdp.stocashticgames.AgentType;
-import burlap.oomdp.stocashticgames.GroundedSingleAction;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.JointReward;
-import burlap.oomdp.stocashticgames.SGDomain;
-import burlap.oomdp.stocashticgames.World;
-import burlap.oomdp.stocashticgames.WorldGenerator;
-import burlap.oomdp.stocashticgames.common.AgentFactoryWithSubjectiveReward;
-import burlap.oomdp.stocashticgames.tournament.common.ConstantWorldGenerator;
+import burlap.oomdp.stochasticgames.AgentFactory;
+import burlap.oomdp.stochasticgames.AgentType;
+import burlap.oomdp.stochasticgames.GroundedSingleAction;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.JointReward;
+import burlap.oomdp.stochasticgames.SGDomain;
+import burlap.oomdp.stochasticgames.World;
+import burlap.oomdp.stochasticgames.WorldGenerator;
+import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
+import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.TBFSAlternatingTurnSG;
 import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRF;
+import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRFWS;
 import ethics.experiments.tbforagesteal.matchvisualizer.ColoredTableRenderer.ColoredTableCell;
 import ethics.experiments.tbforagesteal.matchvisualizer.ColoredTableRenderer.TableLabel;
 
@@ -139,14 +139,16 @@ private static final long serialVersionUID = 1L;
 		stage = 0;
 		maxStage = 1000;
 		
-		domain = (SGDomain) TBForageSteal.generateDomain();
+		TBForageSteal gen = new TBForageSteal();
+		domain = (SGDomain) gen.generateDomain();
 		
 		hashingFactory = new DiscreteStateHashFactory();
 		hashingFactory.setAttributesForClass(TBForageSteal.CLASSAGENT, domain.getObjectClass(TBForageSteal.CLASSAGENT).attributeList);
 		
 		objectiveRF = new TBFSStandardReward();
 		
-		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveRF, new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
+		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveRF, new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
+		//worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveRF, new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG());
 		
 		at = new AgentType("agent", domain.getObjectClass(TBForageSteal.CLASSAGENT), domain.getSingleActions());
 		
@@ -469,8 +471,13 @@ private static final long serialVersionUID = 1L;
 		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PSField.getText()), Double.parseDouble(a0PPField.getText())};
 		double [] a1SRParams = new double[]{Double.parseDouble(a1SField.getText()), Double.parseDouble(a1PSField.getText()), Double.parseDouble(a1PPField.getText())};
 		
+		//TBFSSubjectiveRFWS
+		
 		JointReward a0SRF = new TBFSSubjectiveRF(objectiveRF, a0SRParams);
 		JointReward a1SRF = new TBFSSubjectiveRF(objectiveRF, a1SRParams);
+		
+		//JointReward a0SRF = new TBFSSubjectiveRFWS(objectiveRF, a0SRParams);
+		//JointReward a1SRF = new TBFSSubjectiveRFWS(objectiveRF, a1SRParams);
 		
 		System.out.println(a0SRF.toString());
 		System.out.println(a1SRF.toString());
@@ -1001,7 +1008,7 @@ private static final long serialVersionUID = 1L;
 			arrayFA[i] = i;
 		}
 		
-		State s0 = TBForageSteal.getGameStartState(arrayFA, forAgent);
+		State s0 = TBForageSteal.getGameStartState(domain, arrayFA, forAgent);
 		List <ObjectInstance> agentObs = s0.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
 		s0.renameObject(agentObs.get(0), anames[0]);
 		s0.renameObject(agentObs.get(1), anames[1]);

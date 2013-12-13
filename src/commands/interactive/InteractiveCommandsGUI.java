@@ -158,6 +158,11 @@ public class InteractiveCommandsGUI extends JFrame implements StateVisualizingGU
 				GroundedAction ga = new GroundedAction(waitA, "");
 				return ga;
 			}
+			
+			@Override
+			public boolean isDefinedFor(State s) {
+				return true;
+			}
 		};
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();

@@ -5,9 +5,9 @@ import java.util.Map;
 
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.stocashticgames.GroundedSingleAction;
-import burlap.oomdp.stocashticgames.JointAction;
-import burlap.oomdp.stocashticgames.JointReward;
+import burlap.oomdp.stochasticgames.GroundedSingleAction;
+import burlap.oomdp.stochasticgames.JointAction;
+import burlap.oomdp.stochasticgames.JointReward;
 
 public class TBFSStandardReward implements JointReward {
 
@@ -85,7 +85,9 @@ public class TBFSStandardReward implements JointReward {
 			
 			
 			rewards.put(agentForTurnAction.actingAgent, actingReward);
-			rewards.put(nonActingAgentAction.actingAgent, nonActingReward);
+			if(nonActingAgentAction != null){
+				rewards.put(nonActingAgentAction.actingAgent, nonActingReward);
+			}
 			
 		}
 		

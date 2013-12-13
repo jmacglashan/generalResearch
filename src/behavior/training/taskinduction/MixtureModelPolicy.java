@@ -17,9 +17,18 @@ public class MixtureModelPolicy extends Policy {
 	protected Random			rand;
 	
 	
+	public MixtureModelPolicy(){
+		this.rand = RandomFactory.getMapped(0);
+	}
+	
 	public MixtureModelPolicy(TaskPosterior posteriors) {
 		this.posteriors = posteriors;
 		rand = RandomFactory.getMapped(0);
+	}
+	
+	
+	public void setPosteriors(TaskPosterior posteriors){
+		this.posteriors = posteriors;
 	}
 
 	@Override
@@ -47,6 +56,11 @@ public class MixtureModelPolicy extends Policy {
 
 	@Override
 	public boolean isStochastic() {
+		return true;
+	}
+	
+	@Override
+	public boolean isDefinedFor(State s) {
 		return true;
 	}
 
