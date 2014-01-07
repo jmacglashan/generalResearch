@@ -98,6 +98,11 @@ public class FSSimple implements DomainGenerator {
 		
 	}
 	
+	public static void setStateNode(State s, int sn){
+		ObjectInstance sno = s.getFirstObjectOfClass(CLASSSTATENODE);
+		sno.setValue(ATTSTATENODE, sn);
+	}
+	
 	
 	
 	

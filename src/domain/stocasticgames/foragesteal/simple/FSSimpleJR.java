@@ -53,24 +53,33 @@ public class FSSimpleJR implements JointReward {
 			if(player0Action.action.actionName.startsWith(FSSimple.ACTIONFORAGEBASE)){
 				int fa = this.forageAltForAction(player0Action);
 				r.put(player0Action.actingAgent, this.forageRewards[fa]);
-				r.put(player1Action.actingAgent, 0.);
+				if(player1Action != null){
+					r.put(player1Action.actingAgent, 0.);
+				}
 			}
 			else{
 				//must have stolen
 				r.put(player0Action.actingAgent, this.stealerReward);
-				r.put(player1Action.actingAgent, this.stealeeReward);
+				if(player1Action != null){
+					r.put(player1Action.actingAgent, this.stealeeReward);
+				}
 			}
 			
 		}
 		else{
 			
 			if(player1Action.action.actionName.equals(FSSimple.ACTIONPUNISH)){
-				r.put(player0Action.actingAgent, this.puncheeReward);
+				
+				if(player0Action != null){
+					r.put(player0Action.actingAgent, this.puncheeReward);
+				}
 				r.put(player1Action.actingAgent, this.puncherReward);
 			}
 			else{
 				//must have done nothing
-				r.put(player0Action.actingAgent, 0.);
+				if(player0Action != null){
+					r.put(player0Action.actingAgent, 0.);
+				}
 				r.put(player1Action.actingAgent, 0.);
 			}
 			
@@ -81,6 +90,26 @@ public class FSSimpleJR implements JointReward {
 	}
 
 	
+	public double getStealerReward() {
+		return stealerReward;
+	}
+
+	public double getStealeeReward() {
+		return stealeeReward;
+	}
+
+	public double getPuncherReward() {
+		return puncherReward;
+	}
+
+	public double getPuncheeReward() {
+		return puncheeReward;
+	}
+
+	public double[] getForageRewards() {
+		return forageRewards;
+	}
+
 	protected int forageAltForAction(GroundedSingleAction gsa){
 		ForageAction sa = (ForageAction)gsa.action;
 		return sa.falt;

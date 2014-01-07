@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import datastructures.HashedAggregator;
+
 import burlap.debugtools.DPrint;
 
 
@@ -34,6 +36,8 @@ public class IBM2EM {
 	protected LengthParam lp;
 	
 	protected Map <String, Double> genWordProbs;
+	protected Map <TokenedString, Double> probGenSentences;
+	
 	
 	protected Set<TokenedString> allGeneratingText;
 	protected Set <String> genDictionary;
@@ -43,8 +47,9 @@ public class IBM2EM {
 	
 	protected double wordAdditiveConstant = 0.1;
 	
-	protected boolean factorInAlignment = true;
+	protected boolean factorInAlignment = false;
 	protected int numWithWorParamAlone = 5;
+	
 	
 	public int debugCode = 83724;
 	
@@ -59,16 +64,20 @@ public class IBM2EM {
 		this.allGeneratingText = new HashSet<TokenedString>();
 		this.genDictionary = new HashSet<String>();
 		this.prodDictionary = new HashSet<String>();
+		this.probGenSentences = new HashMap<TokenedString, Double>();
 		
 		this.genDictionary.add(TokenedString.NULLTOKEN);
 		
 		HashedAggregator<IntTupleHash> jlcounts = new HashedAggregator<IBM2EM.IntTupleHash>();
 		HashedAggregator<Integer> slcounts = new HashedAggregator<Integer>();
 		HashedAggregator<String> gWordCounts = new HashedAggregator<String>();
+		HashedAggregator<TokenedString> genSentencesCounts = new HashedAggregator<TokenedString>();
 		int tgwCount = 0;
 		
 		for(MTDataInstance d : dataset){
 			allGeneratingText.add(d.genLangText);
+			
+			genSentencesCounts.add(d.genLangText, 1.);
 			
 			int l = d.genLangText.size();
 			int m = d.prodLangText.size();
@@ -89,6 +98,13 @@ public class IBM2EM {
 			for(int i = 1; i <= d.prodLangText.size(); i++){
 				this.prodDictionary.add(d.prodLangText.t(i));
 			}
+		}
+		
+		//set genSetencePrior
+		double ngs = this.dataset.size();
+		for(TokenedString gs : this.allGeneratingText){
+			double gp = genSentencesCounts.v(gs) / ngs;
+			this.probGenSentences.put(gs, gp);
 		}
 		
 		//set gen word probs
@@ -127,7 +143,7 @@ public class IBM2EM {
 				this.lp.set(np, l, m);
 				
 				for(int i = 1; i <= m; i++){
-					double uniDist = 1./(this.maxL+1);
+					double uniDist = 1./(l+1); //old form, which seems like it was was: 1./(this.maxL+1);
 					for(int j = 0; j <= l; j++){
 						this.dp.set(uniDist, j, i, l, m);
 					}
@@ -181,8 +197,11 @@ public class IBM2EM {
 		
 		int m = input.size();
 		double sum = 0.;
-		double maxN = 0.;
+		double sumNN = 0.;
+		double maxN = -1.;
+		double maxNN = -1.;
 		TokenedString maxDecode = null;
+		TokenedString maxDecodeNN = null;
 		
 		for(TokenedString gText : this.allGeneratingText){
 			
@@ -203,10 +222,16 @@ public class IBM2EM {
 				alignMarg = this.m1MaximumAlignment(input, gText);
 			}
 		
-			double pG = alignMarg;
-			if(n > 0){
-				pG *= n;
+			double pG = alignMarg*this.probGenSentences.get(gText);
+			sumNN += pG;
+			if(pG > maxNN){
+				maxNN = pG;
+				maxDecodeNN = gText;
 			}
+			
+			
+			
+			pG *= n;
 			sum += pG;
 			if(pG > maxN){
 				maxN = pG;
@@ -218,7 +243,15 @@ public class IBM2EM {
 		
 		
 		double p = maxN / sum;
-		DecodeResult dr = new DecodeResult(input, maxDecode, p);
+		double pNN = maxNN / sumNN;
+		
+		DecodeResult dr = null;
+		if(p > 0.){
+			dr = new DecodeResult(input, maxDecode, p);
+		}
+		else{
+			dr = new DecodeResult(input, maxDecodeNN, pNN);
+		}
 		
 		return dr;
 	}
@@ -227,9 +260,11 @@ public class IBM2EM {
 	public List<DecodeResult> probDist(TokenedString input){
 		
 		List <DecodeResult> result = new ArrayList<DecodeResult>();
+		List <DecodeResult> resultNN = new ArrayList<DecodeResult>();
 		
 		int m = input.size();
 		double sum = 0.;
+		double sumNN = 0.;
 		
 		for(TokenedString gText : this.allGeneratingText){
 			
@@ -245,10 +280,13 @@ public class IBM2EM {
 			}
 			
 			
-			double pG = alignMarg;
-			if(n > 0){
-				pG *= n;
-			}
+			double pG = alignMarg*this.probGenSentences.get(gText);
+			sumNN += pG;
+			DecodeResult drnn = new DecodeResult(input, gText, pG);
+			resultNN.add(drnn);
+			
+			
+			pG *= n;
 			sum += pG;
 			DecodeResult dr = new DecodeResult(input, gText, pG);
 			result.add(dr);
@@ -259,10 +297,61 @@ public class IBM2EM {
 		for(DecodeResult dr : result){
 			dr.prob /= sum;
 		}
+		for(DecodeResult drnn : resultNN){
+			drnn.prob /= sumNN;
+		}
+		
+		if(sum > 0.){
+			return result;
+		}
+		else{
+			return resultNN;
+		}
+		
+	}
+	
+	public void probDistMLProbe(TokenedString input){
 		
 		
+		System.out.println("Computing Distribution for: " + input.toString());
+		System.out.println("======================================================");
 		
-		return result;
+		int m = input.size();
+		for(TokenedString gText : this.allGeneratingText){
+			
+			double prior = this.probGenSentences.get(gText);
+			System.out.println(prior + ": " + gText.toString());
+			int l = gText.size();
+			
+			double n = this.lp.prob(l, m);
+			System.out.println(n + ": p(" + m + "| " + l + ")    length prob");
+			List<Integer> alignment = null;
+			if(n > 0.){
+				alignment = this.mlAlignment(l, m);
+			}
+			else{
+				alignment = this.m1mlAlignment(input, gText);
+			}
+			
+			for(int k = 1; k <= alignment.size(); k++){
+				int ak = alignment.get(k-1); //note that alignment array is in 0-base index
+				String pWord = input.t(k);
+				String gWord = gText.t(ak);
+				
+				if(!this.prodDictionary.contains(pWord)){
+					System.out.println("NA");
+					continue;
+				}
+				
+				double word = this.wp.prob(pWord, gWord);
+				System.out.println(word + ": p(" + pWord + " | " + gWord + ")");
+			}
+			
+			System.out.println("----------------------------------------------------------");
+		}
+		
+		System.out.println("**********************************************************\n\n");
+		
 		
 	}
 	
@@ -370,29 +459,70 @@ public class IBM2EM {
 		for(int i = 1; i <= m; i++){
 			double r = this.rand.nextDouble();
 			double sumP = 0.;
-			boolean added = false;
 			for(int j = 0; j <= l; j++){
 				double p = this.dp.prob(j, i, l, m);
 				sumP += p;
 				if(r < sumP){
 					alignment.add(j);
-					added = true;
 					break;
 				}
 			}
-			if(!added){
-				sumP = 0.;
-				for(int j = 0; j < l; j++){
-					sumP += this.dp.prob(j, i, l, m);
-					if(r < sumP){
-						alignment.add(j);
-						added = true;
-						break;
-					}
-				}
-			}
+
 		}
 		
+		
+		return alignment;
+	}
+	
+	protected List<Integer> mlAlignment(int l, int m){
+		
+		List<Integer> alignment = new ArrayList<Integer>(m);
+		
+		for(int i = 1; i <= m; i++){
+			
+			double maxP = -1.;
+			int maxV = -1;
+			for(int j = 0; j <= l; j++){
+				double p = this.dp.prob(j, i, l, m);
+				if(p > maxP){
+					maxV = j;
+					maxP = p;
+				}
+			}
+			System.out.print(maxV + "(" + maxP + ") ");
+			alignment.add(maxV);
+			
+		}
+		System.out.println("");
+		
+		return alignment;
+	}
+	
+	protected List<Integer> m1mlAlignment(TokenedString input, TokenedString gText){
+		
+		int l = gText.size();
+		int m = input.size();
+		
+		List<Integer> alignment = new ArrayList<Integer>(m);
+		
+		for(int i = 1; i <= m; i++){
+			String pWord = input.t(i);
+			
+			double maxP = -1.;
+			int maxV = -1;
+			for(int j = 0; j <= l; j++){
+				String gWord = gText.t(j);
+				double p = this.wp.prob(pWord, gWord);
+				if(p > maxP){
+					maxV = j;
+					maxP = p;
+				}
+			}
+			System.out.print(maxV + "(" + maxP + ") ");
+			alignment.add(maxV);
+			
+		}
+		System.out.println("");
 		
 		return alignment;
 	}

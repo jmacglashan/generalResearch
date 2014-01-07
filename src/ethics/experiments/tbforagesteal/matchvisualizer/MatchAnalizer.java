@@ -47,6 +47,8 @@ public class MatchAnalizer {
 	protected List <QSpace>				agent1QSequence;
 	
 	
+	protected int						maxStages = 100;
+	
 	
 	
 	public static void main(String [] args){
@@ -171,6 +173,10 @@ public class MatchAnalizer {
 	}
 	
 	
+	public void setMaxStages(int maxStages){
+		this.maxStages = maxStages;
+	}
+	
 	public int numQSpaceMeasure(){
 		return this.agent0QSequence.size(); //same number as agent 2
 	}
@@ -206,7 +212,7 @@ public class MatchAnalizer {
 	}
 	
 	
-	protected void runMatch(int maxGames){
+	public void runMatch(int maxGames){
 		
 		for(int i = 0; i < maxGames; i++){
 			this.runGame();
@@ -215,7 +221,7 @@ public class MatchAnalizer {
 		
 	}
 	
-	protected void runGame(){
+	public void runGame(){
 		
 		TerminalFunction tf = this.world.getTF();
 		
@@ -226,7 +232,7 @@ public class MatchAnalizer {
 		
 
 		int t = 0;
-		while(!tf.isTerminal(this.world.getCurrentWorldState()) && t < 100){
+		while(!tf.isTerminal(this.world.getCurrentWorldState()) && t < this.maxStages){
 			this.recordQStatus();
 			this.world.runStage();
 			this.jointActionSequence.add(this.world.getLastJointAction());

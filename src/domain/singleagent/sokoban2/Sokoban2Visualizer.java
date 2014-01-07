@@ -2,9 +2,19 @@ package domain.singleagent.sokoban2;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.imageio.ImageIO;
+
+import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.visualizer.ObjectPainter;
@@ -15,25 +25,35 @@ public class Sokoban2Visualizer {
 
 	
 	
-	public static Visualizer getVisualizer(){
+	public static Visualizer getVisualizer(String...agentImagePath){
 		
 		Visualizer v = new Visualizer();
 		v.addObjectClassPainter(Sokoban2Domain.CLASSROOM, new RoomPainter());
 		v.addObjectClassPainter(Sokoban2Domain.CLASSDOOR, new DoorPainter());
-		v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		if(agentImagePath.length == 0){
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		}
+		else{
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0]));
+		}
 		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter());
 		
 		return v;
 		
 	}
 	
-	public static StateRenderLayer getStateRenderLayer(){
+	public static StateRenderLayer getStateRenderLayer(String...agentImagePath){
 		
 		StateRenderLayer v = new StateRenderLayer();
 		
 		v.addObjectClassPainter(Sokoban2Domain.CLASSROOM, new RoomPainter());
 		v.addObjectClassPainter(Sokoban2Domain.CLASSDOOR, new DoorPainter());
-		v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		if(agentImagePath.length == 0){
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		}
+		else{
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0]));
+		}
 		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter());
 		
 		return v;
@@ -41,13 +61,18 @@ public class Sokoban2Visualizer {
 	}
 	
 	
-	public static Visualizer getVisualizer(int maxX, int maxY){
+	public static Visualizer getVisualizer(int maxX, int maxY, String...agentImagePath){
 		
 		Visualizer v = new Visualizer();
 		
 		v.addObjectClassPainter(Sokoban2Domain.CLASSROOM, new RoomPainter(maxX, maxY));
 		v.addObjectClassPainter(Sokoban2Domain.CLASSDOOR, new DoorPainter(maxX, maxY));
-		v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter(maxX, maxY));
+		if(agentImagePath.length == 0){
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		}
+		else{
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0], maxX, maxY));
+		}
 		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY));
 		
 		return v;
@@ -55,13 +80,18 @@ public class Sokoban2Visualizer {
 	}
 	
 	
-	public static StateRenderLayer getStateRenderLayer(int maxX, int maxY){
+	public static StateRenderLayer getStateRenderLayer(int maxX, int maxY, String...agentImagePath){
 		
 		StateRenderLayer v = new StateRenderLayer();
 		
 		v.addObjectClassPainter(Sokoban2Domain.CLASSROOM, new RoomPainter(maxX, maxY));
 		v.addObjectClassPainter(Sokoban2Domain.CLASSDOOR, new DoorPainter(maxX, maxY));
-		v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter(maxX, maxY));
+		if(agentImagePath.length == 0){
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+		}
+		else{
+			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0], maxX, maxY));
+		}
 		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY));
 		
 		return v;
@@ -224,6 +254,96 @@ public class Sokoban2Visualizer {
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
+		}
+		
+		
+		
+	}
+	
+	
+	public static class AgentPainterWithImages implements ObjectPainter, ImageObserver{
+
+		protected int maxX = -1;
+		protected int maxY = -1;
+		
+		Map<String, BufferedImage>	dirToImage;
+		
+		public AgentPainterWithImages(String pathToImageDir){
+			if(!pathToImageDir.endsWith("/")){
+				pathToImageDir = pathToImageDir + "/";
+			}
+			
+			dirToImage = new HashMap<String, BufferedImage>(4);
+			try {
+				dirToImage.put("north", ImageIO.read(new File(pathToImageDir + "robotNorth.png")));
+				dirToImage.put("south", ImageIO.read(new File(pathToImageDir + "robotSouth.png")));
+				dirToImage.put("east", ImageIO.read(new File(pathToImageDir + "robotEast.png")));
+				dirToImage.put("west", ImageIO.read(new File(pathToImageDir + "robotWest.png")));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		public AgentPainterWithImages(String pathToImageDir, int maxX, int maxY){
+			this.maxX = maxX;
+			this.maxY = maxY;
+			
+			if(!pathToImageDir.endsWith("/")){
+				pathToImageDir = pathToImageDir + "/";
+			}
+			
+			dirToImage = new HashMap<String, BufferedImage>(4);
+			try {
+				dirToImage.put("north", ImageIO.read(new File(pathToImageDir + "robotNorth.png")));
+				dirToImage.put("south", ImageIO.read(new File(pathToImageDir + "robotSouth.png")));
+				dirToImage.put("east", ImageIO.read(new File(pathToImageDir + "robotEast.png")));
+				dirToImage.put("west", ImageIO.read(new File(pathToImageDir + "robotWest.png")));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		@Override
+		public void paintObject(Graphics2D g2, State s, ObjectInstance ob, float cWidth, float cHeight) {
+			
+			
+			float domainXScale = Sokoban2Domain.maxRoomXExtent(s) + 1f;
+			float domainYScale = Sokoban2Domain.maxRoomYExtent(s) + 1f;
+			
+			if(maxX != -1){
+				domainXScale = maxX;
+				domainYScale = maxY;
+			}
+			
+			//determine then normalized width
+			float width = (1.0f / domainXScale) * cWidth;
+			float height = (1.0f / domainYScale) * cHeight;
+			
+			int x = ob.getDiscValForAttribute(Sokoban2Domain.ATTX);
+			int y = ob.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			
+			float rx = x*width;
+			float ry = cHeight - height - y*height;
+			
+			String dir = null;
+			Attribute dirAtt = ob.getObjectClass().getAttribute(Sokoban2Domain.ATTDIR);
+			if(dirAtt != null){
+				dir = ob.getStringValForAttribute(Sokoban2Domain.ATTDIR);
+			}
+			else{
+				dir = "south";
+			}
+			
+			BufferedImage img = this.dirToImage.get(dir);
+			g2.drawImage(img, (int)rx, (int)ry, (int)width, (int)height, this);
+			
+		}
+
+		@Override
+		public boolean imageUpdate(Image img, int infoflags, int x, int y,
+				int width, int height) {
+			return false;
 		}
 		
 		

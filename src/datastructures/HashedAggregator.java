@@ -1,6 +1,9 @@
-package commands.mttest;
+package datastructures;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class HashedAggregator <K>{
 
@@ -30,6 +33,18 @@ public class HashedAggregator <K>{
 	
 	public int size(){
 		return storage.size();
+	}
+	
+	public Set<K> keySet(){
+		return this.storage.keySet();
+	}
+	
+	public Collection<Double> valueSet(){
+		return this.storage.values();
+	}
+	
+	public Set<Map.Entry<K, Double>> entrySet(){
+		return this.storage.entrySet();
 	}
 	
 }

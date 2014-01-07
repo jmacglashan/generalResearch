@@ -53,9 +53,9 @@ public class SokoEMTest {
 		public static void main(String[] args) {
 			
 			
-			//hardCodedTests();
+			hardCodedTests();
 			//trainingDataTest();
-			looTest(args);
+			//looTest(args);
 
 		}
 		

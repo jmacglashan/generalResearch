@@ -20,6 +20,7 @@ import optimization.geneticalgorithm.gamodules.SoftMaxSingleParentMateSelector;
 import optimization.geneticalgorithm.gamodules.TopInstanceMateSelector;
 import optimization.infinitega.InfiniteGA;
 import optimization.infinitega.modules.InfGARepDoubleWithUniMutate;
+import optimization.infinitega.modules.InfGASoftMaxReproduce;
 import optimization.infinitega.modules.RatioKillWorst;
 import optimization.optmodules.ContinuousBoundedVarGen;
 import optimization.optmodules.DiscStepVarClamp;
@@ -48,7 +49,8 @@ public class TBFSOptimizerExp {
 		//optimiztion(args);
 		//optimiztionFullGenome(args);
 		//controlledGATest();
-		optimiztionInfiniteGA(args);
+		//optimiztionInfiniteGA(args);
+		optimiztionInfiniteGASoftMax(args);
 		
 		
 	}
@@ -133,6 +135,26 @@ public class TBFSOptimizerExp {
 		String outputPath = args[4];
 		
 		runInfinteGA(nGAGen, selectSize, mutation, cacheFileInput, outputPath);
+		
+		
+	}
+	
+	public static void optimiztionInfiniteGASoftMax(String [] args){
+		
+		if(args.length != 4){
+			System.out.println("Error: Incorrect format");
+			System.out.println("\tnGAGenerations temperature cacheFileInput outputFilePath");
+			System.exit(-1);
+		}
+		
+		DPrint.toggleCode(InfGASoftMaxReproduce.debugCode, false);
+		
+		int nGAGen = Integer.parseInt(args[0]);
+		double temperature = Double.parseDouble(args[1]);
+		String cacheFileInput = args[2];
+		String outputPath = args[3];
+		
+		runInfinteGASoftMax(nGAGen, temperature, cacheFileInput, outputPath);
 		
 		
 	}
@@ -229,10 +251,41 @@ public class TBFSOptimizerExp {
 		InfGACachedVarEval eval = new InfGACachedVarEval(cacheFilePath);
 		System.out.println("Finished Parsing CacheFile and starting GA");
 		
-		RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1, 2, 1., 3);
+		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2);
 		
 		InfiniteGA ga = new InfiniteGA(eval, new InfGARepDoubleWithUniMutate(selectSize, mutation), new RatioKillWorst(), rfenum.allRFs, nGenerations);
+		eval.setInfGA(ga);
+		
+		OVarStringRep rep = new OVarStringRep() {
+			
+			@Override
+			public String getStringRep(OptVariables vars) {
+				return vars.toString();
+			}
+		};
+		ga.enableOptimzationFileRecording(2, rep, outputPath);
+
+		ga.optimize();
+		
+		System.out.println("Finished\n-----------------------------");
+		
+		
+	}
+	
+	
+	public static void runInfinteGASoftMax(int nGenerations, double temperature, String cacheFilePath, String outputPath){
+		
+		System.out.println("Parsing CacheFile");
+		InfGACachedVarEval eval = new InfGACachedVarEval(cacheFilePath);
+		System.out.println("Finished Parsing CacheFile and starting GA");
+		
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1, 2, 1., 3);
+		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2);
+		
+		InfiniteGA ga = new InfiniteGA(eval, new InfGASoftMaxReproduce(temperature), new RatioKillWorst(), rfenum.allRFs, nGenerations);
 		eval.setInfGA(ga);
 		
 		OVarStringRep rep = new OVarStringRep() {

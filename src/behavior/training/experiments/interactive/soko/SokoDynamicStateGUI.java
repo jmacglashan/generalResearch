@@ -323,9 +323,25 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		});
 		c.gridx = 0;
 		c.gridy = 8;
-		c.insets = new Insets(100, 0, 0, 0);
+		c.insets = new Insets(50, 0, 0, 0);
 		controlContainer.add(this.hallucinateButton, c);
 		
+		
+		
+		JLabel cheatSheet = new JLabel("<html>" +
+									   "<b>Cheat Sheet</b><br/>" +
+									   "c: color<br/>" +
+									   "s: shape<br/>" +
+									   "b: add block<br/>" +
+									   "d: add door<br/>" +
+									   "a: place agent<br/>" +
+									   "x: delete" +
+									   "</html>");
+		c.gridx = 0;
+		c.gridy = 9;
+		c.gridwidth = 2;
+		c.insets = new Insets(100, 0, 0, 0);
+		controlContainer.add(cheatSheet, c);
 		
 		
 		this.canvas.addMouseMotionListener(this);

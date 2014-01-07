@@ -129,7 +129,8 @@ public class IBM2EMWordFilterWrap {
 		Collections.sort(wordScores);
 		
 		
-		int tindex = this.thresholdIndex(wordScores) - 25;
+		//int tindex = this.thresholdIndex(wordScores);
+		int tindex = 100;
 		
 		whiteListWords = new HashSet<String>(wordScores.size() - tindex + 1);
 		blackListWords = new HashSet<String>(tindex);

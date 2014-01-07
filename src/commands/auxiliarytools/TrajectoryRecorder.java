@@ -9,16 +9,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -64,6 +67,10 @@ private static final long serialVersionUID = 1L;
 	protected Container								saveContainer;
 	protected JTextField							commandSaveTF;
 	protected JTextField							pathSaveTF;
+	
+	protected JDialog								saveImageDialog;
+	protected Container								saveImageContainer;
+	protected JTextField							saveImageTF;
 	
 	protected int									cWidth;
 	protected int									cHeight;
@@ -252,11 +259,21 @@ private static final long serialVersionUID = 1L;
 			}
 		});
 		
+		JButton saveImageButton = new JButton("Save Image");
+		saveImageButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				handleSaveImage();
+			}
+		});
+		
 		//add button controls to window
 		Container buttonContainer = new Container();
 		buttonContainer.setLayout(new BorderLayout());
 		buttonContainer.add(saveButton, BorderLayout.EAST);
 		buttonContainer.add(resetButton, BorderLayout.WEST);
+		buttonContainer.add(saveImageButton, BorderLayout.CENTER);
 		
 		controlContainer.add(buttonContainer, BorderLayout.SOUTH);
 		
@@ -291,6 +308,28 @@ private static final long serialVersionUID = 1L;
 		saveDialog = new JDialog(this, "Set Command and File Path", true);
 		saveDialog.setPreferredSize(new Dimension(300, 150));
 		saveDialog.setContentPane(saveContainer);
+		
+		
+		
+		saveImageContainer = new Container();
+		saveImageContainer.setLayout(new BorderLayout());
+		this.saveImageTF = new JTextField(15);
+		saveImageContainer.add(this.saveImageTF, BorderLayout.NORTH);
+		
+		JButton finalSaveImage = new JButton("Save");
+		finalSaveImage.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				handleFinalSaveImage();
+			}
+		});
+		
+		saveImageContainer.add(finalSaveImage, BorderLayout.SOUTH);
+		
+		saveImageDialog = new JDialog(this, "Set Image File Path", true);
+		saveImageDialog.setPreferredSize(new Dimension(300, 75));
+		saveImageDialog.setContentPane(saveImageContainer);
 		
 		
 		//display the window
@@ -397,6 +436,11 @@ private static final long serialVersionUID = 1L;
 		
 	}
 	
+	private void handleSaveImage(){
+		saveImageDialog.pack();
+		saveImageDialog.setVisible(true);
+	}
+	
 	private void handleFinalSave(){
 		
 		//what is the save result?
@@ -426,6 +470,33 @@ private static final long serialVersionUID = 1L;
 		
 		//clear the dialog
 		saveDialog.setVisible(false);
+	}
+	
+	private void handleFinalSaveImage(){
+		
+		String fpath = this.saveImageTF.getText();
+		
+
+		String path = fpath;
+		if(!path.startsWith("/")){
+			path = directory + "/" + fpath;
+		}
+		
+		if(!path.endsWith(".png")){
+			path = path + ".png";
+		}
+		
+		
+		BufferedImage image = new BufferedImage(this.painter.getWidth(), this.painter.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		this.painter.paint(image.getGraphics());
+		
+		try {
+			ImageIO.write(image, "png", new File(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		saveImageDialog.setVisible(false);
 	}
 	
 	

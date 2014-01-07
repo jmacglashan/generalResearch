@@ -86,7 +86,7 @@ public class MatchAnalyzerWInteraction extends MatchAnalizer {
 	}
 	
 	
-	protected void runGame(){
+	public void runGame(){
 		
 		TerminalFunction tf = this.world.getTF();
 		
@@ -104,7 +104,7 @@ public class MatchAnalyzerWInteraction extends MatchAnalizer {
 		
 
 		int t = 0;
-		while(!tf.isTerminal(this.world.getCurrentWorldState()) && t < 100){
+		while(!tf.isTerminal(this.world.getCurrentWorldState()) && t < this.maxStages){
 			this.recordQStatus();
 			State curState = this.world.getCurrentWorldState();
 			this.world.runStage();

@@ -371,8 +371,7 @@ public class MMNLPModule extends MNPEMModule {
 	public static class StringValue extends RVariableValue{
 
 		public String			s;
-		
-		
+
 		public StringValue(String s, RVariable owner){
 			this.s = s;
 			//this.s = s.toLowerCase();

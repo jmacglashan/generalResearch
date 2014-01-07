@@ -29,12 +29,13 @@ public class SokoLabeledMTTest {
 	 */
 	public static void main(String[] args) {
 		//standardTest("dataFiles/commands/blockTurkSemanticLabeled");
-		//looTest("dataFiles/commands/agentTurkSemanticLabeled", false);
+		//looTest("dataFiles/commands/allTurkSemanticLabeled", false);
 		//getAllGenTest("dataFiles/commands/blockTurkSemanticLabeled");
-		//getWordParamDist("dataFiles/commands/blockTurkSemanticLabeled");
-		wordFilterTest("dataFiles/commands/agentTurkSemanticLabeled");
+		//getWordParamDist("dataFiles/commands/allTurkSemanticLabeled");
+		//wordFilterTest("dataFiles/commands/allTurkSemanticLabeled");
 		//wordFilterLearnTest("dataFiles/commands/blockTurkSemanticLabeled");
-		//looWordFilterTest("dataFiles/commands/agentTurkSemanticLabeled", false);
+		looWordFilterTest("dataFiles/commands/allTurkSemanticLabeled", false);
+		//looProbe("dataFiles/commands/allTurkSemanticLabeled", 1);
 		
 	}
 	
@@ -110,13 +111,14 @@ public class SokoLabeledMTTest {
 			
 			if(dr.decoded.equals(testInst.genLangText)){
 				//System.out.println("Correct: " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println("Correct: " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob + "\n");
 				c++;
 				pc++;
 			}
 			else{
 				
 				String incLabel = "Incorrect";
-				if(dr.decoded.t(4).equals(testInst.genLangText.t(4))){
+				if(dr.decoded.t(1).equals(testInst.genLangText.t(1)) && dr.decoded.t(4).equals(testInst.genLangText.t(4))){
 					pc++;
 					incLabel = "Pseudo";
 				}
@@ -130,7 +132,10 @@ public class SokoLabeledMTTest {
 				}
 				
 				//System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
-				System.out.println(incLabel + ": " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				//System.out.println(incLabel + ": " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println("Actual: " + testInst.genLangText.toString() + "\n");
+				
 			}
 			
 		}
@@ -142,7 +147,44 @@ public class SokoLabeledMTTest {
 		
 	}
 	
-	
+	public static void looProbe(String path, int dataInstance){
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		List<MTDataInstance> dataset = MTDataInstance.getDatsetFromDir(tokenizer, path, "txt");
+		
+		MTDataInstance testInst = dataset.get(dataInstance);
+		List<MTDataInstance> looDataset = leaveOneOutDataset(dataset, dataInstance);
+		IBM2EM m2 = new IBM2EM(looDataset);
+		DPrint.toggleCode(m2.debugCode, false);
+		m2.runEM(10);
+		TokenedString s = testInst.prodLangText;
+		
+		DecodeResult dr = m2.decode(s);
+		m2.probDistMLProbe(s);
+		
+		
+		if(dr.decoded.equals(testInst.genLangText)){
+			//System.out.println("Correct: " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+			System.out.println("Correct: " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob + "\n");
+
+		}
+		else{
+			
+			String incLabel = "Incorrect";
+			if(dr.decoded.t(1).equals(testInst.genLangText.t(1)) && dr.decoded.t(4).equals(testInst.genLangText.t(4))){
+				incLabel = "Pseudo";
+			}
+			
+			
+			//System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+			//System.out.println(incLabel + ": " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+			System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob);
+			System.out.println("Actual: " + testInst.genLangText.toString() + "\n");
+			
+		}
+		
+	}
 	
 	public static void getWordParamDist(String path){
 		
@@ -267,14 +309,14 @@ public class SokoLabeledMTTest {
 			DecodeResult dr = m2.decode(s);
 			
 			if(dr.decoded.equals(testInst.genLangText)){
-				//System.out.println("Correct: " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println("Correct: " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob + "\n");
 				c++;
 				pc++;
 			}
 			else{
 				
 				String incLabel = "Incorrect";
-				if(dr.decoded.t(4).equals(testInst.genLangText.t(4))){
+				if(dr.decoded.t(1).equals(testInst.genLangText.t(1)) && dr.decoded.t(4).equals(testInst.genLangText.t(4))){
 					pc++;
 					incLabel = "Pseudo";
 				}
@@ -288,7 +330,9 @@ public class SokoLabeledMTTest {
 				}
 				
 				//System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
-				System.out.println(incLabel + ": " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				//System.out.println(incLabel + ": " + testInst.genLangText.toString() + "; " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println(incLabel + ": " + testInst.prodLangText + " -> " + dr.decoded.toString() + "::" + dr.prob);
+				System.out.println("Actual: " + testInst.genLangText.toString() + "\n");
 			}
 			
 		}
