@@ -34,11 +34,22 @@ public class SokoLabeledMTTest {
 		//getWordParamDist("dataFiles/commands/allTurkSemanticLabeled");
 		//wordFilterTest("dataFiles/commands/allTurkSemanticLabeled");
 		//wordFilterLearnTest("dataFiles/commands/blockTurkSemanticLabeled");
-		looWordFilterTest("dataFiles/commands/allTurkSemanticLabeled", false);
+		//looWordFilterTest("dataFiles/commands/allTurkSemanticLabeled", false);
 		//looProbe("dataFiles/commands/allTurkSemanticLabeled", 1);
+		
+		printParams("dataFiles/commands/allTurkSemanticLabeled");
 		
 	}
 	
+	
+	public static void printParams(String path){
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		List<MTDataInstance> dataset = MTDataInstance.getDatsetFromDir(tokenizer, path, "txt");
+		IBM2EM m2 = new IBM2EM(dataset);
+		m2.runEM(10);
+		m2.printLPParams();
+	}
 	
 	public static void getAllGenTest(String path){
 		Tokenizer tokenizer = new Tokenizer(true, true);
@@ -100,7 +111,7 @@ public class SokoLabeledMTTest {
 		int c = 0;
 		int pc = 0;
 		int tc = 0;
-		for(int i = 0; i < dataset.size(); i++){
+		for(int i = 100; i < dataset.size(); i++){
 			MTDataInstance testInst = dataset.get(i);
 			List<MTDataInstance> looDataset = leaveOneOutDataset(dataset, i);
 			IBM2EM m2 = new IBM2EM(looDataset);

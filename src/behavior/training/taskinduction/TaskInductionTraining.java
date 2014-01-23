@@ -11,6 +11,7 @@ import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.debugtools.DPrint;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
@@ -87,6 +88,13 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		}
 	}
 	
+	public void setToUniform(){
+		double uni = 1. / this.possibleTasks.size();
+		for(int i = 0; i < this.possibleTasks.size(); i++){
+			this.posteriors.setProbFor(i, uni);
+		}
+	}
+	
 	public List <TaskDescription> getTasks(){
 		return new ArrayList<TaskDescription>(this.possibleTasks);
 	}
@@ -99,17 +107,22 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		List <TaskProb> taskProbs = new ArrayList<TaskProb>(possibleTasks.size());
 		
 		//silence debug printing
-		//DPrint.toggleCode(10, false);
-		//DPrint.toggleCode(11, false);
+		DPrint.toggleCode(10, false);
+		DPrint.toggleCode(11, false);
+		
+		DPrint.cl(8473, "Starting Planning");
 		
 		for(int i = 0; i < this.possibleTasks.size(); i++){
 			TaskDescription td = this.possibleTasks.get(i);
 			double prior = this.priorsToUse.get(i);
-			ValueIteration planner = new ValueIteration(planningDomain, td.rf, new NullTermination(), 0.99, hashingFactory, 0.001, 100);
+			ValueIteration planner = new ValueIteration(planningDomain, td.rf, td.tf, 0.99, hashingFactory, 0.001, 100);
 			planner.planFromState(s);
 			Policy p = new NoopOnTermPolicy(noopAction, td.tf, new BoltzmannQPolicy(planner, 0.002));
 			taskProbs.add(new TaskProb(td, p, prior));
+			DPrint.cl(8473, "Planned for task: " + i);
 		}
+		
+		DPrint.cl(8473, "Finished planning");
 		
 		posteriors = new TaskPosterior(taskProbs, false);
 		policy.setPosteriors(posteriors);
@@ -130,6 +143,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		
 		State curState = initialState;
 		int timeStep = 0;
+		this.bookKeeping(curState, null, 0.);
 		while(!this.tf.isTerminal(curState) && timeStep < maxSteps){
 		//while(timeStep < this.maxEpisodeSize){
 			GroundedAction ga = this.worldAction(curState, this.policy.getAction(curState));
@@ -138,6 +152,8 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 			ea.recordTransitionTo(nextState, ga, trainerFeedback);
 			
 			this.posteriors.updateWithSingleStateFeedback(curState, ga, trainerFeedback);
+			
+			this.bookKeeping(curState, ga, trainerFeedback);
 			
 			curState = nextState;
 			timeStep++;
@@ -150,6 +166,10 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		episodeHistory.offer(ea);
 		
 		return ea;
+	}
+	
+	protected void bookKeeping(State s, GroundedAction a, double feedback){
+		//do nothing
 	}
 	
 	protected GroundedAction worldAction(State s, GroundedAction ga){

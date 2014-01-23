@@ -719,8 +719,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		List <ObjectInstance> res = new ArrayList<ObjectInstance>(doors.size());
 		
 		for(ObjectInstance d : doors){
-			if(Sokoban2Domain.regionContainsPoint(d, x-1, y) || Sokoban2Domain.regionContainsPoint(d, x+1, y) || 
-					Sokoban2Domain.regionContainsPoint(d, x, y-1) || Sokoban2Domain.regionContainsPoint(d, x, y+1)){
+			if(Sokoban2Domain.regionContainsPoint(d, x-1, y, true) || Sokoban2Domain.regionContainsPoint(d, x+1, y, true) || 
+					Sokoban2Domain.regionContainsPoint(d, x, y-1, true) || Sokoban2Domain.regionContainsPoint(d, x, y+1, true)){
 				
 				res.add(d);
 				

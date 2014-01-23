@@ -39,8 +39,10 @@ public class TaskModule extends GMModule {
 	
 	protected List<LiftedVarValue>	liftedRFValues;
 	
-	
 	protected Domain				domain;
+	
+	protected boolean				permitInitiallySatisfiedRFs = false;
+	
 	
 	public TaskModule(String name, Domain domain) {
 		super(name);
@@ -479,7 +481,9 @@ public class TaskModule extends GMModule {
 					rfVal.addGoalGP(ggp);
 				}
 				
-				if(!rfVal.rf.satisfied(stateVal.s)){
+				
+				//this enforces that only rfs not satisfied in the initial state added unless otherwise specified
+				if(!rfVal.rf.satisfied(stateVal.s) || permitInitiallySatisfiedRFs){
 					rfVals.add(rfVal);
 				}
 			}

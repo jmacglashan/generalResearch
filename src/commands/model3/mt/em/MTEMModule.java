@@ -46,18 +46,52 @@ public class MTEMModule extends EMModule {
 		this.gm = gm;
 		this.dataset = dataset;
 		this.mtModule = (MTModule)this.gm.getModuleWithName(Model3Controller.LANGMODNAME);
+		
+		this.primeMTModuleParameters(dataset);
 	}
 	
+	public void runEMManually(int numIterations){
+		for(int i = 0; i < numIterations; i++){
+			for(int j = 0; j < this.dataset.size(); j++){
+				this.runEStep(j, null);
+			}
+			this.runMStep();
+		}
+	}
 	
-	
-	protected void primeMTModuleParameters(){
+	protected void primeMTModuleParameters(List<WeightedMTInstance> dataset){
 		jointWordCounts = new HashedAggregator<String>(wordAdditiveConstant);
 		singleWordCounts = new HashedAggregator<String>(wordAdditiveConstant*this.mtModule.getNaturalWords().size());
 		
 		jointDistortionCounts = new HashedAggregator<IntTupleHash>(0);
 		singleDistortionCounts = new HashedAggregator<IntTupleHash>(0);
 		
-		//TODO: step regarding command length parameters
+		
+		//estimate the length parameters up front since they won't change otherwise
+		this.mtModule.resetLengthParameters();
+		HashedAggregator<IntTupleHash> lmCount = new HashedAggregator<MTModule.IntTupleHash>();
+		HashedAggregator<Integer> lCount = new HashedAggregator<Integer>();
+		int maxM = 0; //m is length of natural language
+		int maxL = 0; //l is length of semantic language
+		for(WeightedMTInstance wi : dataset){
+			int m = wi.naturalCommand.size();
+			maxM = Math.max(maxM, m);
+			for(WeightedSemanticCommandPair wsc : wi){
+				int l = wsc.semanticCommand.size();
+				maxL = Math.max(maxL, l);
+				lmCount.add(new IntTupleHash(l, m), wsc.prob);
+				lCount.add(l, wsc.prob);
+			}
+		}
+		for(int l : lCount.keySet()){
+			double norm = lCount.v(l);
+			for(int m = 1; m <= maxM; m++){
+				double joint = lmCount.v(new IntTupleHash(l, m));
+				double p = joint / norm;
+				this.mtModule.setLengthParameterProb(l, m, p);
+			}
+		}
+		
 	}
 	
 	
@@ -82,6 +116,10 @@ public class MTEMModule extends EMModule {
 					
 					String nWord = naturalCommand.t(i);
 					String sWord = semanticCommand.t(j);
+					
+					if(Double.isNaN(delta)){
+						throw new RuntimeException("delta is NaN.");
+					}
 					
 					this.jointWordCounts.add(tokenCombine(nWord, sWord), delta);
 					this.singleWordCounts.add(sWord, delta);
@@ -163,6 +201,8 @@ public class MTEMModule extends EMModule {
 		if(this.numEMIterations >= this.numWithWordParamAlone){
 			this.factorInAlignment = true;
 		}
+		
+		this.gm.emptyCache();
 
 	}
 	
@@ -191,6 +231,14 @@ public class MTEMModule extends EMModule {
 		
 		double num = d*w;
 		double p = num / sum;
+		
+		if(num == 0. && sum == 0.){
+			p = 0.;
+		}
+		
+		if(Double.isNaN(p)){
+			throw new RuntimeException("Expected Val is NaN.");
+		}
 		
 		return p;
 		

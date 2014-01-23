@@ -203,6 +203,7 @@ public class IBM2EM {
 		TokenedString maxDecode = null;
 		TokenedString maxDecodeNN = null;
 		
+		
 		for(TokenedString gText : this.allGeneratingText){
 			
 			int l = gText.size();
@@ -618,6 +619,18 @@ public class IBM2EM {
 		
 		
 	}
+	
+	
+	
+	public void printLPParams(){
+		for(int l = 1; l <= this.maxL; l++){
+			for(int m = 1; m <= this.maxM; m++){
+				System.out.println("p("+m+"|"+l+") = " + this.lp.prob(l, m));
+			}
+		}
+	}
+	
+	
 	
 	protected void print52(){
 		int m = 5;

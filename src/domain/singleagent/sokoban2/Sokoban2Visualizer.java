@@ -36,7 +36,7 @@ public class Sokoban2Visualizer {
 		else{
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0]));
 		}
-		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter());
+		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(agentImagePath[0]));
 		
 		return v;
 		
@@ -54,7 +54,7 @@ public class Sokoban2Visualizer {
 		else{
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0]));
 		}
-		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter());
+		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(agentImagePath[0]));
 		
 		return v;
 		
@@ -73,7 +73,7 @@ public class Sokoban2Visualizer {
 		else{
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0], maxX, maxY));
 		}
-		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY));
+		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY, agentImagePath[0]));
 		
 		return v;
 		
@@ -92,7 +92,7 @@ public class Sokoban2Visualizer {
 		else{
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0], maxX, maxY));
 		}
-		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY));
+		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY, agentImagePath[0]));
 		
 		return v;
 		
@@ -137,6 +137,10 @@ public class Sokoban2Visualizer {
 			int right = ob.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
 			
 			Color rcol = colorForName(ob.getStringValForAttribute(Sokoban2Domain.ATTCOLOR));
+			float [] hsb = new float[3];
+			Color.RGBtoHSB(rcol.getRed(), rcol.getGreen(), rcol.getBlue(), hsb);
+			hsb[1] = 0.4f;
+			rcol = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 			
 			for(int i = left; i <= right; i++){
 				for(int j = bottom; j <= top; j++){
@@ -351,18 +355,53 @@ public class Sokoban2Visualizer {
 	}
 	
 	
-	public static class BlockPainter implements ObjectPainter{
+	public static class BlockPainter implements ObjectPainter, ImageObserver{
 
 		protected int maxX = -1;
 		protected int maxY = -1;
 		
+		protected Map<String, BufferedImage> shapeAndColToImages;
+		
 		public BlockPainter(){
-			
+			shapeAndColToImages = new HashMap<String, BufferedImage>();
 		}
 		
 		public BlockPainter(int maxX, int maxY){
 			this.maxX = maxX;
 			this.maxY = maxY;
+			shapeAndColToImages = new HashMap<String, BufferedImage>();
+		}
+		
+		public BlockPainter(String pathToImageDir){
+			shapeAndColToImages = new HashMap<String, BufferedImage>();
+			this.initImages(pathToImageDir);
+		}
+		
+		public BlockPainter(int maxX, int maxY, String pathToImageDir){
+			this.maxX = maxX;
+			this.maxY = maxY;
+			shapeAndColToImages = new HashMap<String, BufferedImage>();
+			this.initImages(pathToImageDir);
+			
+		}
+		
+		protected void initImages(String pathToImageDir){
+			if(!pathToImageDir.endsWith("/")){
+				pathToImageDir = pathToImageDir + "/";
+			}
+			for(String shapeName : Sokoban2Domain.SHAPES){
+				for(String colName : Sokoban2Domain.COLORS){
+					String key = this.shapeKey(shapeName, colName);
+					String path = pathToImageDir + shapeName + "/" + key + ".png";
+					try {
+						BufferedImage img = ImageIO.read(new File(path));
+						this.shapeAndColToImages.put(key, img);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(-1);
+					}
+				}
+			}
 		}
 		
 		@Override
@@ -386,14 +425,36 @@ public class Sokoban2Visualizer {
 			float rx = x*width;
 			float ry = cHeight - height - y*height;
 			
-			Color col = colorForName(ob.getStringValForAttribute(Sokoban2Domain.ATTCOLOR)).darker();
+			String colName = ob.getStringValForAttribute(Sokoban2Domain.ATTCOLOR);
+			String shapeName = ob.getStringValForAttribute(Sokoban2Domain.ATTSHAPE);
+			String key = this.shapeKey(shapeName, colName);
+			BufferedImage img = this.shapeAndColToImages.get(key);
 			
-			g2.setColor(col);
+			if(img == null){
+				Color col = colorForName(ob.getStringValForAttribute(Sokoban2Domain.ATTCOLOR)).darker();
+				
+				g2.setColor(col);
+				g2.fill(new Rectangle2D.Float(rx, ry, width, height));
+				
+			}
+			else{
+				g2.drawImage(img, (int)rx, (int)ry, (int)width, (int)height, this);
+			}
 			
-			//TODO: handle different shapes differently
-			
-			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
-			
+		}
+		
+		protected String shapeKey(String shape, String color){
+			return shape + this.firstLetterCapped(color);
+		}
+		
+		protected String firstLetterCapped(String input){
+			return input.substring(0, 1).toUpperCase() + input.substring(1);
+		}
+
+		@Override
+		public boolean imageUpdate(Image img, int infoflags, int x, int y,
+				int width, int height) {
+			return false;
 		}
 		
 		

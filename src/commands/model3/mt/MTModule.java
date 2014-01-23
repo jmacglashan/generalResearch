@@ -45,7 +45,7 @@ public class MTModule extends GMModule {
 	protected LengthParam 							lp;
 	
 	protected Tokenizer								naturalTokenizer;
-	protected Tokenizer								sematicTokenizer;
+	protected Tokenizer								semanticTokenizer;
 	
 	protected Random								rand;
 	
@@ -66,7 +66,7 @@ public class MTModule extends GMModule {
 		this.maxNaturalCommandLength = maxNaturalCommandLenth;
 		
 		this.naturalTokenizer = tokenizer;
-		this.sematicTokenizer = new Tokenizer(true);
+		this.semanticTokenizer = new Tokenizer(true);
 		
 		this.wp = new WordParam();
 		this.dp = new DistortionParam();
@@ -97,7 +97,8 @@ public class MTModule extends GMModule {
 		}
 		
 		
-		this.rand = RandomFactory.getMapped(0);
+		//this.rand = RandomFactory.getMapped(0);
+		this.rand = new Random(1);
 		
 	}
 	
@@ -187,6 +188,13 @@ public class MTModule extends GMModule {
 	}
 
 
+	public void setLengthParameterProb(int l, int m, double p){
+		this.lp.set(p, l, m);
+	}
+	
+	public void resetLengthParameters(){
+		this.lp = new LengthParam();
+	}
 
 	public TokenedString getTokenedSemanticString(LiftedVarValue liftedRF, LiftedVarValue bindingConstraints){
 
@@ -209,7 +217,7 @@ public class MTModule extends GMModule {
 			}
 		}
 		
-		return this.sematicTokenizer.tokenize(buf.toString());
+		return this.semanticTokenizer.tokenize(buf.toString());
 	}
 
 	@Override
@@ -224,7 +232,7 @@ public class MTModule extends GMModule {
 			StringValue semanticCommandVal = (StringValue)query.getConditionForVariable(semanticCommandVariable);
 			TokenedString semTokened;
 			if(semanticCommandVal != null){
-				semTokened = this.sematicTokenizer.tokenize(semanticCommandVal.s);
+				semTokened = this.semanticTokenizer.tokenize(semanticCommandVal.s);
 			}
 			else{
 				LiftedVarValue liftedRF = (LiftedVarValue)query.getConditionForVariable(this.liftedRFVariable);
@@ -248,7 +256,22 @@ public class MTModule extends GMModule {
 		int l = semanticCommand.size();
 		int m = naturalCommand.size();
 		
+		
 		double n = this.lp.prob(l, m);
+		if(n == 0.){
+			//then is there any l for which this is not true?
+			boolean allLengthParamsZero = true;
+			for(int i = 1; i <= this.maxSemanticCommandLength; i++){
+				if(this.lp.prob(i, m) > 0.){
+					allLengthParamsZero = false;
+					break;
+				}
+			}
+			if(allLengthParamsZero){
+				n = 1.;
+			}
+		}
+		
 		double alignMarg = 0.;
 		if(n > 0){
 			alignMarg = this.sampleMargAlign(semanticCommand, naturalCommand, 1000);
@@ -370,7 +393,13 @@ public class MTModule extends GMModule {
 	}
 	
 	
-	
+	public void printLPParams(){
+		for(int l = 1; l <= this.maxSemanticCommandLength; l++){
+			for(int m = 1; m <= this.maxNaturalCommandLength; m++){
+				System.out.println("p("+m+"|"+l+") = " + this.lp.prob(l, m));
+			}
+		}
+	}
 	
 	
 	

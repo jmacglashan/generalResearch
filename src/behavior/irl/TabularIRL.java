@@ -310,7 +310,8 @@ public class TabularIRL {
 		public double reward(State s, GroundedAction a, State sprime) {
 			
 			if(a.action.getName().equals("#terminate#")){
-				return rf.reward(s, a, sprime);
+				double r = rf.reward(s, a, sprime);
+				return r;
 			}
 			
 			return 0;

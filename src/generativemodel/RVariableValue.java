@@ -1,5 +1,7 @@
 package generativemodel;
 
+import java.util.List;
+
 public abstract class RVariableValue {
 	
 	protected RVariable			owner;
@@ -49,6 +51,16 @@ public abstract class RVariableValue {
 	@Override
 	public String toString(){
 		return this.stringRep();
+	}
+	
+	
+	public static RVariableValue extractValueForVariable(RVariable var, List<RVariableValue> vals){
+		for(RVariableValue rval : vals){
+			if(rval.owner.equals(var)){
+				return rval;
+			}
+		}
+		return null;
 	}
 	
 }

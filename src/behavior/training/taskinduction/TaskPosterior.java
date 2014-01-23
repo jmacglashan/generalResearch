@@ -37,6 +37,10 @@ public class TaskPosterior {
 		return tasks;
 	}
 	
+	public TaskProb getTaskProb(int i){
+		return this.tasks.get(i);
+	}
+	
 	public void setProbFor(int i, double p){
 		this.tasks.get(i).prob = p;
 	}

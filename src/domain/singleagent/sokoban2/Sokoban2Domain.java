@@ -45,11 +45,11 @@ public class Sokoban2Domain implements DomainGenerator {
 	
 	
 	public static final String[] 				COLORS = new String[]{"blue",
-														"cyan", "green", "magenta", "orange", 
-														"pink", "red", "white", "yellow"};
+														"green", "magenta", 
+														"red", "yellow"};
 
-	public static final String[]				SHAPES = new String[]{"star", "moon",
-														"circle", "smiley", "square"};
+	public static final String[]				SHAPES = new String[]{"chair", "bag",
+														"backpack", "basket"};
 	
 	
 	public static final String[]				DIRECTIONS = new String[]{"north", "south", "east", "west"};
@@ -142,11 +142,11 @@ public class Sokoban2Domain implements DomainGenerator {
 		
 		
 		
-		PropositionalFunction air = new PFInRegion(PFAGENTINROOM, domain, new String[]{CLASSAGENT, CLASSROOM}, true);
-		PropositionalFunction bir = new PFInRegion(PFBLOCKINROOM, domain, new String[]{CLASSBLOCK, CLASSROOM}, true);
+		PropositionalFunction air = new PFInRegion(PFAGENTINROOM, domain, new String[]{CLASSAGENT, CLASSROOM}, false);
+		PropositionalFunction bir = new PFInRegion(PFBLOCKINROOM, domain, new String[]{CLASSBLOCK, CLASSROOM}, false);
 		
-		PropositionalFunction aid = new PFInRegion(PFAGENTINDOOR, domain, new String[]{CLASSAGENT, CLASSDOOR}, false);
-		PropositionalFunction bid = new PFInRegion(PFBLOCKINDOOR, domain, new String[]{CLASSBLOCK, CLASSDOOR}, false);
+		PropositionalFunction aid = new PFInRegion(PFAGENTINDOOR, domain, new String[]{CLASSAGENT, CLASSDOOR}, true);
+		PropositionalFunction bid = new PFInRegion(PFBLOCKINDOOR, domain, new String[]{CLASSBLOCK, CLASSDOOR}, true);
 		
 		for(String col : COLORS){
 			PropositionalFunction pfr = new PFIsColor(PFRoomColorName(col), domain, new String[]{CLASSROOM}, col);
@@ -224,7 +224,7 @@ public class Sokoban2Domain implements DomainGenerator {
 		setDoor(s, 1, 4, 2, 4, 2);
 		
 		setAgent(s, 6, 6);
-		setBlock(s, 0, 2, 2, "star", "yellow");
+		setBlock(s, 0, 2, 2, "basket", "red");
 		
 		
 		return s;
@@ -324,17 +324,17 @@ public class Sokoban2Domain implements DomainGenerator {
 	
 	public static ObjectInstance roomContainingPoint(State s, int x, int y){
 		List<ObjectInstance> rooms = s.getObjectsOfTrueClass(CLASSROOM);
-		return regionContainingPoint(rooms, x, y);
+		return regionContainingPoint(rooms, x, y, false);
 	}
 	
 	public static ObjectInstance doorContainingPoint(State s, int x, int y){
 		List<ObjectInstance> doors = s.getObjectsOfTrueClass(CLASSDOOR);
-		return regionContainingPoint(doors, x, y);
+		return regionContainingPoint(doors, x, y, true);
 	}
 	
-	protected static ObjectInstance regionContainingPoint(List <ObjectInstance> objects, int x, int y){
+	protected static ObjectInstance regionContainingPoint(List <ObjectInstance> objects, int x, int y, boolean countBoundary){
 		for(ObjectInstance o : objects){
-			if(regionContainsPoint(o, x, y)){
+			if(regionContainsPoint(o, x, y, countBoundary)){
 				return o;
 			}
 			
@@ -343,14 +343,21 @@ public class Sokoban2Domain implements DomainGenerator {
 		return null;
 	}
 	
-	public static boolean regionContainsPoint(ObjectInstance o, int x, int y){
+	public static boolean regionContainsPoint(ObjectInstance o, int x, int y, boolean countBoundary){
 		int top = o.getDiscValForAttribute(ATTTOP);
 		int left = o.getDiscValForAttribute(ATTLEFT);
 		int bottom = o.getDiscValForAttribute(ATTBOTTOM);
 		int right = o.getDiscValForAttribute(ATTRIGHT);
 		
-		if(y >= bottom && y <= top && x >= left && x <= right){
-			return true;
+		if(countBoundary){
+			if(y >= bottom && y <= top && x >= left && x <= right){
+				return true;
+			}
+		}
+		else{
+			if(y > bottom && y < top && x > left && x < right){
+				return true;
+			}
 		}
 		
 		return false;
@@ -415,7 +422,8 @@ public class Sokoban2Domain implements DomainGenerator {
 			int nx = ax+xdelta;
 			int ny = ay+ydelta;
 			
-			ObjectInstance roomContaining = roomContainingPoint(s, ax, ay);
+			//ObjectInstance roomContaining = roomContainingPoint(s, ax, ay);
+			ObjectInstance roomContaining = regionContainingPoint(s.getObjectsOfTrueClass(CLASSROOM), ax, ay, true);
 			
 			
 			boolean permissibleMove = false;
@@ -473,11 +481,11 @@ public class Sokoban2Domain implements DomainGenerator {
 	
 	public class PFInRegion extends PropositionalFunction{
 
-		protected boolean falseIfInDoor;
+		protected boolean countBoundary;
 		
-		public PFInRegion(String name, Domain domain, String [] params, boolean falseIfInDoor){
+		public PFInRegion(String name, Domain domain, String [] params, boolean countBoundary){
 			super(name, domain, params);
-			this.falseIfInDoor = falseIfInDoor;
+			this.countBoundary = countBoundary;
 		}
 		
 		@Override
@@ -487,14 +495,9 @@ public class Sokoban2Domain implements DomainGenerator {
 			int x = o.getDiscValForAttribute(ATTX);
 			int y = o.getDiscValForAttribute(ATTY);
 			
-			if(this.falseIfInDoor){
-				if(doorContainingPoint(s, x, y) != null){
-					return false;
-				}
-			}
 			
 			ObjectInstance region = s.getObject(params[1]);
-			return regionContainsPoint(region, x, y);
+			return regionContainsPoint(region, x, y, countBoundary);
 			
 		}
 		

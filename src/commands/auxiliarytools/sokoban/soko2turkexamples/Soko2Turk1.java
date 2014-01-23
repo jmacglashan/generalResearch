@@ -33,7 +33,7 @@ public class Soko2Turk1 implements StateGenerator {
 		Sokoban2Domain.setDoor(s, 1, 4, 2, 4, 2);
 		
 		Sokoban2Domain.setAgent(s, 6, 6);
-		Sokoban2Domain.setBlock(s, 0, 2, 2, "square", "yellow");
+		Sokoban2Domain.setBlock(s, 0, 2, 2, "backpack", "yellow");
 		
 		this.initialStates.add(s);
 		
@@ -47,7 +47,7 @@ public class Soko2Turk1 implements StateGenerator {
 		Sokoban2Domain.setDoor(s, 1, 4, 2, 4, 2);
 		
 		Sokoban2Domain.setAgent(s, 6, 6);
-		Sokoban2Domain.setBlock(s, 0, 2, 6, "square", "yellow");
+		Sokoban2Domain.setBlock(s, 0, 2, 6, "backpack", "yellow");
 		
 		this.initialStates.add(s);
 		
@@ -61,8 +61,8 @@ public class Soko2Turk1 implements StateGenerator {
 		Sokoban2Domain.setDoor(s, 1, 4, 2, 4, 2);
 		
 		Sokoban2Domain.setAgent(s, 6, 6);
-		Sokoban2Domain.setBlock(s, 0, 2, 2, "square", "yellow");
-		Sokoban2Domain.setBlock(s, 1, 2, 6, "square", "magenta");
+		Sokoban2Domain.setBlock(s, 0, 2, 2, "backpack", "yellow");
+		Sokoban2Domain.setBlock(s, 1, 2, 6, "chair", "red");
 		
 		this.initialStates.add(s);
 		

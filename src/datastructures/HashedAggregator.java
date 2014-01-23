@@ -47,4 +47,8 @@ public class HashedAggregator <K>{
 		return this.storage.entrySet();
 	}
 	
+	public Map<K, Double> getHashMap(){
+		return this.storage;
+	}
+	
 }

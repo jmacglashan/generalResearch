@@ -46,9 +46,9 @@ public class SokobanOldToNewParser extends Sokoban2Parser {
 				ObjectInstance block = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), Sokoban2Domain.CLASSBLOCK + blocks);
 				
 				String colName = SokobanDomain.colors.get(Integer.parseInt(splitobject[1]));
-				String shapeName = SokobanDomain.shapes.get(Integer.parseInt(splitobject[2]));
+				//String shapeName = SokobanDomain.shapes.get(Integer.parseInt(splitobject[2])); shapes are now unique between versions so use indexing instead
 				block.setValue(Sokoban2Domain.ATTCOLOR, colName);
-				block.setValue(Sokoban2Domain.ATTSHAPE, shapeName);
+				block.setValue(Sokoban2Domain.ATTSHAPE, Integer.parseInt(splitobject[2]));
 				block.setValue(Sokoban2Domain.ATTX, Integer.parseInt(splitobject[3]));
 				block.setValue(Sokoban2Domain.ATTY, Integer.parseInt(splitobject[4]));
 				s.addObject(block);

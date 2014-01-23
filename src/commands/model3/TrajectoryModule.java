@@ -90,13 +90,14 @@ public class TrajectoryModule extends GMModule{
 			ConjunctiveGroundedPropTF tf = new ConjunctiveGroundedPropTF(rval.rf);
 			TaskCondition tc = new TaskCondition(rval.rf, tf);
 			
+			
 			p = irl.getBehaviorProbability(bval.t.convertToZeroRewardEpisodeAnalysis(), tc);
 			
 			if(this.useIRLCache){
 				this.cachedResults.put(query, p);
 			}
 			
-			//System.out.println(rval.toString() + ": " + p);
+			//System.out.println("t_" + rval.toString() + ": " + p);
 			
 			
 		}
