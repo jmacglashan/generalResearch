@@ -11,30 +11,32 @@ import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.stochasticgames.AgentFactory;
 import burlap.oomdp.stochasticgames.AgentType;
 import burlap.oomdp.stochasticgames.JointActionModel;
 import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SGStateGenerator;
+import burlap.oomdp.stochasticgames.World;
+import burlap.oomdp.stochasticgames.WorldGenerator;
 import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
+import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
+import domain.stocasticgames.foragesteal.simple.FSSimpleTerminatingJAM;
 import ethics.ParameterizedRFFactory;
-import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
+import ethics.experiments.fssimple.FSSMatchCaching.DoublePair;
+import ethics.experiments.fssimple.FSSMatchCaching.MatchResult;
 import ethics.experiments.fssimple.aux.FSRQInit;
 import ethics.experiments.fssimple.aux.FSSimpleSG;
 import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
-import ethics.experiments.fssimple.aux.RNPseudoTerm;
 import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
 
-public class FSSMatchCaching {
+public class FSSTermMatchCaching {
 
 	protected List<OptVariables>					rfParamSet;
-	protected ConsantPsudoTermWorldGenerator		worldGenerator;
+	protected WorldGenerator						worldGenerator;
 	protected FSSimpleJR							objectiveReward;
 	protected ParameterizedRFFactory				rewardFactory;
 
@@ -44,8 +46,6 @@ public class FSSMatchCaching {
 	
 	protected int									nTries;
 	protected int									nGames;
-	
-	
 	
 	/**
 	 * @param args
@@ -65,7 +65,7 @@ public class FSSMatchCaching {
 		String outputFile = args[0];
 		double lr = Double.parseDouble(args[1]);
 		
-		FSSMatchCaching mc = new FSSMatchCaching(lr);
+		FSSTermMatchCaching mc = new FSSTermMatchCaching(lr);
 		
 		System.out.println("Beginning");
 		if(args.length == 2){
@@ -80,7 +80,7 @@ public class FSSMatchCaching {
 	}
 	
 	
-	public FSSMatchCaching(double learningRate){
+	FSSTermMatchCaching(double learningRate){
 		
 		this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
 		
@@ -89,10 +89,9 @@ public class FSSMatchCaching {
 		this.nGames = 1000;
 		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
 		
-		FSSimple dgen = new FSSimple();
+		FSSimple dgen = new FSSimple(3);
 		SGDomain domain = (SGDomain)dgen.generateDomain();
-		JointActionModel jam = new FSSimpleJAM();
-		
+		JointActionModel jam = new FSSimpleTerminatingJAM();
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
 		double discount = 0.99;
@@ -101,12 +100,13 @@ public class FSSMatchCaching {
 		
 		SGStateGenerator sg = new FSSimpleSG(domain);
 		
-		this.worldGenerator = new ConsantPsudoTermWorldGenerator(domain, jam, objectiveReward, new NullTermination(), sg, new RNPseudoTerm());
+		worldGenerator = new ConstantWorldGenerator(domain, jam, objectiveReward, 
+				new FSSimpleTerminatingJAM.FSSimpleTerminatingTF(), sg);
 		
 		this.fsAgentType = new AgentType("player", domain.getObjectClass(FSSimple.CLASSPLAYER), domain.getSingleActions());
 		
+		
 	}
-	
 	
 	protected void cacheAll(String outFilePath){
 		
@@ -242,11 +242,13 @@ public class FSSMatchCaching {
 		SGQLAgent a2 = (SGQLAgent)factV2.generateAgent();
 		a2.setQValueInitializer(v2QInit);
 		
-		PseudoGameCountWorld w1 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
+		World w1 = this.worldGenerator.generateWorld();
 		a1.joinWorld(w1, this.fsAgentType);
 		a2.joinWorld(w1, this.fsAgentType);
 		
-		w1.runGame(Integer.MAX_VALUE, nGames);
+		for(int i = 0; i < this.nGames; i++){
+			w1.runGame(nGames);
+		}
 		
 		double a1r1 = w1.getCumulativeRewardForAgent(a1.getAgentName());
 		double a2r1 = w1.getCumulativeRewardForAgent(a2.getAgentName());
@@ -259,11 +261,13 @@ public class FSSMatchCaching {
 		SGQLAgent a22 = (SGQLAgent)factV2.generateAgent();
 		a22.setQValueInitializer(v2QInit);
 		
-		PseudoGameCountWorld w2 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
+		World w2 = this.worldGenerator.generateWorld();
 		a22.joinWorld(w2, this.fsAgentType); //switch join order
 		a12.joinWorld(w2, this.fsAgentType);
 		
-		w2.runGame(Integer.MAX_VALUE, nGames);
+		for(int i = 0; i < this.nGames; i++){
+			w2.runGame();
+		}
 		
 		double a1r2 = w2.getCumulativeRewardForAgent(a12.getAgentName());
 		double a2r2 = w2.getCumulativeRewardForAgent(a22.getAgentName());
@@ -277,7 +281,6 @@ public class FSSMatchCaching {
 		
 		return res;
 	}
-	
 	
 	
 	
@@ -355,6 +358,5 @@ public class FSSMatchCaching {
 		}
 		
 	}
-	
 
 }

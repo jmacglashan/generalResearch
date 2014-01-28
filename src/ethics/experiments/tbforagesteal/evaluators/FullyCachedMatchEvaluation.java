@@ -315,9 +315,9 @@ public class FullyCachedMatchEvaluation implements VarEvaluaiton {
 	
 	public class MatchPerformanceGenerator{
 		
-		String [] agentIndices;
-		List <Double> performanceOfA1;
-		List <Double> performanceOfA2;
+		public String [] agentIndices;
+		public List <Double> performanceOfA1;
+		public List <Double> performanceOfA2;
 		
 		Random rand;
 		
@@ -356,6 +356,13 @@ public class FullyCachedMatchEvaluation implements VarEvaluaiton {
 			
 			return pf;
 			
+		}
+		
+		public double averagePerformance(int ind){
+			if(ind == 0){
+				return this.average(performanceOfA1);
+			}
+			return this.average(performanceOfA2);
 		}
 		
 		public Map <String, List<Double>> allPerformances(){

@@ -32,7 +32,16 @@ public class FSSimple implements DomainGenerator {
 	
 	
 	protected int nfalts = 5;
+	protected int maxStateNodeID = 2;
 	
+	
+	public FSSimple(){
+		
+	}
+	
+	public FSSimple(int maxStateNodeID){
+		this.maxStateNodeID = maxStateNodeID;
+	}
 	
 	@Override
 	public Domain generateDomain() {
@@ -43,7 +52,7 @@ public class FSSimple implements DomainGenerator {
 		pnAtt.setDiscValuesForRange(0, 1, 1);
 		
 		Attribute snAtt = new Attribute(domain, ATTSTATENODE, Attribute.AttributeType.DISC);
-		snAtt.setDiscValuesForRange(0, 2, 1);
+		snAtt.setDiscValuesForRange(0, this.maxStateNodeID, 1);
 		
 		Attribute faAtt = new Attribute(domain, ATTFA, Attribute.AttributeType.DISC);
 		faAtt.setDiscValuesForRange(0, 4, 1);

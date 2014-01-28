@@ -155,7 +155,7 @@ public class CacheQuery {
 		}
 		
 		
-		System.out.println(k1 + " versus. " + k1);
+		System.out.println(k1 + " versus. " + k2);
 		System.out.println("Aveage Performances:");
 		System.out.println(averages.get(k1a) + " " + averages.get(k2a));
 		

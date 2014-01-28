@@ -40,6 +40,7 @@ import commands.model3.mt.TokenedString;
 import commands.model3.mt.Tokenizer;
 import commands.model3.mt.em.WeightedMTInstance;
 import commands.model3.mt.em.WeightedMTInstance.WeightedSemanticCommandPair;
+import commands.model3.noisyor.NoisyOr;
 
 import datastructures.HashedAggregator;
 import em.Dataset;
@@ -177,6 +178,27 @@ public class Model3Controller {
 		
 		this.naturalCommandVariable = this.gm.getRVarWithName(BagOfWordsModule.NNAME);
 	}
+	
+	
+	
+	public void setToNORLanugageModel(List<TrainingElement> trainingData, Tokenizer tokenizer, boolean includeInSemanticsParameterObjectClasses){
+		
+		this.trajectoryDataset = trainingData;
+		
+		Set<String> semanticWords = this.getSemanticWords(includeInSemanticsParameterObjectClasses);
+		Set<String> naturalWords = this.getNaturalWords(trainingData, tokenizer);
+		
+		NoisyOr norModule = new NoisyOr(LANGMODNAME, this.gm.getRVarWithName(TaskModule.LIFTEDRFNAME), this.gm.getRVarWithName(TaskModule.BINDINGNAME),
+				semanticWords, naturalWords, tokenizer);
+		
+		norModule.setIncludePFParamClasses(includeInSemanticsParameterObjectClasses);
+		
+		this.gm.addGMModule(norModule);
+		
+		this.naturalCommandVariable = this.gm.getRVarWithName(NoisyOr.NNAME);
+	}
+	
+	
 	
 	
 	public List<GMQueryResult> getLiftedRFAndBindingDistribution(State initialState, String naturalCommand){

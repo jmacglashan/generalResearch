@@ -35,6 +35,8 @@ import commands.model3.mt.Tokenizer;
 import commands.model3.mt.em.MTEMModule;
 import commands.model3.mt.em.WeightedMTInstance;
 import commands.model3.mt.em.WeightedMTInstance.WeightedSemanticCommandPair;
+import commands.model3.noisyor.NoisyOr;
+import commands.model3.noisyor.NoisyOrEMModule;
 
 import domain.singleagent.sokoban2.Sokoban2Domain;
 import domain.singleagent.sokoban2.SokobanOldToNewParser;
@@ -56,8 +58,9 @@ public class Model3ControllerTest {
 		
 		//uniformTest();
 		//trajectoryTrainingTest();
-		parallelLOOOutput(args);
+		//parallelLOOOutput(args);
 		//parallelBOWLOOOutput(args);
+		parallelNORLOOOutput(args);
 		//trajectoryToWeightedMTDataset();
 		//rfFromTrajectoryDistributionTest();
 		//strictMTTest();
@@ -65,7 +68,9 @@ public class Model3ControllerTest {
 		//strictMTLOOTest();
 		//parameterTest();
 		//uniformBOWTest();
+		//uniformNORTest();
 		//trajectoryBOWTrainingTest();
+		//trajectoryNORTrainingTest();
 
 	}
 	
@@ -125,6 +130,25 @@ public class Model3ControllerTest {
 		tokenizer.addDelimiter("-");
 		
 		controller.setToBOWLanugageModel(trainingDataset, tokenizer, true);
+		
+		outputConstraintAndRFDistro(trainingDataset, controller);
+		
+	}
+	
+	
+	public static void uniformNORTest(){
+		
+		Model3Controller controller = constructController();
+		
+		Domain domain = controller.getDomain();
+		
+		StateParser sp = new SokobanOldToNewParser(domain);
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, DATASETTESTPATH, sp);
+		
+		Tokenizer tokenizer = new Tokenizer(false);
+		tokenizer.addDelimiter("-");
+		
+		controller.setToNORLanugageModel(trainingDataset, tokenizer, false);
 		
 		outputConstraintAndRFDistro(trainingDataset, controller);
 		
@@ -245,6 +269,40 @@ public class Model3ControllerTest {
 		//setParamsForSimpleSoko(bowMod);
 		//System.out.println("Finished Training; beginning testing");
 		//bowMod.printWordParams();
+		
+		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
+		//Map<String, String> trainingRFLabels = getSimpleDatasetRFLabels();
+		getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
+		
+	}
+	
+	public static void trajectoryNORTrainingTest(){
+		
+		Model3Controller controller = constructController();
+		
+		Domain domain = controller.getDomain();
+		
+		StateParser sp = new SokobanOldToNewParser(domain);
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, DATASETTESTPATH, sp);
+		
+		Tokenizer tokenizer = new Tokenizer(true);
+		tokenizer.addDelimiter("-");
+		
+		controller.setToNORLanugageModel(trainingDataset, tokenizer, true);
+		
+		Dataset emDataset = controller.getEMDatasetFromTrajectoriesDataset(trainingDataset);
+		EMAlgorithm em = new EMAlgorithm(controller.getGM(), emDataset);
+		NoisyOrEMModule norEMMod = new NoisyOrEMModule(controller.getHashingFactory());
+		em.addEMModule(norEMMod);
+		
+		NoisyOr norMod = (NoisyOr)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME);
+		//norMod.printWordParams();
+		
+		System.out.println("Beginning Training...");
+		em.runEM(10);
+		//setParamsForSimpleSoko(bowMod);
+		System.out.println("Finished Training; beginning testing");
+		//norMod.printWordParams();
 		
 		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
 		//Map<String, String> trainingRFLabels = getSimpleDatasetRFLabels();
@@ -402,6 +460,95 @@ public class Model3ControllerTest {
 		EMAlgorithm em = new EMAlgorithm(controller.getGM(), emDataset);
 		BagOfWordsEMModule bowEMMod = new BagOfWordsEMModule(controller.getHashingFactory());
 		em.addEMModule(bowEMMod);
+		
+		em.runEM(10);
+		
+		System.out.println("Testing " + testInstance.identifier);
+		
+		GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistribution(testInstance.trajectory.getState(0), testInstance.command));
+		RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+		String grs = gr.toString().trim();
+		
+		try {
+			out.write(grs + "\n");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Finished");
+		
+	}
+	
+	
+	public static void parallelNORLOOOutput(String [] args){
+		
+		if(args.length != 3){
+			System.out.println("Format:\n\tpathToDatasetDir pathToOutputdir instanceToTest");
+			System.exit(0);
+		}
+		
+		String pathToDatasetDir = args[0];
+		String pathToOutputDir = args[1];
+		int instanceToTest = Integer.parseInt(args[2]);
+		
+		if(!pathToOutputDir.endsWith("/")){
+			pathToOutputDir = pathToOutputDir + "/";
+		}
+		
+		System.out.println("Setting up...");
+		
+		Sokoban2Domain dg = new Sokoban2Domain();
+		Domain domain = dg.generateDomain();
+		StateHashFactory hashingFactory = new NameDependentStateHashFactory();
+		StateParser sp = new SokobanOldToNewParser(domain);
+		List<GPConjunction> liftedTaskDescriptions = new ArrayList<GPConjunction>(2);
+		
+		GPConjunction atr = new GPConjunction();
+		atr.addGP(new GroundedProp(domain.getPropFunction(Sokoban2Domain.PFAGENTINROOM), new String[]{"a", "r"}));
+		liftedTaskDescriptions.add(atr);
+		
+		GPConjunction btr = new GPConjunction();
+		btr.addGP(new GroundedProp(domain.getPropFunction(Sokoban2Domain.PFBLOCKINROOM), new String[]{"b", "r"}));
+		liftedTaskDescriptions.add(btr);
+		
+		Model3Controller controller = new Model3Controller(domain, liftedTaskDescriptions, hashingFactory, true);
+		GenerativeModel gm = controller.getGM();
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		
+		List<TrainingElement> fullTrajectoryDataset = Model3Controller.getCommandsDataset(domain, pathToDatasetDir, sp);
+		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
+		List<TrainingElement> looDataset = looTrajectoryDataset(fullTrajectoryDataset, instanceToTest);
+		TrainingElement testInstance = fullTrajectoryDataset.get(instanceToTest);
+		String outputPathName = pathToOutputDir + testInstance.identifier;
+		
+		
+		BufferedWriter out = null;
+		
+		try {
+			out = new BufferedWriter(new FileWriter(outputPathName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		if(out == null){
+			throw new RuntimeException("Could not open output file");
+		}
+		
+		controller.setToNORLanugageModel(looDataset, tokenizer, true);
+		
+		Dataset emDataset = controller.getEMDatasetFromTrajectoriesDataset(looDataset);
+		EMAlgorithm em = new EMAlgorithm(controller.getGM(), emDataset);
+		NoisyOrEMModule norEMMod = new NoisyOrEMModule(controller.getHashingFactory());
+		em.addEMModule(norEMMod);
 		
 		em.runEM(10);
 		

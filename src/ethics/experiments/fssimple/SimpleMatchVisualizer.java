@@ -113,6 +113,9 @@ public class SimpleMatchVisualizer extends JFrame {
 	double []									oldA0Params;
 	double []									oldA1Params;
 	
+	
+	int											numMatches = 1;
+	
 
 	public SimpleMatchVisualizer(){
 		
@@ -449,7 +452,7 @@ public class SimpleMatchVisualizer extends JFrame {
 		}
 		
 		this.ma = this.getMatchAnalyzer(world, agent0, agent1);
-		this.ma.runMatch(1);
+		this.ma.runMatch(this.numMatches);
 		
 		this.qTableController.setMatchAnalyzer(this.ma);
 		this.qTableController.setAgentNames(agent0Name, agent1Name);
