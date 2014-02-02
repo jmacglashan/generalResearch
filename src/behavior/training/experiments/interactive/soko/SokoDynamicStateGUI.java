@@ -24,15 +24,17 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import tests.training.SemanticTaskDescription;
 import auxiliary.DynamicVisualFeedbackEnvironment;
 import auxiliary.StateVisualizingGUI;
 import behavior.learning.DomainEnvironmentWrapper;
 import behavior.training.taskinduction.MAPMixtureModelPolicy;
 import behavior.training.taskinduction.TaskDescription;
-import behavior.training.taskinduction.TaskInductionTraining;
 import behavior.training.taskinduction.TaskProb;
+import behavior.training.taskinduction.commands.CommandsToTrainingInterface;
+import behavior.training.taskinduction.strataware.FeedbackStrategy;
+import behavior.training.taskinduction.strataware.TaskInductionWithFeedbackStrategies;
 import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.statehashing.DiscreteMaskHashingFactory;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
@@ -45,6 +47,10 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.NullAction;
 import burlap.oomdp.visualizer.MultiLayerRenderer;
 import burlap.oomdp.visualizer.StateRenderLayer;
+
+import commands.model3.GPConjunction;
+import commands.model3.mt.Tokenizer;
+
 import domain.singleagent.sokoban2.Sokoban2Domain;
 import domain.singleagent.sokoban2.Sokoban2Visualizer;
 
@@ -62,6 +68,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	protected Domain					domainEnvWrapper;
 	
 	protected DynamicVisualFeedbackEnvironment		env;
+	
 	
 	protected DiscreteStateHashFactory	hashingFactory;
 	protected Action					noopAction;
@@ -105,7 +112,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	protected TextArea					propViewer;
 	
-	protected TaskInductionTraining		agent;
+	protected CommandsToTrainingInterface			commandInterface;
+	protected TaskInductionWithFeedbackStrategies	agent;
 	
 	protected Thread					agentThread;
 	
@@ -114,13 +122,14 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	public SokoDynamicStateGUI(){
 		canvas = new MultiLayerRenderer();
-		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY);
+		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY, "robotImages");
 		canvas.addRenderLayer(sLayer);
 		
 		cLayer = new CursorHighlightLayer(maxX, maxY);
 		canvas.addRenderLayer(cLayer);
 		
 		Sokoban2Domain dgen = new Sokoban2Domain();
+		dgen.includeDirectionAttribute(true);
 		this.domain = dgen.generateDomain();
 		noopAction = new NullAction("noop", domain, ""); //add noop to the domain
 		
@@ -130,7 +139,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		
 		this.planningDomain = dgen.generateDomain();
 		
-		this.hashingFactory = new DiscreteStateHashFactory();
+		this.hashingFactory = new DiscreteMaskHashingFactory();
 		this.hashingFactory.addAttributeForClass(Sokoban2Domain.CLASSAGENT, this.domain.getAttribute(Sokoban2Domain.ATTX));
 		this.hashingFactory.addAttributeForClass(Sokoban2Domain.CLASSAGENT, this.domain.getAttribute(Sokoban2Domain.ATTY));
 		this.hashingFactory.addAttributeForClass(Sokoban2Domain.CLASSBLOCK, this.domain.getAttribute(Sokoban2Domain.ATTX));
@@ -143,10 +152,40 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		sLayer.updateState(this.curState);
 		
 		StateRenderLayer abSL = new StateRenderLayer();
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainter(maxX, maxY));
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("robotImages", maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "robotImages"));
 		hLayer = new HallucinateStateRenderLayer(abSL);
+		hLayer.setOpacity(0.5f);
 		canvas.addRenderLayer(hLayer);
+		
+		
+		RewardFunction trainerRF = env.getEnvRewardFunction();
+		TerminalFunction trainerTF = env.getEnvTerminalFunction();
+		
+		//this.agent = new TaskInductionWithFeedbackStrategies(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, new ArrayList<TaskDescription>(), 
+				//new MAPMixtureModelPolicy());
+		
+		this.agent = new DynamicPlanISABL(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, new ArrayList<TaskDescription>(), 
+			new MAPMixtureModelPolicy());
+		this.agent.setNoopAction(noopAction);
+		this.agent.useSeperatePlanningDomain(domain);
+		this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.7, 0.1)); 
+		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.05, 0.7, 0.1));
+		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.05, 0.1));
+		
+		
+		List<GPConjunction> liftedTaskDescriptions = new ArrayList<GPConjunction>(2);
+		
+		GPConjunction atr = new GPConjunction();
+		atr.addGP(new GroundedProp(domain.getPropFunction(Sokoban2Domain.PFAGENTINROOM), new String[]{"a", "r"}));
+		liftedTaskDescriptions.add(atr);
+		
+		GPConjunction btr = new GPConjunction();
+		btr.addGP(new GroundedProp(domain.getPropFunction(Sokoban2Domain.PFBLOCKINROOM), new String[]{"b", "r"}));
+		liftedTaskDescriptions.add(btr);
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		this.commandInterface = new CommandsToTrainingInterface(domain, liftedTaskDescriptions, hashingFactory, this.agent, tokenizer, 22);
 		
 	}
 	
@@ -393,15 +432,15 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		this.maxY = Integer.parseInt(this.cellHeightField.getText());
 		
 		this.canvas.removeRenderLayer(0);
-		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY);
+		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY, "robotImages");
 		canvas.insertRenderLayerTo(0, sLayer);
 		sLayer.updateState(curState);
 		
 		this.cLayer.setDim(maxX, maxY);
 		
 		StateRenderLayer abSL = new StateRenderLayer();
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainter(maxX, maxY));
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("robotImages", maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "robotImages"));
 		this.hLayer.setSrcStateRenderLayer(abSL);
 		
 		this.needsRepaint = true;
@@ -433,7 +472,21 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		
 		this.initialState = curState;
 		
+		this.commandInterface.setRFDistribution(initialState, this.commandArea.getText());
+		this.env.setCurStateTo(curState);
 		
+		this.agentThread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				agent.runLearningEpisodeFrom(curState);
+			}
+		});
+		
+		this.agentThread.start();
+		
+		
+		/*
 		List<TaskDescription> tasks = new ArrayList<TaskDescription>();
 		tasks.add(new SemanticTaskDescription(new GroundedProp(this.domain.getPropFunction(Sokoban2Domain.PFAGENTINROOM), new String[]{"agent0", "room0"})));
 		tasks.add(new SemanticTaskDescription(new GroundedProp(this.domain.getPropFunction(Sokoban2Domain.PFAGENTINROOM), new String[]{"agent0", "room1"})));
@@ -442,8 +495,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		RewardFunction trainerRF = env.getEnvRewardFunction();
 		TerminalFunction trainerTF = env.getEnvTerminalFunction();
 		
-		this.agent = new TaskInductionTraining(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, 
-				tasks, new MAPMixtureModelPolicy());
+		//this.agent = new TaskInductionTraining(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, 
+			//	tasks, new MAPMixtureModelPolicy());
 		this.agent.setNoopAction(noopAction);
 		for(int i = 0; i < tasks.size(); i++){
 			this.agent.setProbFor(i, 1./(double)tasks.size());
@@ -463,7 +516,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		});
 		
 		this.agentThread.start();
-		
+		*/
 		
 	}
 	
@@ -492,6 +545,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		this.hLayer.updateState(null);
 		
 		this.lastMostLikelyTask = null;
+		
+		this.commandInterface.addLastTrainingResultToDatasetAndRetrain(this.initialState, this.commandArea.getText(), 5e-5);
 		
 		this.needsRepaint = true;
 		this.updateGUI();
@@ -564,7 +619,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	protected void addBlock(){
 		int nBlock = this.nextObNameNumber(this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSBLOCK));
 		ObjectInstance b = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), Sokoban2Domain.CLASSBLOCK+nBlock);
-		Sokoban2Domain.setBlock(b, this.lastCellX, this.lastCellY, "star", "yellow");
+		Sokoban2Domain.setBlock(b, this.lastCellX, this.lastCellY, Sokoban2Domain.SHAPES[0], Sokoban2Domain.COLORS[0]);
 		this.curState.addObject(b);
 		this.selectedObject = b;
 		this.needsRepaint = true;
@@ -763,7 +818,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		}
 		
 		//then check doors
-		this.selectedObject = Sokoban2Domain.roomContainingPoint(this.curState, cellX, cellY);
+		this.selectedObject = Sokoban2Domain.roomContainingPointIncludingBorder(this.curState, cellX, cellY);
 		
 	}
 	

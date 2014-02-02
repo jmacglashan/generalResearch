@@ -88,11 +88,13 @@ public class Sokoban2Visualizer {
 		v.addObjectClassPainter(Sokoban2Domain.CLASSDOOR, new DoorPainter(maxX, maxY));
 		if(agentImagePath.length == 0){
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainter());
+			v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY));
 		}
 		else{
 			v.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new AgentPainterWithImages(agentImagePath[0], maxX, maxY));
+			v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY, agentImagePath[0]));
 		}
-		v.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new BlockPainter(maxX, maxY, agentImagePath[0]));
+		
 		
 		return v;
 		

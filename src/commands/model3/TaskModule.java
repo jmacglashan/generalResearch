@@ -42,6 +42,7 @@ public class TaskModule extends GMModule {
 	protected Domain				domain;
 	
 	protected boolean				permitInitiallySatisfiedRFs = false;
+	protected int					maxBindingConstraintsComponentSize = 12;
 	
 	
 	public TaskModule(String name, Domain domain) {
@@ -183,6 +184,14 @@ public class TaskModule extends GMModule {
 			}
 		}
 		
+		public int numComps(){
+			int num = 0;
+			for(GroundedProp gp : this.conditions){
+				num += 1 + gp.params.length;
+			}
+			return num;
+		}
+		
 		
 		@Override
 		public boolean valueEquals(RVariableValue other) {
@@ -267,6 +276,42 @@ public class TaskModule extends GMModule {
 				}
 			}
 			return true;
+		}
+		
+		
+		@Override
+		public boolean equals(Object other){
+			
+			if(this == other){
+				return true;
+			}
+			
+			if(!(other instanceof ConjunctiveGroundedPropRF)){
+				return false;
+			}
+			
+			ConjunctiveGroundedPropRF orf = (ConjunctiveGroundedPropRF)other;
+			
+			if(this.goalR != orf.goalR){
+				return false;
+			}
+			
+			if(this.nonGoalR != orf.nonGoalR){
+				return false;
+			}
+			
+			if(this.gps.size() != orf.gps.size()){
+				return false;
+			}
+			
+			for(GroundedProp gp : this.gps){
+				if(!orf.gps.contains(gp)){
+					return false;
+				}
+			}
+			
+			return true;
+			
 		}
 		
 		
@@ -591,7 +636,9 @@ public class TaskModule extends GMModule {
 			for(List<GroundedProp> pgp : pureSetGPs){
 				LiftedVarValue val = this.getLiftedVarValue(pgp, groundedToFree);
 				pureSet.add(val);
-				this.bindingConstraints.add(val);
+				if(val.numComps() <= TaskModule.this.maxBindingConstraintsComponentSize){
+					this.bindingConstraints.add(val);
+				}
 			}
 			
 			
@@ -642,7 +689,9 @@ public class TaskModule extends GMModule {
 						fullExtended.addAll(connections);
 						fullExtended.addAll(aComb);
 						LiftedVarValue val = this.getLiftedVarValue(fullExtended, groundedToFree);
-						this.bindingConstraints.add(val);
+						if(val.numComps() <= TaskModule.this.maxBindingConstraintsComponentSize){
+							this.bindingConstraints.add(val);
+						}
 						
 						//then we add a new constraint set for each of the previous pure constraints, along with their connections
 						for(List<GroundedProp> pc : pureSetGPs){
@@ -651,7 +700,9 @@ public class TaskModule extends GMModule {
 							fullExtended.addAll(connections);
 							fullExtended.addAll(aComb);
 							val = this.getLiftedVarValue(fullExtended, groundedToFree);
-							this.bindingConstraints.add(val);
+							if(val.numComps() <= TaskModule.this.maxBindingConstraintsComponentSize){
+								this.bindingConstraints.add(val);
+							}
 						}
 					}
 					

@@ -45,8 +45,8 @@ import em.EMAlgorithm;
 
 public class Model3ControllerTest {
 
-	public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrain";
-	//public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrainLimitedCommand";
+	//public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrain";
+	public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrainLimitedCommand";
 	//public static String 						DATASETTESTPATH = "dataFiles/commands/mySimpleSokoData";
 	public static String						MTDATASETPATH = "dataFiles/commands/allTurkSemanticLabeled";
 	
@@ -56,11 +56,13 @@ public class Model3ControllerTest {
 	 */
 	public static void main(String[] args) {
 		
+		getAverageNumberOfWordsInTrajDataset();
+		
 		//uniformTest();
 		//trajectoryTrainingTest();
 		//parallelLOOOutput(args);
 		//parallelBOWLOOOutput(args);
-		parallelNORLOOOutput(args);
+		//parallelNORLOOOutput(args);
 		//trajectoryToWeightedMTDataset();
 		//rfFromTrajectoryDistributionTest();
 		//strictMTTest();
@@ -992,6 +994,31 @@ public class Model3ControllerTest {
 			String name = baseIdentifier + i + "." + extension;
 			labels.put(name, label);
 		}
+		
+	}
+	
+	
+	public static void getAverageNumberOfWordsInTrajDataset(){
+		
+		Sokoban2Domain dg = new Sokoban2Domain();
+		Domain domain = dg.generateDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		
+		List<TrainingElement> dataset = Model3Controller.getCommandsDataset(domain, DATASETTESTPATH, sp);
+		
+		int sum = 0;
+		for(TrainingElement te : dataset){
+			TokenedString ts = tokenizer.tokenize(te.command);
+			sum += ts.size();
+		}
+		
+		double avgNum = (double)sum / (double)dataset.size();
+		
+		System.out.println("Average number of words: " + avgNum);
+		
 		
 	}
 	

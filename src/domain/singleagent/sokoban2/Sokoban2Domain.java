@@ -327,6 +327,11 @@ public class Sokoban2Domain implements DomainGenerator {
 		return regionContainingPoint(rooms, x, y, false);
 	}
 	
+	public static ObjectInstance roomContainingPointIncludingBorder(State s, int x, int y){
+		List<ObjectInstance> rooms = s.getObjectsOfTrueClass(CLASSROOM);
+		return regionContainingPoint(rooms, x, y, true);
+	}
+	
 	public static ObjectInstance doorContainingPoint(State s, int x, int y){
 		List<ObjectInstance> doors = s.getObjectsOfTrueClass(CLASSDOOR);
 		return regionContainingPoint(doors, x, y, true);

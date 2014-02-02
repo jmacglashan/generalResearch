@@ -24,7 +24,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		LearningAgent {
 
 	protected List <TaskDescription>				possibleTasks;
-	protected TaskPosterior							posteriors;
+	protected TaskPosterior							posteriors = null;
 	protected MixtureModelPolicy					policy;
 	
 	protected Domain								planningDomain;
@@ -88,6 +88,11 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		}
 	}
 	
+	public void resetTasks(List<TaskDescription> tasks, List<Double> priors){
+		this.possibleTasks = tasks;
+		this.priorsToUse = priors;
+	}
+	
 	public void setToUniform(){
 		double uni = 1. / this.possibleTasks.size();
 		for(int i = 0; i < this.possibleTasks.size(); i++){
@@ -124,8 +129,15 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		
 		DPrint.cl(8473, "Finished planning");
 		
-		posteriors = new TaskPosterior(taskProbs, false);
-		policy.setPosteriors(posteriors);
+		if(this.posteriors != null){
+			this.posteriors.resetTaskProbs(taskProbs);
+		}
+		else{
+		
+			posteriors = new TaskPosterior(taskProbs, false);
+			policy.setPosteriors(posteriors);
+			
+		}
 		
 		this.initializedPriors = true;
 	}

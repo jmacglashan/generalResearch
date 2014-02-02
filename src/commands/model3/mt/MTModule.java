@@ -103,6 +103,42 @@ public class MTModule extends GMModule {
 	}
 	
 	
+	public void resetParametersToUniforForNewDictionary(Set<String> naturalWords, int maxNaturalCommandLenth){
+		
+		this.naturalWords = naturalWords;
+		this.maxNaturalCommandLength = maxNaturalCommandLenth;
+		
+		this.wp = new WordParam();
+		this.dp = new DistortionParam();
+		this.lp = new LengthParam();
+		
+		//initialize the word parameters to be uniform
+		double uniWordGen = 1. / this.semanticWords.size();
+		for(String s : this.semanticWords){
+			for(String n : this.naturalWords){
+				this.wp.set(uniWordGen, n, s);
+			}
+		}
+		
+		//initialize length params; this should probably be reset once a dataset is provided
+		double uniLen = 1. / this.maxNaturalCommandLength;
+		for(int l = 1; l <= this.maxSemanticCommandLength; l++){
+			for(int m = 1; m <= this.maxNaturalCommandLength; m++){
+				this.lp.set(uniLen, l, m);
+				
+				for(int i = 1; i <= m; i++){
+					double uniDist = 1./(l+1); //old form, which seems like it was wrong: 1./(this.maxL+1);
+					for(int j = 0; j <= l; j++){
+						this.dp.set(uniDist, j, i, l, m);
+					}
+				}
+				
+			}
+		}
+		
+	}
+	
+	
 	
 	public int getMaxSemanticCommandLength() {
 		return maxSemanticCommandLength;
@@ -242,6 +278,8 @@ public class MTModule extends GMModule {
 				}
 				semTokened = this.getTokenedSemanticString(liftedRF, bindingConstraints);
 			}
+			
+			
 			double p = this.computeNaturalCommandProb(semTokened, naturalTokened);
 			GMQueryResult res = new GMQueryResult(query, p);
 			return res;
@@ -252,6 +290,7 @@ public class MTModule extends GMModule {
 	}
 	
 	public double computeNaturalCommandProb(TokenedString semanticCommand, TokenedString naturalCommand){
+		
 		
 		int l = semanticCommand.size();
 		int m = naturalCommand.size();
@@ -397,6 +436,23 @@ public class MTModule extends GMModule {
 		for(int l = 1; l <= this.maxSemanticCommandLength; l++){
 			for(int m = 1; m <= this.maxNaturalCommandLength; m++){
 				System.out.println("p("+m+"|"+l+") = " + this.lp.prob(l, m));
+			}
+		}
+	}
+	
+	public void printDistortionParams(){
+		for(int l = 1; l <= this.maxSemanticCommandLength; l++){
+			for(int m = 1; m <= this.maxNaturalCommandLength; m++){
+				double lprob = this.lp.prob(l, m);
+				if(lprob > 0.){
+					System.out.println("l = " + l + "; m = " + m + "\n----------------------------");
+					for(int i = 1; i <= m; i++){
+						for(int j = 0; j <= l; j++){
+							double p = this.dp.prob(j, i, l, m);
+							System.out.println(p + ": (" + j + " | " + i + ")");
+						}
+					}
+				}
 			}
 		}
 	}

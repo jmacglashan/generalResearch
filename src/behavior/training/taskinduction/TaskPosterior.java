@@ -17,7 +17,7 @@ public class TaskPosterior {
 		//initialize to uniform
 		double u = 1. / (tasks.size());
 		for(TaskProb tp : tasks){
-			tp.prob = u;
+			tp.setProbAndLiklihood(u, u);
 		}
 	}
 	
@@ -27,11 +27,14 @@ public class TaskPosterior {
 		if(initToUniform){
 			double u = 1. / (tasks.size());
 			for(TaskProb tp : tasks){
-				tp.prob = u;
+				tp.setProbAndLiklihood(u, u);
 			}
 		}
 	}
 	
+	public void resetTaskProbs(List<TaskProb> tasks){
+		this.tasks = tasks;
+	}
 	
 	public List <TaskProb> getTaskProbs(){
 		return tasks;
@@ -42,7 +45,7 @@ public class TaskPosterior {
 	}
 	
 	public void setProbFor(int i, double p){
-		this.tasks.get(i).prob = p;
+		this.tasks.get(i).setProbAndLiklihood(p, p);
 	}
 	
 	public TaskProb getMostLikelyTask(){
@@ -65,6 +68,7 @@ public class TaskPosterior {
 			TaskProb tp = tasks.get(i);
 			double prior = tp.prob;
 			double l = this.liklihood(s, ga, feedback, tp.policy);
+			tp.setLiklihood(l*tp.getLikilhood());
 			double lp = l*prior;
 			liklihoodpriors[i] = lp;
 			marginal += lp;

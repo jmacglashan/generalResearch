@@ -107,16 +107,21 @@ public class TaskInductionWithFeedbackStrategies extends TaskInductionTraining {
 		
 		DPrint.cl(8473, "Finished planning");
 		
-		
-		StratAwareTaskPosterior saposteriors = new StratAwareTaskPosterior(taskProbs, false);
-		for(FeedbackStrategy strat : this.strategies){
-			saposteriors.addFeedbackStrateg(strat);
+		if(this.posteriors != null){
+			this.posteriors.resetTaskProbs(taskProbs);
 		}
-		saposteriors.setFeedbackStrategyProbsToUniform();
-		
-		posteriors = saposteriors;
-		policy.setPosteriors(posteriors);
-		
+		else{
+			StratAwareTaskPosterior saposteriors = new StratAwareTaskPosterior(taskProbs, false);
+			for(FeedbackStrategy strat : this.strategies){
+				saposteriors.addFeedbackStrateg(strat);
+			}
+			saposteriors.setFeedbackStrategyProbsToUniform();
+			
+			posteriors = saposteriors;
+			policy.setPosteriors(posteriors);
+			
+		}
+			
 		this.initializedPriors = true;
 	}
 	

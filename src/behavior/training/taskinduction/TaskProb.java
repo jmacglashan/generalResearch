@@ -9,6 +9,7 @@ public class TaskProb {
 	TaskDescription			task;
 	Policy					policy;
 	double 					prob;
+	double					likelihood = 1.;
 	
 	
 	public TaskProb(TaskDescription task, Policy policy){
@@ -64,9 +65,22 @@ public class TaskProb {
 	public double getProb() {
 		return prob;
 	}
+	
+	public double getLikilhood(){
+		return this.likelihood;
+	}
 
 	public void setProb(double prob) {
 		this.prob = prob;
+	}
+	
+	public void setLiklihood(double l){
+		this.likelihood = l;
+	}
+	
+	public void setProbAndLiklihood(double prob, double l){
+		this.prob = prob;
+		this.likelihood = l;
 	}
 
 	public TaskDescription getTask(){

@@ -638,7 +638,7 @@ public class Model3Controller {
 		for(WeightedMTInstance wi : dataset){
 			for(WeightedSemanticCommandPair wsc : wi){
 				maxLength = Math.max(maxLength, wsc.semanticCommand.size());
-				for(int i = 0; i < wsc.semanticCommand.size(); i++){
+				for(int i = 0; i <= wsc.semanticCommand.size(); i++){
 					semWords.add(wsc.semanticCommand.t(i));
 				}
 			}
@@ -660,7 +660,7 @@ public class Model3Controller {
 		int maxLength = 0;
 		for(WeightedMTInstance wi : dataset){
 			maxLength = Math.max(maxLength, wi.naturalCommand.size());
-			for(int i = 1; i < wi.naturalCommand.size(); i++){
+			for(int i = 1; i <= wi.naturalCommand.size(); i++){
 				natWords.add(wi.naturalCommand.t(i));
 			}
 		}

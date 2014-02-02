@@ -31,6 +31,9 @@ public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
 		this.distanceFunction = new HashMap<StateHashTuple, Integer>();
 	}
 	
+	public boolean planDefinedForState(State s){
+		return this.distanceFunction.containsKey(this.hashingFactory.hashState(s));
+	}
 	
 	@Override
 	public void planFromState(State initialState) {

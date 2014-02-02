@@ -51,10 +51,12 @@ public class StratAwareTaskPosterior extends TaskPosterior {
 		
 		double normalizing = 0.;
 		double [] tTerms = new double[this.tasks.size()];
+		double [] tlTerms = new double[this.tasks.size()];
 		double [] sTerms = new double[this.strategies.size()];
 		
 		for(int i = 0; i < tTerms.length; i++){
 			tTerms[i] = 0.;
+			tlTerms[i] = 0.;
 		}
 		for(int i = 0; i < sTerms.length; i++){
 			sTerms[i] = 0.;
@@ -66,10 +68,12 @@ public class StratAwareTaskPosterior extends TaskPosterior {
 			double sp = strat.getProbOfStrategy();
 			for(int j = 0; j < this.tasks.size(); j++){
 				TaskProb tp = this.tasks.get(j);
-				double term = sp * tp.getProb() * strat.liklihood(s, ga, feedback, tp.getPolicy());
+				double l = strat.liklihood(s, ga, feedback, tp.getPolicy());
+				double term = sp * tp.getProb() * l;
 				normalizing += term;
 				sTerms[i] += term;
 				tTerms[j] += term;
+				tlTerms[j] += l * sp;
 			}
 		}
 		
@@ -81,8 +85,9 @@ public class StratAwareTaskPosterior extends TaskPosterior {
 		}
 		
 		for(int i = 0; i < tTerms.length; i++){
+			TaskProb tp = this.tasks.get(i);
 			double p = tTerms[i] / normalizing;
-			this.tasks.get(i).setProb(p);
+			tp.setProbAndLiklihood(p, tlTerms[i]*tp.getLikilhood());
 		}
 		
 	}
