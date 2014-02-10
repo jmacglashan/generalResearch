@@ -100,7 +100,7 @@ public class PotentialShapedRMax extends OOMDPPlanner implements LearningAgent {
 		int steps = 0;
 		while(!this.tf.isTerminal(curState) && steps < maxSteps){
 			
-			GroundedAction ga = policy.getAction(curState);
+			GroundedAction ga = (GroundedAction)policy.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			double r = this.rf.reward(curState, ga, nextState);
 			

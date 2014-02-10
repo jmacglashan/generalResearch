@@ -136,7 +136,7 @@ public class TabularModel extends Model {
 		if(sn == null){
 			return null;
 		}
-		return sn.actionNode(ga.translateParameters(sh.s, sn.sh.s));
+		return sn.actionNode((GroundedAction)ga.translateParameters(sh.s, sn.sh.s));
 	}
 	
 	
@@ -158,7 +158,7 @@ public class TabularModel extends Model {
 			
 		}
 		else{
-			toReturn = sn.actionNode(ga.translateParameters(sh.s, sn.sh.s));
+			toReturn = sn.actionNode((GroundedAction)ga.translateParameters(sh.s, sn.sh.s));
 		}
 		
 		if(toReturn == null){

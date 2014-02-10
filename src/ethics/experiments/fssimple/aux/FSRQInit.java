@@ -1,13 +1,14 @@
 package ethics.experiments.fssimple.aux;
 
-import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
-import domain.stocasticgames.foragesteal.simple.FSSimple.ForageAction;
-import burlap.behavior.stochasticgame.agents.naiveq.SGNQValueInitialization;
+import burlap.behavior.singleagent.ValueFunctionInitialization;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.stochasticgames.GroundedSingleAction;
+import domain.stocasticgames.foragesteal.simple.FSSimple;
+import domain.stocasticgames.foragesteal.simple.FSSimple.ForageAction;
+import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
 
-public class FSRQInit implements SGNQValueInitialization {
+public class FSRQInit implements ValueFunctionInitialization {
 
 	protected FSSubjectiveRF		subjectiveRF;
 	protected FSSimpleJR			objectiveRF;
@@ -17,8 +18,22 @@ public class FSRQInit implements SGNQValueInitialization {
 		this.subjectiveRF = subjectiveRF;
 	}
 	
+	
+	protected int forageAltForAction(GroundedSingleAction gsa){
+		ForageAction sa = (ForageAction)gsa.action;
+		return sa.falt;
+	}
+
 	@Override
-	public double qInit(State s, GroundedSingleAction gsa) {
+	public double value(State s) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double qValue(State s, AbstractGroundedAction a) {
+		
+		GroundedSingleAction gsa = (GroundedSingleAction)a;
 		
 		double [] params = this.subjectiveRF.getParameters();
 		
@@ -35,12 +50,6 @@ public class FSRQInit implements SGNQValueInitialization {
 		}
 		
 		return 0; //return 0 for all do nothing actions
-	}
-
-	
-	protected int forageAltForAction(GroundedSingleAction gsa){
-		ForageAction sa = (ForageAction)gsa.action;
-		return sa.falt;
 	}
 	
 }

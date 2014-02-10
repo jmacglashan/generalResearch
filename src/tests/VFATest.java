@@ -39,8 +39,8 @@ public class VFATest {
 		VFATest example = new VFATest();
 		String outputPath = "outputVFA"; //directory to record results
 		
-		example.runCMACVFA(outputPath);
-		//example.visualize(outputPath);
+		//example.runCMACVFA(outputPath);
+		example.visualize(outputPath);
 
 	}
 	

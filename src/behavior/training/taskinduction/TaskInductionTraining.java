@@ -12,7 +12,6 @@ import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.debugtools.DPrint;
-import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -158,7 +157,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 		this.bookKeeping(curState, null, 0.);
 		while(!this.tf.isTerminal(curState) && timeStep < maxSteps){
 		//while(timeStep < this.maxEpisodeSize){
-			GroundedAction ga = this.worldAction(curState, this.policy.getAction(curState));
+			GroundedAction ga = this.worldAction(curState, (GroundedAction)this.policy.getAction(curState));
 			State nextState = ga.executeIn(curState);
 			double trainerFeedback = this.rf.reward(curState, ga, nextState);
 			ea.recordTransitionTo(nextState, ga, trainerFeedback);

@@ -5,10 +5,10 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
 public class InteractiveReplanAgent {
@@ -50,8 +50,8 @@ public class InteractiveReplanAgent {
 		
 		while(true){
 			State s = actingEnvironment.getCurState();
-			GroundedAction ga = this.currentPolicy.getAction(s);
-			this.actingEnvironment.executeAction(ga.action.getName(), ga.params);
+			AbstractGroundedAction ga = this.currentPolicy.getAction(s);
+			this.actingEnvironment.executeAction(ga.actionName(), ga.params);
 		}
 	}
 	

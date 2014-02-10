@@ -43,7 +43,7 @@ public class MultiVFPassAC extends ActorCritic {
 		int timeSteps = 0;
 		while(!tf.isTerminal(curState) && timeSteps < this.maxEpisodeSize){
 			
-			GroundedAction ga = this.actor.getAction(curState);
+			GroundedAction ga = (GroundedAction)this.actor.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			double r = this.rf.reward(curState, ga, nextState);
 			
@@ -84,7 +84,7 @@ public class MultiVFPassAC extends ActorCritic {
 		int timeSteps = 0;
 		while(!tf.isTerminal(curState) && timeSteps < this.maxEpisodeSize){
 			
-			GroundedAction ga = this.actor.getAction(curState);
+			GroundedAction ga = (GroundedAction)this.actor.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			
 			this.critic.critiqueAndUpdate(curState, ga, nextState);

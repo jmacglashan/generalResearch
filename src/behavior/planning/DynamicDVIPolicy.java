@@ -6,8 +6,8 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.PlannerDerivedPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.GroundedAction;
 
 public class DynamicDVIPolicy extends Policy implements PlannerDerivedPolicy {
 
@@ -26,7 +26,7 @@ public class DynamicDVIPolicy extends Policy implements PlannerDerivedPolicy {
 	}
 
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		if(!this.planner.planDefinedForState(s)){
 			this.planner.planFromState(s);
 		}

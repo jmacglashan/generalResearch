@@ -7,6 +7,7 @@ import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 
@@ -40,7 +41,7 @@ public class TDPolicyIteration extends OOMDPPlanner implements QComputablePlanne
 			State curState = initialState;
 			int timeStep = 0;
 			
-			GroundedAction curAction = this.policy.getAction(curState);
+			GroundedAction curAction = (GroundedAction)this.policy.getAction(curState);
 			
 			
 			while(!this.tf.isTerminal(curState) && timeStep < horizon){
@@ -51,7 +52,7 @@ public class TDPolicyIteration extends OOMDPPlanner implements QComputablePlanne
 				
 				GroundedAction nextAction = null;
 				if(!tf.isTerminal(nextState)){
-					nextAction = this.policy.getAction(nextState);
+					nextAction = (GroundedAction)this.policy.getAction(nextState);
 				}
 				
 				this.qSource.updateQValues(curState, curAction, nextState, nextAction);
@@ -72,8 +73,8 @@ public class TDPolicyIteration extends OOMDPPlanner implements QComputablePlanne
 	}
 
 	@Override
-	public QValue getQ(State s, GroundedAction a) {
-		return this.qSource.getQ(s, a);
+	public QValue getQ(State s, AbstractGroundedAction a) {
+		return this.qSource.getQ(s, (GroundedAction)a);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import burlap.behavior.singleagent.Policy;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
@@ -24,7 +25,7 @@ public class NoopOnTermPolicy extends Policy {
 	}
 	
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		
 		if(this.noopAction != null && this.tf.isTerminal(s)){
 			return this.noopAction;

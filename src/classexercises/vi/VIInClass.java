@@ -11,6 +11,7 @@ import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -59,7 +60,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 	}
 
 	@Override
-	public QValue getQ(State s, GroundedAction a) {
+	public QValue getQ(State s, AbstractGroundedAction a) {
 		
 		//this method is required to be implemented by the QComputablePlanner interface
 		//it asks us to return the Q-value for the specified action
@@ -75,7 +76,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 		//this list can be retrieved from the action object, which is a data member of our grounded action
 		//the getTransition method requires the parameters passes to the action, which are specified
 		//in a data member of the grounded action (params)
-		List <TransitionProbability> transitions = a.action.getTransitions(s, a.params);
+		List <TransitionProbability> transitions = ((GroundedAction)a).action.getTransitions(s, a.params);
 		
 		//iterate through each possible transition and sum up the contribution
 		for(TransitionProbability tp : transitions){
@@ -84,7 +85,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 			//and the probability of that state transition
 			
 			StateHashTuple sh = this.hashingFactory.hashState(tp.s);
-			sum += tp.p * (this.rf.reward(s, a, tp.s) + this.gamma * this.v.get(sh)); //bellman operate in BURLAP form
+			sum += tp.p * (this.rf.reward(s, (GroundedAction)a, tp.s) + this.gamma * this.v.get(sh)); //bellman operate in BURLAP form
 			
 		}
 		

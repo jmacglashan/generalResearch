@@ -19,6 +19,8 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import burlap.behavior.learningrate.ExponentialDecayLR;
+import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
@@ -98,7 +100,7 @@ public class SimpleMatchVisualizer extends JFrame {
 	AgentFactory								baseAgentFactory;
 	SGDomain									domain;
 	DiscreteStateHashFactory					hashingFactory;
-	double										discount = 0.99;
+	double										discount = 0.95;
 	double										learningRate;
 	JointReward									objectiveRF;
 	WorldGenerator								worldGenerator;
@@ -120,13 +122,14 @@ public class SimpleMatchVisualizer extends JFrame {
 	public SimpleMatchVisualizer(){
 		
 		stage = 0;
-		maxStage = 500;
+		maxStage = 1000;
 		
 		FSSimple dgen = new FSSimple();
 		this.domain = (SGDomain)dgen.generateDomain();
 		JointActionModel jam = new FSSimpleJAM();
 		
-		this.objectiveRF = new FSSimpleJR();
+		//this.objectiveRF = new FSSimpleJR();
+		this.objectiveRF = new FSSimpleJR(1., -0.5, -2.5, 0.);
 		
 		this.hashingFactory = new DiscreteStateHashFactory();
 		SGStateGenerator sg = new FSSimpleSG(domain);
@@ -420,6 +423,7 @@ public class SimpleMatchVisualizer extends JFrame {
 		FSSubjectiveRF a1SRF = new FSSubjectiveRF(this.objectiveRF);
 		a1SRF.setParameters(a1SRParams);
 		FSRQInit v1QInit = new FSRQInit((FSSimpleJR)this.objectiveRF, a1SRF);
+		//FSRPunisherQInit v1QInit = new FSRPunisherQInit(a1SRF, (FSSimpleJR)this.objectiveRF);
 		
 		System.out.println(a0SRF.toString());
 		System.out.println(a1SRF.toString());
@@ -429,9 +433,13 @@ public class SimpleMatchVisualizer extends JFrame {
 		
 		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
 		agent0.setQValueInitializer(v0QInit);
+		agent0.setLearningRate(new ExponentialDecayLR(learningRate, 0.99, 0.001));
 		
 		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
-		agent1.setQValueInitializer(v1QInit);
+		//agent1.setQValueInitializer(v1QInit);
+		agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.0));
+		agent1.setLearningRate(new ExponentialDecayLR(learningRate, 0.99, 0.001));
+		
 		
 		World world = worldGenerator.generateWorld();
 		agent0.joinWorld(world, at);
@@ -504,7 +512,7 @@ public class SimpleMatchVisualizer extends JFrame {
 	protected MatchAnalizer getMatchAnalyzer(World w, SGQLAgent agent0, SGQLAgent agent1){
 		
 		MatchAnalizer ma = new MatchAnalyzerSimple(w, agent0, agent1, extractStatesFromQuery(agent0QueryStates), extractStatesFromQuery(agent1QueryStates));
-		ma.setMaxStages(500);
+		ma.setMaxStages(this.maxStage);
 		return ma;
 		
 	}

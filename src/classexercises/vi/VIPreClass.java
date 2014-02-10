@@ -2,17 +2,16 @@ package classexercises.vi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -45,14 +44,14 @@ public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 	}
 
 	@Override
-	public QValue getQ(State s, GroundedAction a) {
+	public QValue getQ(State s, AbstractGroundedAction a) {
 		
 		double sum = 0.;
-		List<TransitionProbability> tps = a.action.getTransitions(s, a.params);
+		List<TransitionProbability> tps = ((GroundedAction)a).action.getTransitions(s, a.params);
 		for(TransitionProbability tp : tps){
 			StateHashTuple sh = this.hashingFactory.hashState(tp.s);
 			double v = this.v.get(sh);
-			double r = this.rf.reward(s, a, sh.s);
+			double r = this.rf.reward(s, (GroundedAction)a, sh.s);
 			sum += tp.p * (r + this.gamma*v);
 			
 		}

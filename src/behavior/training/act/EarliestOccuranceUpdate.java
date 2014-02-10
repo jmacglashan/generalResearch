@@ -61,8 +61,6 @@ public class EarliestOccuranceUpdate implements TrainerModel {
 	@Override
 	public int updateWithoutFeedback(int curTime, State s, GroundedAction ga, State sprime) {
 		
-		int updateState = 0;
-		
 		return 0;
 	}
 

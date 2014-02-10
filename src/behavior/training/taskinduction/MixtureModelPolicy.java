@@ -6,10 +6,9 @@ import java.util.Random;
 import javax.management.RuntimeErrorException;
 
 import burlap.behavior.singleagent.Policy;
-import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.debugtools.RandomFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.GroundedAction;
 
 public class MixtureModelPolicy extends Policy {
 
@@ -32,7 +31,7 @@ public class MixtureModelPolicy extends Policy {
 	}
 
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		
 		double sump = 0.;
 		double roll = rand.nextDouble();

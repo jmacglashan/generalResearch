@@ -13,6 +13,7 @@ import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -208,11 +209,11 @@ public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
 	}
 
 	@Override
-	public QValue getQ(State s, GroundedAction a) {
+	public QValue getQ(State s, AbstractGroundedAction a) {
 		
 		State sp = a.executeIn(s);
 		StateHashTuple shp = this.stateHash(sp);
-		double r = rf.reward(s, a, sp);
+		double r = rf.reward(s, (GroundedAction)a, sp);
 		double vp = this.vFor(shp);
 		double q = r + (this.gamma*vp);
 		

@@ -5,6 +5,7 @@ import java.util.List;
 import behavior.training.taskinduction.MixtureModelPolicy;
 import behavior.training.taskinduction.TaskPosterior;
 import behavior.training.taskinduction.TaskProb;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -24,7 +25,7 @@ public class MAPNOCompleteMMPolicy extends MixtureModelPolicy {
 	}
 	
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		
 		List <TaskProb> taskProbs = posteriors.getTaskProbs();
 		

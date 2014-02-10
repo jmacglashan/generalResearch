@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import burlap.behavior.singleagent.Policy;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -35,7 +36,7 @@ public class DomainMappedPolicy extends Policy {
 	}
 	
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		return this.mapAction(this.modelPolicy.getAction(s));
 	}
 
@@ -66,7 +67,7 @@ public class DomainMappedPolicy extends Policy {
 	 * @param ga the input GroundedAction to map.
 	 * @return a GroundedAction whose action reference belongs to the Action with the same name in this object's {@link realWorldDomain} object 
 	 */
-	protected GroundedAction mapAction(GroundedAction ga){
+	protected AbstractGroundedAction mapAction(AbstractGroundedAction ga){
 		return new GroundedAction(realWorldDomain.getAction(ga.actionName()), ga.params);
 	}
 

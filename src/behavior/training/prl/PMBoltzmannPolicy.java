@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.Domain;
@@ -37,7 +36,7 @@ public class PMBoltzmannPolicy extends PMDirectPolicy {
 		
 		for(int i = 0; i < preferences.size(); i++){
 			ActionProb aprob = preferences.get(i);
-			ActionPreference ap = this.getMatchingPreference(sh, aprob.ga, pn);
+			ActionPreference ap = this.getMatchingPreference(sh, (GroundedAction)aprob.ga, pn);
 			alignedNodePrefs.add(ap);
 			curAlignedPreferenceValues[i] = ap.preference;
 		}
@@ -175,7 +174,7 @@ public class PMBoltzmannPolicy extends PMDirectPolicy {
 					translated.add(ap);
 				}
 				else{
-					ActionProb tap = new ActionProb(this.translateAction(ap.ga, matching), ap.pSelection);
+					ActionProb tap = new ActionProb(this.translateAction((GroundedAction)ap.ga, matching), ap.pSelection);
 					translated.add(tap);
 				}
 			}

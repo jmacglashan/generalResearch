@@ -237,10 +237,10 @@ public class MultiStateBanditTrainingTest {
 			if(ap.pSelection > maxProb){
 				maxProb = ap.pSelection;
 				selections.clear();
-				selections.add(ap.ga);
+				selections.add((GroundedAction)ap.ga);
 			}
 			else if(ap.pSelection == maxProb){
-				selections.add(ap.ga);
+				selections.add((GroundedAction)ap.ga);
 			}
 		}
 		

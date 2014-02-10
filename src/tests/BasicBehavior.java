@@ -25,7 +25,6 @@ import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.StateConditionTest;
-import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner;
 import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
@@ -38,19 +37,17 @@ import burlap.behavior.singleagent.planning.stochastic.policyiteration.PolicyIte
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.singleagent.shaping.potential.PotentialFunction;
-import burlap.behavior.singleagent.shaping.potential.PotentialShapedRF;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldStateParser;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.oomdp.auxiliary.StateParser;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
-import burlap.oomdp.singleagent.common.SingleGoalPFRF;
 import burlap.oomdp.singleagent.common.SinglePFTF;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 import burlap.oomdp.singleagent.common.VisualActionObserver;
@@ -101,8 +98,8 @@ public class BasicBehavior {
 		//example.visualize(outputPath);
 
 		
-		example.valueIterationAndVisualizeValueFunction();
-		//example.qLearningAndVisualizeValueFunction();
+		//example.valueIterationAndVisualizeValueFunction();
+		example.qLearningAndVisualizeValueFunction();
 		
 	}
 	
@@ -123,8 +120,8 @@ public class BasicBehavior {
 		
 		//set up the initial state
 		initialState = GridWorldDomain.getOneAgentOneLocationState(domain);
-		//GridWorldDomain.setAgent(initialState, 0, 0);
-		GridWorldDomain.setAgent(initialState, 10, 5);
+		GridWorldDomain.setAgent(initialState, 0, 0);
+		//GridWorldDomain.setAgent(initialState, 10, 5);
 		GridWorldDomain.setLocation(initialState, 0, 10, 10);
 		//GridWorldDomain.setLocation(initialState, 0, 0, 0);
 		//GridWorldDomain.setLocation(initialState, 0, 14, 14);
@@ -395,7 +392,7 @@ public class BasicBehavior {
 			}
 			
 			@Override
-			public double qValue(State s, GroundedAction a) {
+			public double qValue(State s, AbstractGroundedAction a) {
 				//not defined
 				return 0;
 			}

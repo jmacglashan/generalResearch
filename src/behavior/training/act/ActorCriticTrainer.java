@@ -50,7 +50,7 @@ public class ActorCriticTrainer extends ActorCritic {
 			
 			this.modeledRF.setCurTime(timeSteps);
 			
-			GroundedAction ga = this.actor.getAction(curState);
+			GroundedAction ga = (GroundedAction)this.actor.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			double trainerActualReward = this.rf.reward(curState, ga, nextState);
 			
@@ -105,7 +105,7 @@ public class ActorCriticTrainer extends ActorCritic {
 			
 			this.modeledRF.setCurTime(timeSteps);
 			
-			GroundedAction ga = this.actor.getAction(curState);
+			GroundedAction ga = (GroundedAction)this.actor.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			
 			int mu = this.trainerModel.updateWithoutFeedback(timeSteps, curState, ga, nextState);

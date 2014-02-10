@@ -130,7 +130,7 @@ public class FeedbackStrategy {
 		double threshold = maxProb - OPTIMALDIFFROMMAX;
 		for(ActionProb ap : dist){
 			if(ap.pSelection >= threshold){
-				optimal.add(ap.ga);
+				optimal.add((GroundedAction)ap.ga);
 			}
 		}
 		

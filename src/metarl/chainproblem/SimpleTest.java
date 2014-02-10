@@ -61,7 +61,7 @@ public class SimpleTest {
 			for(ActionProb oap : optDist){
 				boolean found = false;
 				for(ActionProb qap : qDist){
-					if(oap.ga.action.getName().equals(qap.ga.action.getName())){
+					if(oap.ga.actionName().equals(qap.ga.actionName())){
 						found = true;
 						break;
 					}

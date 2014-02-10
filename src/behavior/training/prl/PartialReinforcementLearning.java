@@ -78,7 +78,7 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 		int timeStep = 0;
 		while(!this.tf.isTerminal(curState) && timeStep < maxSteps){
 			
-			GroundedAction ga = this.policy.getAction(curState);
+			GroundedAction ga = (GroundedAction)this.policy.getAction(curState);
 			State nextState = ga.executeIn(curState);
 			double trainerFeedback = this.rf.reward(curState, ga, nextState);
 			ea.recordTransitionTo(nextState, ga, trainerFeedback);

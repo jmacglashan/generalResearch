@@ -7,10 +7,10 @@ import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.debugtools.DPrint;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
 public class VIModelPlanner implements ModelPlanner {
@@ -76,7 +76,7 @@ public class VIModelPlanner implements ModelPlanner {
 		}
 		
 		@Override
-		public GroundedAction getAction(State s) {
+		public AbstractGroundedAction getAction(State s) {
 			if(!VIModelPlanner.this.vi.hasComputedValueFor(s)){
 				VIModelPlanner.this.vi.planFromState(s);
 			}

@@ -22,7 +22,7 @@ public class FSSimpleJR implements JointReward {
 		
 	}
 	
-	public FSSimpleJR(double stealValue, double puncherReward, double puncheeReward, double [] forageRewards){
+	public FSSimpleJR(double stealValue, double puncherReward, double puncheeReward, double...forageRewards){
 		this.stealerReward = stealValue;
 		this.stealeeReward = -stealValue;
 		this.puncherReward = puncherReward;

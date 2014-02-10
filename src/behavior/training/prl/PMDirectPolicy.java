@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import burlap.behavior.singleagent.Policy.ActionProb;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.debugtools.RandomFactory;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
@@ -69,7 +69,7 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 		}
 		
 		for(ActionProb ap : preferences){
-			ActionPreference app = this.getMatchingPreference(sh, ap.ga, pn);
+			ActionPreference app = this.getMatchingPreference(sh, (GroundedAction)ap.ga, pn);
 			app.preference += this.learningRate * (ap.pSelection - app.preference);
 		}
 		
@@ -129,7 +129,7 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 
 
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		List <ActionProb> aprobs = this.getActionDistributionForState(s);
 		double roll = this.rand.nextDouble();
 		double sumP = 0.;
@@ -171,7 +171,7 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 					translated.add(ap);
 				}
 				else{
-					ActionProb tap = new ActionProb(this.translateAction(ap.ga, matching), ap.pSelection);
+					ActionProb tap = new ActionProb(this.translateAction((GroundedAction)ap.ga, matching), ap.pSelection);
 					translated.add(tap);
 				}
 			}

@@ -56,7 +56,8 @@ public class Model3ControllerTest {
 	 */
 	public static void main(String[] args) {
 		
-		getAverageNumberOfWordsInTrajDataset();
+		//getAverageNumberOfWordsInTrajDataset();
+		getLatexDatasetTable();
 		
 		//uniformTest();
 		//trajectoryTrainingTest();
@@ -208,7 +209,8 @@ public class Model3ControllerTest {
 		mtem.runEMManually(10);
 		System.out.println("Finished training; beginning testing.");
 		
-		getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
+		//getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
+		printWordParams((MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME));
 		
 		
 		
@@ -890,7 +892,9 @@ public class Model3ControllerTest {
 		mtem.runEMManually(10);
 		
 		MTModule mtmod = (MTModule)gm.getModuleWithName(Model3Controller.LANGMODNAME);
-		mtmod.printLPParams();
+		//mtmod.printLPParams();
+		System.out.println("Starting");
+		printWordParams((MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME));
 		
 	}
 	
@@ -1020,6 +1024,50 @@ public class Model3ControllerTest {
 		System.out.println("Average number of words: " + avgNum);
 		
 		
+	}
+	
+	
+	public static void getLatexDatasetTable(){
+		
+		Sokoban2Domain dg = new Sokoban2Domain();
+		Domain domain = dg.generateDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		
+		List<TrainingElement> dataset = Model3Controller.getCommandsDataset(domain, DATASETTESTPATH, sp);
+		
+		for(TrainingElement te : dataset){
+			String command = te.command.replaceAll(" \\.", ".");
+			command = command.replaceAll(" ,", ",");
+			command = command.replaceAll("&", "\\&");
+			System.out.println(command + " & " + latexTaskMap(te.identifier) + " \\\\ \\hline");
+		}
+		
+	}
+	
+	protected static String latexTaskMap(String input){
+		if(input.startsWith("agent2orange")){
+			return "${\\tt agentInRoom}(?a, ?r) \\land {\\tt roomIsOrange}(?r)$";
+		}
+		else if(input.startsWith("agent2tan")){
+			return "${\\tt agentInRoom}(?a, ?r) \\land {\\tt roomIsTan}(?r)$";
+		}
+		else if(input.startsWith("agent2teal")){
+			return "${\\tt agentInRoom}(?a, ?r) \\land {\\tt roomIsTeal(?r)}$";
+		}
+		else if(input.startsWith("star2orange")){
+			return "${\\tt blockInRoom}(?b, ?r) \\land {\\tt itemIsStar}(?b) \\land {\\tt roomIsOrange}(?r)$";
+		}
+		else if(input.startsWith("star2tan")){
+			return "${\\tt blockInRoom}(?b, ?r) \\land {\\tt itemIsStar}(?b) \\land {\\tt roomIsTan}(?r)$";
+		}
+		else if(input.startsWith("star2teal")){
+			return "${\\tt blockInRoom}(?b, ?r) \\land {\\tt itemIsStar}(?b) \\land {\\tt roomIsTeal}(?r)$";
+		}
+		
+		throw new RuntimeException("Could not map task");
 	}
 	
 

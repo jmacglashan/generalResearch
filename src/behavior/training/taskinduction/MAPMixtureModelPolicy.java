@@ -2,10 +2,8 @@ package behavior.training.taskinduction;
 
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
-
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.GroundedAction;
 
 public class MAPMixtureModelPolicy extends MixtureModelPolicy {
 
@@ -20,7 +18,7 @@ public class MAPMixtureModelPolicy extends MixtureModelPolicy {
 
 	
 	@Override
-	public GroundedAction getAction(State s) {
+	public AbstractGroundedAction getAction(State s) {
 		
 		List <TaskProb> taskProbs = posteriors.getTaskProbs();
 		

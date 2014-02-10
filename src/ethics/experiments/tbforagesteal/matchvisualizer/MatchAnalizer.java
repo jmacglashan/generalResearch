@@ -5,10 +5,10 @@ import java.util.List;
 
 import javax.management.RuntimeErrorException;
 
+import burlap.behavior.singleagent.QValue;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQValue;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -251,14 +251,14 @@ public class MatchAnalizer {
 		
 		QSpace a0Space = new QSpace();
 		for(State s : agent0QQueryStates){
-			QResult res = new QResult(s, agent0.getAllQsFor(s));
+			QResult res = new QResult(s, agent0.getQs(s));
 			a0Space.addQResult(res);
 		}
 		agent0QSequence.add(a0Space);
 		
 		QSpace a1Space = new QSpace();
 		for(State s : agent1QQueryStates){
-			QResult res = new QResult(s, agent1.getAllQsFor(s));
+			QResult res = new QResult(s, agent1.getQs(s));
 			a1Space.addQResult(res);
 		}
 		agent1QSequence.add(a1Space);
@@ -288,8 +288,8 @@ public class MatchAnalizer {
 			
 			for(QResult qr : qResults){
 				if(qr.s.equals(s)){
-					for(SGQValue qe : qr.qEntries){
-						if(qe.gsa.equals(gsa)){
+					for(QValue qe : qr.qEntries){
+						if(qe.a.equals(gsa)){
 							return qe.q;
 						}
 					}
@@ -306,14 +306,14 @@ public class MatchAnalizer {
 	public class QResult{
 		
 		public State s;
-		public List <SGQValue> qEntries;
+		public List <QValue> qEntries;
 		
 		
-		public QResult(State s, List<SGQValue> qEntries){
+		public QResult(State s, List<QValue> qEntries){
 			this.s = s;
-			this.qEntries = new ArrayList<SGQValue>(qEntries.size());
-			for(SGQValue qe : qEntries){
-				this.qEntries.add(new SGQValue(qe));
+			this.qEntries = new ArrayList<QValue>(qEntries.size());
+			for(QValue qe : qEntries){
+				this.qEntries.add(new QValue(qe));
 			}
 		}
 		

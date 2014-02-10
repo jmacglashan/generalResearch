@@ -1,23 +1,28 @@
 package ethics.experiments.fssimple;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import burlap.behavior.learningrate.ExponentialDecayLR;
 import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.QValue;
+import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
+import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.Strategy;
 import burlap.behavior.stochasticgame.agents.SetStrategyAgent;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQValue;
 import burlap.debugtools.DPrint;
 import burlap.debugtools.RandomFactory;
 import burlap.domain.singleagent.graphdefined.GraphDefinedDomain;
 import burlap.oomdp.auxiliary.common.NullTermination;
+import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -48,10 +53,10 @@ public class SimpleLearningExp {
 	 */
 	public static void main(String[] args) {
 		
-		//saTest(true);
+		saTest(false);
 		//saTest2(false);
 		//maTest();
-		maPTTest();
+		//maPTTest();
 
 	}
 	
@@ -96,9 +101,9 @@ public class SimpleLearningExp {
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0);
 		s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).setValue(FSSimple.ATTSTATENODE, 2);
 		
-		List <SGQValue> qs = a1.getAllQsFor(s);
-		for(SGQValue qv : qs){
-			System.out.println(qv.q + "\t" + qv.gsa.action.actionName);
+		List <QValue> qs = a1.getQs(s);
+		for(QValue qv : qs){
+			System.out.println(qv.q + "\t" + qv.a.actionName());
 		}
 		
 	}
@@ -144,28 +149,24 @@ public class SimpleLearningExp {
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0);
 		s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).setValue(FSSimple.ATTSTATENODE, 2);
 		
-		List <SGQValue> qs = a1.getAllQsFor(s);
-		for(SGQValue qv : qs){
-			System.out.println(qv.q + "\t" + qv.gsa.action.actionName);
+		List <QValue> qs = a1.getQs(s);
+		for(QValue qv : qs){
+			System.out.println(qv.q + "\t" + qv.a.actionName());
 		}
 		
 	}
 	
 	
+	/**
+	 * Use this method for testing a punish learner
+	 * @param useVI
+	 */
 	public static void saTest(boolean useVI){
 		
-		GraphDefinedDomain gen = new GraphDefinedDomain(3);
-		//gen.setTransition(0, 0, 2, 1.); //use this for deterministic strategy
-		gen.setTransition(0, 0, 2, 0.9);
-		gen.setTransition(0, 0, 0, 0.1);
+		double opponetError = 0.1;
 		
-		gen.setTransition(2, 0, 0, 1.); //action 0 is do nothing
-		gen.setTransition(2, 1, 1, 1.); //action 1 is punish
-		
-		gen.setTransition(1, 0, 1, 0.9);
-		gen.setTransition(1, 0, 2, .1);
-		
-		Domain domain = gen.generateDomain();
+		Domain domain = getDomainForSAPunisherPlayingAgainstAContingentStealer(opponetError);
+		//Domain domain = getDomainForSAPunisherPlayingAgainstAConstantStealer(opponetError);
 		
 		RewardFunction rf = new RewardFunction() {
 			
@@ -179,7 +180,7 @@ public class SimpleLearningExp {
 				
 				int sn = GraphDefinedDomain.getNodeId(s);
 				if(sn == 2 && spn == 1){
-					return -2.;
+					return -2.; //punish cost incurred when transitioning from my decision state to the punish state
 				}
 				
 				return 0;
@@ -188,10 +189,17 @@ public class SimpleLearningExp {
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
+		double discount = 0.95;
+		//double initQ = -4.8;
+		double initQ = -4.9;
 		
 		
-		ValueIteration vi = new ValueIteration(domain, rf, new NullTermination(), 0.99, hashingFactory, 0.0001, 1000);
-		QLearning ql = new QLearning(domain, rf, new NullTermination(), 0.99, hashingFactory, -25, 0.1);
+		ValueIteration vi = new ValueIteration(domain, rf, new NullTermination(), discount, hashingFactory, 0.0001, 1000);
+		QLearning ql = new QLearning(domain, rf, new NullTermination(), discount, hashingFactory, initQ, 0.01);
+		ql.setLearningRateFunction(new ExponentialDecayLR(0.1, 0.99, 0.001));
+		//ql.setQInitFunction(new OptPunisherQOnPessimisticOpponent());
+		ql.setQInitFunction(new PunisherQForContingent());
+		
 		
 		State s = GraphDefinedDomain.getState(domain, 0);
 		
@@ -200,10 +208,11 @@ public class SimpleLearningExp {
 			vi.planFromState(s);
 		}
 		else{
-			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 5000);
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 1000);
+			/*
 			for(int i = 0; i < ea.numTimeSteps()-1; i++){
 				System.out.println("R: " + ea.getReward(i));
-			}
+			}*/
 			
 			qSource = ql;
 		}
@@ -214,27 +223,79 @@ public class SimpleLearningExp {
 		
 		List<QValue> qs = qSource.getQs(ps);
 		
+		Map<String, String> aMap = new HashMap<String, String>();
+		aMap.put("action0", "Do nothing");
+		aMap.put("action1", "Punish");
+		
 		for(QValue q : qs){
-			System.out.println(q.q + "\t" + q.a.actionName());
+			System.out.println(q.q + "\t" + aMap.get(q.a.actionName()));
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 0);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S0");
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 1);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S1");
 		}
 		
 		
 	}
 	
-	public static void saTest2(boolean useVI){
-		
+	
+	public static Domain getDomainForSAPunisherPlayingAgainstAContingentStealer(double opponentError){
 		GraphDefinedDomain gen = new GraphDefinedDomain(3);
-		gen.setTransition(0, 0, 0, 1.); //action 0 is forage
-		gen.setTransition(0, 1, 2, 1.); //action 1 is steal
+		gen.setTransition(0, 0, 2, 1.-opponentError);
+		gen.setTransition(0, 0, 0, opponentError);
 		
-		gen.setTransition(2, 0, 0, 0.1); //0.1 response of nothing
-		gen.setTransition(2, 0, 1, 0.9); //0.9 response of punish
+		gen.setTransition(2, 0, 0, 1.); //action 0 is do nothing
+		gen.setTransition(2, 1, 1, 1.); //action 1 is punish
 		
-		
-		gen.setTransition(1, 0, 1, 1.); //action 0 is forage
-		gen.setTransition(1, 1, 2, 1.); //action 1 is steal
+		gen.setTransition(1, 0, 1, 1.-opponentError);
+		gen.setTransition(1, 0, 2, opponentError);
 		
 		Domain domain = gen.generateDomain();
+		
+		return domain;
+	}
+	
+	public static Domain getDomainForSAPunisherPlayingAgainstAConstantStealer(double opponentError){
+		GraphDefinedDomain gen = new GraphDefinedDomain(3);
+		gen.setTransition(0, 0, 2, 1.-opponentError);
+		gen.setTransition(0, 0, 0, opponentError);
+		
+		gen.setTransition(2, 0, 0, 1.); //action 0 is do nothing
+		gen.setTransition(2, 1, 1, 1.); //action 1 is punish
+		
+		gen.setTransition(1, 0, 2, 1.-opponentError);
+		gen.setTransition(1, 0, 1, opponentError);
+		
+		Domain domain = gen.generateDomain();
+		
+		return domain;
+	}
+	
+	
+	
+	
+	/**
+	 * Use this method for testing a forage learner
+	 * @param useVI
+	 */
+	public static void saTest2(boolean useVI){
+		
+		double opponentError = 0.1;
+		
+		//Domain domain = getDomainForSAStealerPlayingAgainstPunisher(opponentError);
+		Domain domain = getDomainForSAStealerPlayingAgainstPassive(opponentError);
 		
 		RewardFunction rf = new RewardFunction() {
 			
@@ -262,10 +323,12 @@ public class SimpleLearningExp {
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
+		double discount = 0.92;
+		double qInit = 0.0;
 		
-		
-		ValueIteration vi = new ValueIteration(domain, rf, new NullTermination(), 0.99, hashingFactory, 0.0001, 1000);
-		QLearning ql = new QLearning(domain, rf, new NullTermination(), 0.99, hashingFactory, 1, 0.1);
+		ValueIteration vi = new ValueIteration(domain, rf, new NullTermination(), discount, hashingFactory, 0.0001, 1000);
+		QLearning ql = new QLearning(domain, rf, new NullTermination(), discount, hashingFactory, qInit, 0.1);
+		ql.setLearningRateFunction(new ExponentialDecayLR(0.2, 0.99, 0.001));
 		
 		State s = GraphDefinedDomain.getState(domain, 0);
 		
@@ -274,7 +337,7 @@ public class SimpleLearningExp {
 			vi.planFromState(s);
 		}
 		else{
-			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 5000);
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 50);
 			for(int i = 0; i < ea.numTimeSteps()-1; i++){
 				//System.out.println("R: " + ea.getReward(i));
 			}
@@ -283,11 +346,15 @@ public class SimpleLearningExp {
 		}
 		
 		
+		Map<String, String> aMap = new HashMap<String, String>();
+		aMap.put("action0", "forage");
+		aMap.put("action1", "steal");
+		
 
 		State ps = GraphDefinedDomain.getState(domain, 0);
 		List<QValue> qs = qSource.getQs(ps);
 		for(QValue q : qs){
-			System.out.println(q.q + "\t" + q.a.actionName());
+			System.out.println(q.q + "\t" + aMap.get(q.a.actionName()));
 		}
 		
 		
@@ -295,7 +362,7 @@ public class SimpleLearningExp {
 		ps = GraphDefinedDomain.getState(domain, 1);
 		qs = qSource.getQs(ps);
 		for(QValue q : qs){
-			System.out.println(q.q + "\t" + q.a.actionName());
+			System.out.println(q.q + "\t" + aMap.get(q.a.actionName()));
 		}
 		
 		
@@ -304,12 +371,155 @@ public class SimpleLearningExp {
 	
 	
 	
+	public static Domain getDomainForSAStealerPlayingAgainstPunisher(double opponetError){
+		
+		GraphDefinedDomain gen = new GraphDefinedDomain(3);
+		gen.setTransition(0, 0, 0, 1.); //action 0 is forage
+		gen.setTransition(0, 1, 2, 1.); //action 1 is steal
+		
+		gen.setTransition(2, 0, 0, opponetError); 
+		gen.setTransition(2, 0, 1, 1.-opponetError);
+		
+		
+		gen.setTransition(1, 0, 1, 1.); //action 0 is forage
+		gen.setTransition(1, 1, 2, 1.); //action 1 is steal
+		
+		return gen.generateDomain();
+		
+	}
+	
+	public static Domain getDomainForSAStealerPlayingAgainstPassive(double opponetError){
+		
+		GraphDefinedDomain gen = new GraphDefinedDomain(3);
+		gen.setTransition(0, 0, 0, 1.); //action 0 is forage
+		gen.setTransition(0, 1, 2, 1.); //action 1 is steal
+		
+		gen.setTransition(2, 0, 1, opponetError); 
+		gen.setTransition(2, 0, 0, 1.-opponetError);
+		
+		
+		gen.setTransition(1, 0, 1, 1.); //action 0 is forage
+		gen.setTransition(1, 1, 2, 1.); //action 1 is steal
+		
+		return gen.generateDomain();
+		
+	}
+	
+	
+	public static class OptPunisherQOnPessimisticOpponent implements ValueFunctionInitialization {
+
+		QComputablePlanner planner;
+		
+		public OptPunisherQOnPessimisticOpponent(){
+			
+			Domain domain = getDomainForSAPunisherPlayingAgainstAConstantStealer(0.1);
+			
+			RewardFunction rf = new RewardFunction() {
+				
+				@Override
+				public double reward(State s, GroundedAction a, State sprime) {
+					
+					int spn = GraphDefinedDomain.getNodeId(sprime);
+					if(spn == 2){
+						return -1; //steal cost
+					}
+					
+					int sn = GraphDefinedDomain.getNodeId(s);
+					if(sn == 2 && spn == 1){
+						return -2.; //punish cost incurred when transitioning from my decision state to the punish state
+					}
+					
+					return 0;
+				}
+			};
+			
+			DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
+			double discount = 0.92;
+			planner = new ValueIteration(domain, rf, new NullTermination(), discount, hashingFactory, 0.0001, 1000);
+			State s = GraphDefinedDomain.getState(domain, 0);
+			
+			((OOMDPPlanner)planner).planFromState(s);
+			
+			
+		}
+		
+		@Override
+		public double value(State s) {
+			double maxQ = Double.NEGATIVE_INFINITY;
+			List<QValue> qs = planner.getQs(s);
+			for(QValue q : qs){
+				if(q.q > maxQ){
+					maxQ = q.q;
+				}
+			}
+			return maxQ;
+		}
+
+		@Override
+		public double qValue(State s, AbstractGroundedAction a) {
+			return this.value(s);
+		}
+		
+		
+		
+	}
+	
+	
+	public static class PunisherQForContingent implements ValueFunctionInitialization {
+
+		QComputablePlanner planner;
+		
+		public PunisherQForContingent(){
+			
+			Domain domain = getDomainForSAPunisherPlayingAgainstAContingentStealer(0.1);
+			
+			RewardFunction rf = new RewardFunction() {
+				
+				@Override
+				public double reward(State s, GroundedAction a, State sprime) {
+					
+					int spn = GraphDefinedDomain.getNodeId(sprime);
+					if(spn == 2){
+						return -1; //steal cost
+					}
+					
+					int sn = GraphDefinedDomain.getNodeId(s);
+					if(sn == 2 && spn == 1){
+						return -2.; //punish cost incurred when transitioning from my decision state to the punish state
+					}
+					
+					return 0;
+				}
+			};
+			
+			DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
+			double discount = 0.95;
+			planner = new ValueIteration(domain, rf, new NullTermination(), discount, hashingFactory, 0.0001, 1000);
+			State s = GraphDefinedDomain.getState(domain, 0);
+			
+			((OOMDPPlanner)planner).planFromState(s);
+			
+			
+		}
+		
+		@Override
+		public double value(State s) {
+			return ((ValueFunctionPlanner)planner).value(s);
+		}
+
+		@Override
+		public double qValue(State s, AbstractGroundedAction a) {
+			return this.planner.getQ(s, a).q;
+		}
+		
+		
+		
+	}
 	
 	
 	
 	
-	
-	public static class ConditionalStealStrategy extends Strategy{
+	public static class ConditionalStealStrategy extends Policy{
 
 		public String myAgentName;
 		public SGDomain domain;
@@ -328,7 +538,7 @@ public class SimpleLearningExp {
 		}
 		
 		@Override
-		public GroundedSingleAction getAction(State s) {
+		public AbstractGroundedAction getAction(State s) {
 			
 			
 			int sn = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE);
@@ -347,7 +557,7 @@ public class SimpleLearningExp {
 		}
 
 		@Override
-		public List<SingleActionProb> getActionDistributionForState(State s) {
+		public List<ActionProb> getActionDistributionForState(State s) {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -356,8 +566,15 @@ public class SimpleLearningExp {
 		public boolean isStochastic() {
 			return true;
 		}
+
+		@Override
+		public boolean isDefinedFor(State s) {
+			return true;
+		}
 		
 	}
+	
+	
 	
 	
 	
