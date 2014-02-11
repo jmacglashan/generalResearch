@@ -21,6 +21,7 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.Attribute.AttributeType;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.SADomain;
@@ -321,28 +322,28 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 		//otherwise construct it!
 		SOKOBANDOMAIN = new SADomain();
 
-		Attribute xAtt = new Attribute(SOKOBANDOMAIN, XATTNAME, 0);
+		Attribute xAtt = new Attribute(SOKOBANDOMAIN, XATTNAME, AttributeType.DISC);
 		xAtt.setDiscValuesForRange(MINX, MAXX, 1);
 
-		Attribute topXAtt = new Attribute(SOKOBANDOMAIN, TOPXATTNAME, 0);
+		Attribute topXAtt = new Attribute(SOKOBANDOMAIN, TOPXATTNAME, AttributeType.DISC);
 		topXAtt.setDiscValuesForRange(MINX, MAXX, 1);
 
-		Attribute bottomXAtt = new Attribute(SOKOBANDOMAIN, BOTTOMXATTNAME, 0);
+		Attribute bottomXAtt = new Attribute(SOKOBANDOMAIN, BOTTOMXATTNAME, AttributeType.DISC);
 		bottomXAtt.setDiscValuesForRange(MINX, MAXX, 1);
 
-		Attribute yAtt = new Attribute(SOKOBANDOMAIN, YATTNAME, 0);
+		Attribute yAtt = new Attribute(SOKOBANDOMAIN, YATTNAME, AttributeType.DISC);
 		yAtt.setDiscValuesForRange(MINY, MAXY, 1);
 
-		Attribute topYAtt = new Attribute(SOKOBANDOMAIN, TOPYATTNAME, 0);
+		Attribute topYAtt = new Attribute(SOKOBANDOMAIN, TOPYATTNAME, AttributeType.DISC);
 		topYAtt.setDiscValuesForRange(MINY, MAXY, 1);
 
-		Attribute bottomYAtt = new Attribute(SOKOBANDOMAIN, BOTTOMYATTNAME, 0);
+		Attribute bottomYAtt = new Attribute(SOKOBANDOMAIN, BOTTOMYATTNAME, AttributeType.DISC);
 		bottomYAtt.setDiscValuesForRange(MINY, MAXY, 1);
 
-		Attribute colorAtt = new Attribute(SOKOBANDOMAIN, COLORATTNAME, 0);
+		Attribute colorAtt = new Attribute(SOKOBANDOMAIN, COLORATTNAME, AttributeType.DISC);
 		colorAtt.setDiscValues(colors);
 
-		Attribute shapeAtt = new Attribute(SOKOBANDOMAIN, SHAPEATTNAME, 0);
+		Attribute shapeAtt = new Attribute(SOKOBANDOMAIN, SHAPEATTNAME, AttributeType.DISC);
 		shapeAtt.setDiscValues(shapes);
 
 		ObjectClass aClass = new ObjectClass(SOKOBANDOMAIN, AGENTCLASS);

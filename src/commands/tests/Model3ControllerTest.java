@@ -45,8 +45,8 @@ import em.EMAlgorithm;
 
 public class Model3ControllerTest {
 
-	//public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrain";
-	public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrainLimitedCommand";
+	public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrain";
+	//public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrainLimitedCommand";
 	//public static String 						DATASETTESTPATH = "dataFiles/commands/mySimpleSokoData";
 	public static String						MTDATASETPATH = "dataFiles/commands/allTurkSemanticLabeled";
 	
@@ -57,10 +57,11 @@ public class Model3ControllerTest {
 	public static void main(String[] args) {
 		
 		//getAverageNumberOfWordsInTrajDataset();
-		getLatexDatasetTable();
+		//getLatexDatasetTable();
 		
 		//uniformTest();
-		//trajectoryTrainingTest();
+		//trajectoryTrainingTest(DATASETTESTPATH);
+		trajectoryTrainingTest(args[0]);
 		//parallelLOOOutput(args);
 		//parallelBOWLOOOutput(args);
 		//parallelNORLOOOutput(args);
@@ -186,7 +187,7 @@ public class Model3ControllerTest {
 		
 	}
 	
-	public static void trajectoryTrainingTest(){
+	public static void trajectoryTrainingTest(String datasetpath){
 		
 		
 		Model3Controller controller = constructController();
@@ -197,7 +198,7 @@ public class Model3ControllerTest {
 		Tokenizer tokenizer = new Tokenizer(true, true);
 		tokenizer.addDelimiter("-");
 		
-		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, DATASETTESTPATH, sp);
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
 		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
 		List<WeightedMTInstance> mtDataset = controller.getWeightedMTDatasetFromTrajectoryDataset(trainingDataset, tokenizer, 1.e-20);
 		
@@ -209,8 +210,8 @@ public class Model3ControllerTest {
 		mtem.runEMManually(10);
 		System.out.println("Finished training; beginning testing.");
 		
-		//getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
-		printWordParams((MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME));
+		getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
+		//printWordParams((MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME));
 		
 		
 		
