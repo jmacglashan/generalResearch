@@ -16,6 +16,7 @@ public class InfGASoftMaxReproduce implements RatioReproduce {
 	
 	protected boolean			normalize = false;
 	protected double			temperature = 1.;
+	protected boolean			usePopulationRatio = true;
 	
 	
 	public InfGASoftMaxReproduce(double temp){
@@ -37,7 +38,11 @@ public class InfGASoftMaxReproduce implements RatioReproduce {
 		RepResult res = new RepResult(0., new ArrayList<GenomeRatioFitness>(popDist));
 		double sumPopIncrease = 0.;
 		for(int i = 0; i < fitProb.length; i++){
-			double children = fitProb[i] * popDist.get(i).gr.ratio;
+			//double children = fitProb[i] * popDist.get(i).gr.ratio;
+			double children = fitProb[i];
+			if(this.usePopulationRatio){
+				children *= popDist.get(i).gr.ratio;
+			}
 			sumPopIncrease += children;
 			GenomeRatio gr = res.nextPop.get(i).gr;
 			gr.ratio += children;

@@ -40,11 +40,11 @@ import burlap.oomdp.stochasticgames.WorldGenerator;
 import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleJAM;
+import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
 import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
 import ethics.experiments.fssimple.aux.FSRQInit;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
+import ethics.experiments.fssimple.aux.FSSimpleBTSG;
 import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 import ethics.experiments.fssimple.aux.RNPseudoTerm;
 import ethics.experiments.tbforagesteal.matchvisualizer.MatchAnalizer;
@@ -124,15 +124,19 @@ public class SimpleMatchVisualizer extends JFrame {
 		stage = 0;
 		maxStage = 1000;
 		
+		double backTurnedProb = 0.2;
+		
 		FSSimple dgen = new FSSimple();
 		this.domain = (SGDomain)dgen.generateDomain();
-		JointActionModel jam = new FSSimpleJAM();
+		//JointActionModel jam = new FSSimpleJAM();
+		JointActionModel jam = new FSSimpleBTJAM(backTurnedProb);
 		
 		//this.objectiveRF = new FSSimpleJR();
 		this.objectiveRF = new FSSimpleJR(1., -0.5, -2.5, 0.);
 		
 		this.hashingFactory = new DiscreteStateHashFactory();
-		SGStateGenerator sg = new FSSimpleSG(domain);
+		//SGStateGenerator sg = new FSSimpleSG(domain);
+		SGStateGenerator sg = new FSSimpleBTSG(domain, backTurnedProb);
 		
 		this.worldGenerator = new ConsantPsudoTermWorldGenerator(domain, jam, this.objectiveRF, new NullTermination(), sg, new RNPseudoTerm());
 		
@@ -406,7 +410,14 @@ public class SimpleMatchVisualizer extends JFrame {
 		decStage.setEnabled(true);
 		stageSlider.setEnabled(true);
 		
+		boolean firstTime = false;
+		if(this.ma == null){
+			firstTime = true;
+		}
+		
 		double oldLearningRate = learningRate;
+		
+		
 		learningRate = Double.parseDouble(lrField.getText());
 		
 		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
@@ -416,51 +427,10 @@ public class SimpleMatchVisualizer extends JFrame {
 		double [] a1SRParams = new double[]{Double.parseDouble(a1SField.getText()), Double.parseDouble(a1PField.getText())};
 		
 		
-		FSSubjectiveRF a0SRF = new FSSubjectiveRF(this.objectiveRF);
-		a0SRF.setParameters(a0SRParams);
-		FSRQInit v0QInit = new FSRQInit((FSSimpleJR)this.objectiveRF, a0SRF);
+		JointReward [] subjectiveRFStorage = new JointReward[2];
 		
-		FSSubjectiveRF a1SRF = new FSSubjectiveRF(this.objectiveRF);
-		a1SRF.setParameters(a1SRParams);
-		FSRQInit v1QInit = new FSRQInit((FSSimpleJR)this.objectiveRF, a1SRF);
-		//FSRPunisherQInit v1QInit = new FSRPunisherQInit(a1SRF, (FSSimpleJR)this.objectiveRF);
+		this.performMatch(a0SRParams, a1SRParams, subjectiveRFStorage);
 		
-		System.out.println(a0SRF.toString());
-		System.out.println(a1SRF.toString());
-		
-		AgentFactory a0Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a0SRF);
-		AgentFactory a1Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a1SRF);
-		
-		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
-		agent0.setQValueInitializer(v0QInit);
-		agent0.setLearningRate(new ExponentialDecayLR(learningRate, 0.99, 0.001));
-		
-		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
-		//agent1.setQValueInitializer(v1QInit);
-		agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.0));
-		agent1.setLearningRate(new ExponentialDecayLR(learningRate, 0.99, 0.001));
-		
-		
-		World world = worldGenerator.generateWorld();
-		agent0.joinWorld(world, at);
-		agent1.joinWorld(world, at);
-		
-		agent0Name = agent0.getAgentName();
-		agent1Name = agent1.getAgentName();
-		
-		String [] anames = new String []{agent0.getAgentName(), agent1.getAgentName()};
-		agent0QueryStates = getQueryStates(anames, 0);
-		agent1QueryStates = getQueryStates(anames, 1);
-		
-		DPrint.toggleCode(world.getDebugId(), false);
-		
-		boolean firstTime = false;
-		if(this.ma == null){
-			firstTime = true;
-		}
-		
-		this.ma = this.getMatchAnalyzer(world, agent0, agent1);
-		this.ma.runMatch(this.numMatches);
 		
 		this.qTableController.setMatchAnalyzer(this.ma);
 		this.qTableController.setAgentNames(agent0Name, agent1Name);
@@ -480,7 +450,7 @@ public class SimpleMatchVisualizer extends JFrame {
 		this.a1CumulativeReturn.setText(String.format("%.1f", this.ma.getObjectiveCumulativeReward(1)));
 		
 		
-		this.qTableController.updateRFValues(a0SRF, a1SRF);
+		this.qTableController.updateRFValues(subjectiveRFStorage[0], subjectiveRFStorage[1]);
 		
 		stage = 0;
 		maxStage = this.ma.numQSpaceMeasure()-1;
@@ -492,6 +462,58 @@ public class SimpleMatchVisualizer extends JFrame {
 		this.oldA1Params = a1SRParams;
 		
 		this.updateStage();
+		
+	}
+	
+	
+	protected void performMatch(double [] a0SRParams, double [] a1SRParams, JointReward[] subjectiveRFStorage){
+		
+		FSSubjectiveRF a0SRF = new FSSubjectiveRF(this.objectiveRF);
+		a0SRF.setParameters(a0SRParams);
+		FSRQInit v0QInit = new FSRQInit((FSSimpleJR)this.objectiveRF, a0SRF);
+		
+		FSSubjectiveRF a1SRF = new FSSubjectiveRF(this.objectiveRF);
+		a1SRF.setParameters(a1SRParams);
+		FSRQInit v1QInit = new FSRQInit((FSSimpleJR)this.objectiveRF, a1SRF);
+		//FSRPunisherQInit v1QInit = new FSRPunisherQInit(a1SRF, (FSSimpleJR)this.objectiveRF);
+		
+		subjectiveRFStorage[0] = a0SRF;
+		subjectiveRFStorage[1] = a1SRF;
+		
+		System.out.println(a0SRF.toString());
+		System.out.println(a1SRF.toString());
+		
+		AgentFactory a0Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a0SRF);
+		AgentFactory a1Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a1SRF);
+		
+		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
+		//agent0.setQValueInitializer(v0QInit);
+		agent0.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
+		agent0.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.001));
+		
+		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
+		agent1.setQValueInitializer(v1QInit);
+		agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
+		agent1.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.001));
+		
+		
+		World world = worldGenerator.generateWorld();
+		agent0.joinWorld(world, at);
+		agent1.joinWorld(world, at);
+		
+		agent0Name = agent0.getAgentName();
+		agent1Name = agent1.getAgentName();
+		
+		String [] anames = new String []{agent0.getAgentName(), agent1.getAgentName()};
+		agent0QueryStates = getQueryStates(anames, 0);
+		agent1QueryStates = getQueryStates(anames, 1);
+		
+		DPrint.toggleCode(world.getDebugId(), false);
+		
+		
+		
+		this.ma = this.getMatchAnalyzer(world, agent0, agent1);
+		this.ma.runMatch(this.numMatches);
 		
 	}
 	
@@ -526,6 +548,80 @@ public class SimpleMatchVisualizer extends JFrame {
 	}
 	
 	protected void computeAverage(){
+		
+		incStage.setEnabled(true);
+		decStage.setEnabled(true);
+		stageSlider.setEnabled(true);
+		
+		boolean firstTime = false;
+		if(this.ma == null){
+			firstTime = true;
+		}
+		
+		double oldLearningRate = learningRate;
+		
+		
+		learningRate = Double.parseDouble(lrField.getText());
+		
+		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		
+		
+		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PField.getText())};
+		double [] a1SRParams = new double[]{Double.parseDouble(a1SField.getText()), Double.parseDouble(a1PField.getText())};
+		
+		
+		JointReward [] subjectiveRFStorage = new JointReward[2];
+		
+		double suma0 = 0.;
+		double suma1 = 0.;
+		double lasta0 = 0.;
+		double lasta1 = 0.;
+		int nTrials = 10;
+		for(int i = 0; i < nTrials; i++){
+			this.performMatch(a0SRParams, a1SRParams, subjectiveRFStorage);
+			lasta0 = this.ma.getObjectiveCumulativeReward(0);
+			lasta1 = this.ma.getObjectiveCumulativeReward(1);
+			
+			suma0 += lasta0;
+			suma1 += lasta1;
+		}
+		
+		
+		
+		this.qTableController.setMatchAnalyzer(this.ma);
+		this.qTableController.setAgentNames(agent0Name, agent1Name);
+		this.qTableController.setQueryState(agent0QueryStates, agent1QueryStates);
+		
+		if(firstTime){
+			this.qTableController.setupTable();
+		}
+		
+		
+		if(oldLearningRate != learningRate || !this.doubleArraysEqual(oldA0Params, a0SRParams) || !this.doubleArraysEqual(oldA1Params, a1SRParams)){
+			this.a0AvgCumulativeReturn.setText("-----");
+			this.a1AvgCumulativeReturn.setText("-----");
+		}
+		
+		this.a0CumulativeReturn.setText(String.format("%.1f", this.ma.getObjectiveCumulativeReward(0)));
+		this.a1CumulativeReturn.setText(String.format("%.1f", this.ma.getObjectiveCumulativeReward(1)));
+		
+		this.a0AvgCumulativeReturn.setText(String.format("%.1f", suma0 / nTrials));
+		this.a1AvgCumulativeReturn.setText(String.format("%.1f", suma1 / nTrials));
+		
+		
+		this.qTableController.updateRFValues(subjectiveRFStorage[0], subjectiveRFStorage[1]);
+		
+		stage = 0;
+		maxStage = this.ma.numQSpaceMeasure()-1;
+		stageSlider.setMaximum(this.ma.numQSpaceMeasure()-1);
+		stageSlider.setValue(0);
+		
+		
+		this.oldA0Params = a0SRParams;
+		this.oldA1Params = a1SRParams;
+		
+		this.updateStage();
+		
 		
 	}
 	
@@ -579,13 +675,20 @@ public class SimpleMatchVisualizer extends JFrame {
 		
 		if(playerId == 0){
 			
-			State s0 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0);
+			State s0 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0, 0);
 			StateActionSetTuple sas0 = new StateActionSetTuple(s0, "S0");
 			sas0.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
 			sas0.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONSTEAL), ""), "S");
 			res.add(sas0);
 			
-			State s1 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0);
+			State s0t = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 1, 0);
+			StateActionSetTuple sas0t = new StateActionSetTuple(s0t, "S0T");
+			sas0t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
+			sas0t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONSTEAL), ""), "S");
+			res.add(sas0t);
+			
+			
+			State s1 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0, 0);
 			FSSimple.setStateNode(s1, 1);
 			StateActionSetTuple sas1 = new StateActionSetTuple(s1, "S1");
 			sas1.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
@@ -593,11 +696,19 @@ public class SimpleMatchVisualizer extends JFrame {
 			res.add(sas1);
 			
 			
+			State s1t = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 1, 0);
+			FSSimple.setStateNode(s1t, 1);
+			StateActionSetTuple sas1t = new StateActionSetTuple(s1t, "S1T");
+			sas1t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
+			sas1t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONSTEAL), ""), "S");
+			res.add(sas1t);
+			
+			
 			
 		}
 		else{
 			
-			State s2 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0);
+			State s2 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0, 0);
 			FSSimple.setStateNode(s2, 2);
 			StateActionSetTuple sas2 = new StateActionSetTuple(s2, "S2");
 			sas2.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONPUNISH), ""), "P");

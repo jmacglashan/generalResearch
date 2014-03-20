@@ -31,7 +31,7 @@ public class TBFSWhoStartedMechanics extends JointActionModel {
 	}
 
 	@Override
-	protected void actionHelper(State s, JointAction ja) {
+	protected State actionHelper(State s, JointAction ja) {
 		
 		
 		GroundedSingleAction agentForTurnAction = null;
@@ -88,6 +88,8 @@ public class TBFSWhoStartedMechanics extends JointActionModel {
 		if(shouldSwapTurns){
 			nonActingAgent.setValue(TBForageSteal.ATTISTURN, 1);
 		}
+		
+		return s;
 
 	}
 	

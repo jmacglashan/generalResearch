@@ -32,7 +32,7 @@ public class TBFSStandardMechanics extends JointActionModel {
 	}
 
 	@Override
-	protected void actionHelper(State s, JointAction ja) {
+	protected State actionHelper(State s, JointAction ja) {
 		
 		GroundedSingleAction agentForTurnAction = null;
 		ObjectInstance agentForTurnObject = null;
@@ -88,6 +88,7 @@ public class TBFSStandardMechanics extends JointActionModel {
 			nonActingAgent.setValue(TBForageSteal.ATTISTURN, 1);
 		}
 		
+		return s;
 		
 	}
 	

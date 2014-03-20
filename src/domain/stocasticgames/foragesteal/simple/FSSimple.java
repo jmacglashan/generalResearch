@@ -4,6 +4,7 @@ import java.util.List;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Attribute;
+import burlap.oomdp.core.Attribute.AttributeType;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
@@ -19,6 +20,7 @@ public class FSSimple implements DomainGenerator {
 	public static final String				ATTPN = "playerNum";
 	public static final String				ATTSTATENODE = "stateNode";
 	public static final String				ATTFA = "forageAlternative";
+	public static final String				ATTBACKTURNED = "backIsTurned";
 	
 	public static final String				CLASSPLAYER = "player";
 	public static final String				CLASSFALT = "forageAlternative";
@@ -57,8 +59,11 @@ public class FSSimple implements DomainGenerator {
 		Attribute faAtt = new Attribute(domain, ATTFA, Attribute.AttributeType.DISC);
 		faAtt.setDiscValuesForRange(0, 4, 1);
 		
+		Attribute btAtt = new Attribute(domain, ATTBACKTURNED, AttributeType.BOOLEAN);
+		
 		ObjectClass playerClass = new ObjectClass(domain, CLASSPLAYER);
 		playerClass.addAttribute(pnAtt);
+		playerClass.addAttribute(btAtt);
 		
 		ObjectClass stateNodeClass = new ObjectClass(domain, CLASSSTATENODE);
 		stateNodeClass.addAttribute(snAtt);
@@ -79,7 +84,7 @@ public class FSSimple implements DomainGenerator {
 	}
 	
 	
-	public static State getInitialState(Domain domain, String player0Name, String player1Name, int...forageValues){
+	public static State getInitialState(Domain domain, String player0Name, String player1Name, int backTurned, int...forageValues){
 		
 		State s = new State();
 		
@@ -87,7 +92,9 @@ public class FSSimple implements DomainGenerator {
 		ObjectInstance player1 = new ObjectInstance(domain.getObjectClass(CLASSPLAYER), player1Name);
 		
 		player0.setValue(ATTPN, 0);
+		player0.setValue(ATTBACKTURNED, 0);
 		player1.setValue(ATTPN, 1);
+		player1.setValue(ATTBACKTURNED, backTurned);
 		
 		s.addObject(player0);
 		s.addObject(player1);
@@ -239,10 +246,11 @@ public class FSSimple implements DomainGenerator {
 		
 		FSSimple gen = new FSSimple();
 		SGDomain domain = (SGDomain)gen.generateDomain();
-		JointActionModel jam = new FSSimpleJAM();
+		//JointActionModel jam = new FSSimpleJAM();
+		JointActionModel jam = new FSSimpleBTJAM(0.5);
 		JointReward r = new FSSimpleJR();
 		
-		State s = FSSimple.getInitialState(domain, "player0", "player1", 0);
+		State s = FSSimple.getInitialState(domain, "player0", "player1", 0, 0);
 		
 		SGTerminalExplorer exp = new SGTerminalExplorer(domain, jam);
 		exp.setTrackingRF(r);

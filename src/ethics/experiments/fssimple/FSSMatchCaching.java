@@ -8,6 +8,7 @@ import java.util.List;
 
 import optimization.OptVariables;
 import burlap.behavior.learningrate.ExponentialDecayLR;
+import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
@@ -21,12 +22,12 @@ import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SGStateGenerator;
 import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleJAM;
+import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
 import ethics.ParameterizedRFFactory;
 import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
-import ethics.experiments.fssimple.aux.FSRPunisherQInit;
 import ethics.experiments.fssimple.aux.FSRQInit;
+import ethics.experiments.fssimple.aux.FSSimpleBTSG;
 import ethics.experiments.fssimple.aux.FSSimpleSG;
 import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
@@ -90,14 +91,18 @@ public class FSSMatchCaching {
 		
 		this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
 		
-		this.objectiveReward = new FSSimpleJR();
+		//this.objectiveReward = new FSSimpleJR();
+		this.objectiveReward = new FSSimpleJR(1., -0.5, -2.5, 0.);
 		this.nTries =  25;
 		this.nGames = 1000;
 		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
 		
+		double probBackTurned = 0.2;
+		
 		FSSimple dgen = new FSSimple();
 		SGDomain domain = (SGDomain)dgen.generateDomain();
-		JointActionModel jam = new FSSimpleJAM();
+		//JointActionModel jam = new FSSimpleJAM();
+		JointActionModel jam = new FSSimpleBTJAM(probBackTurned);
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
@@ -105,7 +110,8 @@ public class FSSMatchCaching {
 		
 		this.baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory);
 		
-		SGStateGenerator sg = new FSSimpleSG(domain);
+		//SGStateGenerator sg = new FSSimpleSG(domain);
+		SGStateGenerator sg = new FSSimpleBTSG(domain, probBackTurned);
 		
 		this.worldGenerator = new ConsantPsudoTermWorldGenerator(domain, jam, objectiveReward, new NullTermination(), sg, new RNPseudoTerm());
 		
@@ -233,24 +239,26 @@ public class FSSMatchCaching {
 		
 		JointReward subjectiveRewardV1 = this.rewardFactory.generateRF(v1.vars);
 		AgentFactory factV1 = new AgentFactoryWithSubjectiveReward(baseFactory, subjectiveRewardV1);
-		FSRQInit v1QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV1);
+		//FSRQInit v1QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV1);
 		
 		JointReward subjectiveRewardV2 = this.rewardFactory.generateRF(v2.vars);
 		AgentFactory factV2 = new AgentFactoryWithSubjectiveReward(baseFactory, subjectiveRewardV2);
 		//FSRQInit v2QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV2);
-		FSRPunisherQInit v2QInit = new FSRPunisherQInit((FSSubjectiveRF)subjectiveRewardV2, (FSSimpleJR)this.objectiveReward);
+		//FSRPunisherQInit v2QInit = new FSRPunisherQInit((FSSubjectiveRF)subjectiveRewardV2, (FSSimpleJR)this.objectiveReward);
 		
 		
 		
 		//role 1
 		
 		SGQLAgent a1 = (SGQLAgent)factV1.generateAgent();
-		a1.setQValueInitializer(v1QInit);
-		a1.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.99, 0.001));
+		//a1.setQValueInitializer(v1QInit);
+		a1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
+		a1.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
 		SGQLAgent a2 = (SGQLAgent)factV2.generateAgent();
-		a2.setQValueInitializer(v2QInit);
-		a2.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.99, 0.001));
+		//a2.setQValueInitializer(v2QInit);
+		a2.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
+		a2.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
 		PseudoGameCountWorld w1 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
 		a1.joinWorld(w1, this.fsAgentType);
@@ -263,16 +271,19 @@ public class FSSMatchCaching {
 		
 		//role 2
 		
-		FSRPunisherQInit v12QInit = new FSRPunisherQInit((FSSubjectiveRF)subjectiveRewardV1, (FSSimpleJR)this.objectiveReward);
-		FSRQInit v22QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV2);
+		//FSRPunisherQInit v12QInit = new FSRPunisherQInit((FSSubjectiveRF)subjectiveRewardV1, (FSSimpleJR)this.objectiveReward);
+		//FSRQInit v12QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV1);
+		//FSRQInit v22QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV2);
 		
 		SGQLAgent a12 = (SGQLAgent)factV1.generateAgent();
-		a12.setQValueInitializer(v12QInit);
-		a12.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.99, 0.001));
+		//a12.setQValueInitializer(v12QInit);
+		a12.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
+		a12.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
 		SGQLAgent a22 = (SGQLAgent)factV2.generateAgent();
-		a22.setQValueInitializer(v22QInit);
-		a22.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.99, 0.001));
+		//a22.setQValueInitializer(v22QInit);
+		a22.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
+		a22.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
 		PseudoGameCountWorld w2 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
 		a22.joinWorld(w2, this.fsAgentType); //switch join order

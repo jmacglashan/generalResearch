@@ -53,8 +53,9 @@ public class SimpleLearningExp {
 	 */
 	public static void main(String[] args) {
 		
-		saTest(false);
+		//saTest(false);
 		//saTest2(false);
+		saTest3(false);
 		//maTest();
 		//maPTTest();
 
@@ -286,6 +287,9 @@ public class SimpleLearningExp {
 	
 	
 	
+	
+	
+	
 	/**
 	 * Use this method for testing a forage learner
 	 * @param useVI
@@ -404,6 +408,190 @@ public class SimpleLearningExp {
 		return gen.generateDomain();
 		
 	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Use this method for testing a punish learner
+	 * @param useVI
+	 */
+	public static void saTest3(boolean useVI){
+		
+		final double opponetError = 0.1;
+		
+		Domain domain = getDomainForSAPunisherPlayingAgainstAContingentStealerWithBackTurning(opponetError, 0.2);
+		
+		RewardFunction rf = new RewardFunction() {
+			
+			@Override
+			public double reward(State s, GroundedAction a, State sprime) {
+				
+				int spn = GraphDefinedDomain.getNodeId(sprime);
+				int sn = GraphDefinedDomain.getNodeId(s);
+				
+				//punisher turn
+				if(sn == 4){
+					if(spn == 2 || spn == 3){
+						//punished
+						return -.5;
+					}
+					else{
+						return 0.; //punisher did nothing
+					}
+				}
+				
+				if(sn == 0 || sn == 2){
+					if(spn == 4){
+						return -1.; //stealer stole
+					}
+					else{
+						return 0.; //stealer did not steal
+					}
+				}
+				else{
+					//expected value of action in back turned
+					return (1. - opponetError) * -1;
+				}
+				
+				
+			}
+		};
+		
+		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
+		
+		double discount = 0.95;
+		//double initQ = -4.8;
+		double initQ = -6.5;
+		
+		
+		ValueIteration vi = new ValueIteration(domain, rf, new NullTermination(), discount, hashingFactory, 0.000001, 1000);
+		QLearning ql = new QLearning(domain, rf, new NullTermination(), discount, hashingFactory, initQ, 0.01);
+		ql.setLearningRateFunction(new ExponentialDecayLR(0.1, 0.999, 0.01));
+		//ql.setQInitFunction(new OptPunisherQOnPessimisticOpponent());
+		//ql.setQInitFunction(new PunisherQForContingent());
+		
+		
+		State s = GraphDefinedDomain.getState(domain, 0);
+		
+		QComputablePlanner qSource = vi;
+		if(useVI){
+			vi.planFromState(s);
+		}
+		else{
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 500);
+			/*
+			for(int i = 0; i < ea.numTimeSteps()-1; i++){
+				System.out.println("R: " + ea.getReward(i));
+			}*/
+			
+			qSource = ql;
+		}
+		
+		
+
+		State ps = GraphDefinedDomain.getState(domain, 4);
+		
+		List<QValue> qs = qSource.getQs(ps);
+		
+		Map<String, String> aMap = new HashMap<String, String>();
+		aMap.put("action0", "Do nothing");
+		aMap.put("action1", "Punish");
+		
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + aMap.get(q.a.actionName()));
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 0);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S0");
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 1);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S1");
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 2);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S2");
+		}
+		
+		System.out.println("----------------------");
+		
+		ps = GraphDefinedDomain.getState(domain, 3);
+		qs = qSource.getQs(ps);
+		for(QValue q : qs){
+			System.out.println(q.q + "\t" + "S3");
+		}
+		
+		
+	}
+	
+	
+	
+	
+	public static Domain getDomainForSAPunisherPlayingAgainstAContingentStealerWithBackTurning(double opponentError, double probBT){
+		
+		double opponentIE = 1. - opponentError;
+		double pIBT = 1. - probBT;
+		
+		GraphDefinedDomain gen = new GraphDefinedDomain(5);
+		
+		//stealer no response with punisher facing
+		gen.setTransition(0, 0, 4, opponentIE);
+		gen.setTransition(0, 0, 0, opponentError * pIBT);
+		gen.setTransition(0, 0, 1, opponentError * probBT);
+		
+		//stealer no response with punisher turned
+		gen.setTransition(1, 0, 1, probBT);
+		gen.setTransition(1, 0, 0, pIBT);
+		
+		
+		
+		//stealer punished with punisher facing
+		gen.setTransition(2, 0, 4, opponentError);
+		gen.setTransition(2, 0, 2, opponentIE * pIBT);
+		gen.setTransition(2, 0, 3, opponentIE * probBT);
+		
+		//stealer no response with punisher turned
+		gen.setTransition(3, 0, 3, probBT);
+		gen.setTransition(3, 0, 2, pIBT);
+		
+		
+		
+		//punisher does nothing
+		gen.setTransition(4, 0, 0, pIBT);
+		gen.setTransition(4, 0, 1, probBT);
+		
+		//punisher punishers
+		gen.setTransition(4, 1, 2, pIBT);
+		gen.setTransition(4, 1, 3, probBT);
+
+		
+		Domain domain = gen.generateDomain();
+		
+		return domain;
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	public static class OptPunisherQOnPessimisticOpponent implements ValueFunctionInitialization {

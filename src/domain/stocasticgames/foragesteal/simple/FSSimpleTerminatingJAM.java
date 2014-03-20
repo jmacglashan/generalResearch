@@ -22,7 +22,7 @@ public class FSSimpleTerminatingJAM extends JointActionModel {
 	}
 
 	@Override
-	protected void actionHelper(State s, JointAction ja) {
+	protected State actionHelper(State s, JointAction ja) {
 		
 		GroundedSingleAction player0Action = null;
 		
@@ -50,6 +50,8 @@ public class FSSimpleTerminatingJAM extends JointActionModel {
 			sn.setValue(FSSimple.ATTSTATENODE, 3);
 			
 		}
+		
+		return s;
 
 	}
 	
