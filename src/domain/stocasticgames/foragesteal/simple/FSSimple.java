@@ -15,6 +15,15 @@ import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.stochasticgames.explorers.SGTerminalExplorer;
 
+
+/**
+ * State node identification:
+ * 	0: theif chooses, state when has not been punished in the past
+ * 	1: theif chooes, state when has been punished previously
+ * 	2: punisher chooses
+ * @author James MacGlashan
+ *
+ */
 public class FSSimple implements DomainGenerator {
 
 	public static final String				ATTPN = "playerNum";
@@ -123,9 +132,15 @@ public class FSSimple implements DomainGenerator {
 	
 	
 	public static boolean isRootNode(State s){
+		int n = stateNode(s);
+		return n == 0 || n == 1;
+	}
+	
+	
+	public static int stateNode(State s){
 		ObjectInstance sn = s.getFirstObjectOfClass(CLASSSTATENODE);
 		int n = sn.getDiscValForAttribute(CLASSSTATENODE);
-		return n == 0 || n == 1;
+		return n;
 	}
 	
 	public class ForageAction extends SingleAction{

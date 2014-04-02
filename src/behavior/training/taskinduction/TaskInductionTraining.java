@@ -212,6 +212,11 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	public void planFromState(State initialState) {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public void resetPlannerResults() {
+		//nothing to do... to what priors should things be set?
+	}
 	
 	
 	

@@ -162,6 +162,11 @@ public class QTDLam {
 		
 	}
 	
+	
+	public void reset(){
+		this.qIndex.clear();
+	}
+	
 	protected QValue getQ(StateHashTuple s, GroundedAction a) {
 		QLearningStateNode node = this.getStateNode(s);
 		

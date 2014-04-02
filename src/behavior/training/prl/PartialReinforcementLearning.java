@@ -205,4 +205,11 @@ public class PartialReinforcementLearning extends OOMDPPlanner implements
 		
 	}
 
+
+
+	@Override
+	public void resetPlannerResults() {
+		this.trainerModel = new MTPositiveSPNegativeSA(this.hashingFactory);
+	}
+
 }

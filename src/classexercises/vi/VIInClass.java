@@ -219,5 +219,10 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 		
 		
 	}
+	
+	@Override
+	public void resetPlannerResults() {
+		this.v.clear();
+	}
 
 }

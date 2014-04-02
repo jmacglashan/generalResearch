@@ -134,4 +134,9 @@ public class SimulatedTrainingCritic implements Critic {
 		
 	}
 
+	@Override
+	public void resetData() {
+		//nothing to do
+	}
+
 }

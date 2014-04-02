@@ -155,4 +155,9 @@ public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 		
 	}
 
+	@Override
+	public void resetPlannerResults() {
+		this.v.clear();
+	}
+
 }

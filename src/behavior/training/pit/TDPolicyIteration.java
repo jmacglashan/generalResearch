@@ -77,4 +77,9 @@ public class TDPolicyIteration extends OOMDPPlanner implements QComputablePlanne
 		return this.qSource.getQ(s, (GroundedAction)a);
 	}
 
+	@Override
+	public void resetPlannerResults() {
+		this.qSource.reset();
+	}
+
 }

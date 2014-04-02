@@ -32,6 +32,7 @@ import ethics.experiments.fssimple.aux.FSSimpleSG;
 import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
 import ethics.experiments.fssimple.aux.RNPseudoTerm;
+import ethics.experiments.fssimple.specialagents.OpponentOutcomeAgent;
 import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
 
 public class FSSMatchCaching {
@@ -50,6 +51,7 @@ public class FSSMatchCaching {
 	protected int									nTries;
 	protected int									nGames;
 	
+	protected SGDomain 								domain;
 	
 	
 	/**
@@ -89,7 +91,9 @@ public class FSSMatchCaching {
 		
 		this.baseLearningRate = learningRate;
 		
-		this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
+		//this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
+		this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 5)).allRFs;
+		
 		
 		//this.objectiveReward = new FSSimpleJR();
 		this.objectiveReward = new FSSimpleJR(1., -0.5, -2.5, 0.);
@@ -100,7 +104,7 @@ public class FSSMatchCaching {
 		double probBackTurned = 0.2;
 		
 		FSSimple dgen = new FSSimple();
-		SGDomain domain = (SGDomain)dgen.generateDomain();
+		this.domain = (SGDomain)dgen.generateDomain();
 		//JointActionModel jam = new FSSimpleJAM();
 		JointActionModel jam = new FSSimpleBTJAM(probBackTurned);
 		
@@ -236,7 +240,11 @@ public class FSSMatchCaching {
 	
 	protected DoublePair runMatch(OptVariables v1, OptVariables v2){
 		
+		return this.runMatchHardCoded(v1, v2);
 		
+	}
+	
+	protected DoublePair runMatchLearning(OptVariables v1, OptVariables v2){
 		JointReward subjectiveRewardV1 = this.rewardFactory.generateRF(v1.vars);
 		AgentFactory factV1 = new AgentFactoryWithSubjectiveReward(baseFactory, subjectiveRewardV1);
 		//FSRQInit v1QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV1);
@@ -305,6 +313,53 @@ public class FSSMatchCaching {
 	}
 	
 	
+	protected DoublePair runMatchHardCoded(OptVariables v1, OptVariables v2){
+		
+		int [] hp1 = this.doubleToIntArray(v1.vars);
+		int [] hp2 = this.doubleToIntArray(v2.vars);
+		
+		OpponentOutcomeAgent a1 = new OpponentOutcomeAgent(this.domain, hp1);
+		OpponentOutcomeAgent a2 = new OpponentOutcomeAgent(this.domain, hp2);
+		
+		PseudoGameCountWorld w1 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
+		a1.joinWorld(w1, this.fsAgentType);
+		a2.joinWorld(w1, this.fsAgentType);
+		
+		w1.runGame(Integer.MAX_VALUE, nGames);
+		
+		double a1r1 = w1.getCumulativeRewardForAgent(a1.getAgentName());
+		double a2r1 = w1.getCumulativeRewardForAgent(a2.getAgentName());
+		
+		
+		OpponentOutcomeAgent a12 = new OpponentOutcomeAgent(this.domain, hp1);
+		OpponentOutcomeAgent a22 = new OpponentOutcomeAgent(this.domain, hp2);
+		
+		PseudoGameCountWorld w2 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
+		a22.joinWorld(w2, this.fsAgentType); //switch join order
+		a12.joinWorld(w2, this.fsAgentType);
+		
+		w2.runGame(Integer.MAX_VALUE, nGames);
+		
+		double a1r2 = w2.getCumulativeRewardForAgent(a12.getAgentName());
+		double a2r2 = w2.getCumulativeRewardForAgent(a22.getAgentName());
+		
+		double a1r = a1r1 + a1r2;
+		double a2r = a2r1 + a2r2;
+		
+		DoublePair res = new DoublePair(a1r, a2r);
+		
+		
+		return res;
+		
+	}
+	
+	protected int [] doubleToIntArray(double [] vars){
+		int [] ia = new int[vars.length];
+		for(int i = 0; i < vars.length; i++){
+			ia[i] = (int)vars[i];
+		}
+		return ia;
+	}
 	
 	
 	protected String commaDelimString(OptVariables v){

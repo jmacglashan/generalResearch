@@ -632,9 +632,13 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		if(agents.size() == 0){
 			a = new ObjectInstance(domain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT + 0);
 			this.curState.addObject(a);
+			Sokoban2Domain.setAgent(this.curState, this.lastCellX, this.lastCellY, 1);
+		}
+		else{
+			Sokoban2Domain.setAgent(this.curState, this.lastCellX, this.lastCellY);
 		}
 		
-		Sokoban2Domain.setAgent(this.curState, this.lastCellX, this.lastCellY);
+		
 		this.needsRepaint = true;
 		
 	}

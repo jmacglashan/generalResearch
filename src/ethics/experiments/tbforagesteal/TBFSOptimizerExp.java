@@ -283,9 +283,40 @@ public class TBFSOptimizerExp {
 		
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1, 2, 1., 3);
-		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2);
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2);
+		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(0, 1, 1, 5);
+		
+		
+		//List<OptVariables> selectHCAgents = rfenum.allRFs;
+		//selectHCAgents.remove(new OptVariables(new double[]{1,0,1,1,1}));
+		
+		
+		/*
+		List<OptVariables> selectHCAgents = new ArrayList<OptVariables>(9);
+		selectHCAgents.add(new OptVariables(new double[]{0,0,0,0,0}));
+		selectHCAgents.add(new OptVariables(new double[]{0,0,0,1,1}));
+		selectHCAgents.add(new OptVariables(new double[]{0,0,0,1,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,1,0,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,1,1,1}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,1,1,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,0,1,0,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,0,1,1,1}));
+		selectHCAgents.add(new OptVariables(new double[]{1,0,1,1,0}));
+		
+		
+		selectHCAgents.add(new OptVariables(new double[]{0,0,0,0,1}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,1,0,1}));
+		selectHCAgents.add(new OptVariables(new double[]{1,0,1,0,1}));
+		
+		
+		selectHCAgents.add(new OptVariables(new double[]{1,1,0,0,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,0,1,1}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,0,1,0}));
+		selectHCAgents.add(new OptVariables(new double[]{1,1,0,0,1}));
+		*/
 		
 		InfiniteGA ga = new InfiniteGA(eval, new InfGASoftMaxReproduce(temperature), new RatioKillWorst(), rfenum.allRFs, nGenerations);
+		//InfiniteGA ga = new InfiniteGA(eval, new InfGASoftMaxReproduce(temperature), new RatioKillWorst(), selectHCAgents, nGenerations);
 		eval.setInfGA(ga);
 		
 		OVarStringRep rep = new OVarStringRep() {

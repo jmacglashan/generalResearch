@@ -42,6 +42,12 @@ public class OptVariables {
 		return buf.toString();
 	}
 	
+	@Override
+	public boolean equals(Object o){
+		OptVariables ov = (OptVariables)o;
+		return ov.toString().equals(this.toString());
+	}
+	
 	
 	
 }

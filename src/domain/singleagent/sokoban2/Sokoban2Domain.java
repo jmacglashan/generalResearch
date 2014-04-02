@@ -238,6 +238,13 @@ public class Sokoban2Domain implements DomainGenerator {
 		o.setValue(ATTY, y);
 	}
 	
+	public static void setAgent(State s, int x, int y, int dir){
+		ObjectInstance o = s.getFirstObjectOfClass(CLASSAGENT);
+		o.setValue(ATTX, x);
+		o.setValue(ATTY, y);
+		o.setValue(ATTDIR, dir);
+	}
+	
 	public static void setBlockPos(State s, int i, int x, int y){
 		ObjectInstance o = s.getObjectsOfTrueClass(CLASSBLOCK).get(i);
 		o.setValue(ATTX, x);
