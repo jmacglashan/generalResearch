@@ -12,10 +12,15 @@ import burlap.behavior.singleagent.learnbydemo.apprenticeship.ApprenticeshipLear
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
+import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
+import burlap.behavior.singleagent.vfa.common.PFFeatureVectorGenerator;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldStateParser;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
+import burlap.domain.singleagent.gridworld.macro.MacroCellGridWorld;
+import burlap.domain.singleagent.gridworld.macro.MacroCellGridWorld.LinearInPFRewardFunction;
+import burlap.domain.singleagent.gridworld.macro.MacroCellVisualizer;
 import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.auxiliary.common.RandomStartStateGenerator;
@@ -25,11 +30,15 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
+import burlap.oomdp.singleagent.explorer.VisualExplorer;
 import burlap.oomdp.visualizer.Visualizer;
+
 
 public class IRLGridWorldDemo {
 
-	MacroGridWorld 				irlgw;
+	public static final int 	MCELL_FILLED = 5;
+	
+	MacroCellGridWorld 				irlgw;
 	Domain						domain;
 	StateParser 				sp;
 	RewardFunction 				rf;
@@ -43,14 +52,18 @@ public class IRLGridWorldDemo {
 
 	public IRLGridWorldDemo() {
 
-		irlgw = new MacroGridWorld(); //create an 11x11 grid world
+		
+		irlgw = new MacroCellGridWorld(); //create an 11x11 grid world
 		domain = irlgw.generateDomain();
 		sp = new GridWorldStateParser(domain); //for writing states to a file
 
-
+		this.featureFunctions = MacroCellGridWorld.getMacroCellPropositionalFunctions(this.domain, this.irlgw);
+		this.rewardMap = MacroCellGridWorld.generateRandomRewardsMap(featureFunctions);
+		
+		
 		//set up the initial state
-		initialState = MacroGridWorld.getOneAgentState(domain);
-		MacroGridWorld.setAgent(initialState, 0,0);
+		initialState = MacroCellGridWorld.getOneAgentNoLocationState(domain);
+		MacroCellGridWorld.setAgent(initialState, 0,0);
 		this.startStateGenerator = new RandomStartStateGenerator((SADomain)domain, initialState);
 
 		//rf = new IRLGridRF(irlgw.getMacroCellRewards(initialState));
@@ -65,7 +78,8 @@ public class IRLGridWorldDemo {
 		//when computing hash values this will ignore the attributes of the location objects. since location objects cannot be moved
 		//by any action, there is no reason to include the in the computation for our task.
 		//if the below line was not included, the hashingFactory would use every attribute of every object class
-		hashingFactory.setAttributesForClass(MacroGridWorld.CLASSAGENT, domain.getObjectClass(GridWorldDomain.CLASSAGENT).attributeList);
+		hashingFactory.setAttributesForClass(MacroCellGridWorld.CLASSAGENT, domain.getObjectClass(GridWorldDomain.CLASSAGENT).attributeList);
+		
 	}
 
 
@@ -73,17 +87,69 @@ public class IRLGridWorldDemo {
 	 * launch an interactive visualizer of our domain/task
 	 */
 	public List<EpisodeAnalysis> interactive(){
-		Visualizer v = GridWorldVisualizer.getVisualizer(domain, irlgw.getMap());
+		Visualizer v = GridWorldVisualizer.getVisualizer(irlgw.getMap());
 		VisualExplorerRecorder exp = new VisualExplorerRecorder(domain, v, initialState);
 
-		exp.addKeyAction("w", MacroGridWorld.ACTIONNORTH);
-		exp.addKeyAction("s", MacroGridWorld.ACTIONSOUTH);
-		exp.addKeyAction("d", MacroGridWorld.ACTIONEAST);
-		exp.addKeyAction("a", MacroGridWorld.ACTIONWEST);
+		exp.addKeyAction("w", MacroCellGridWorld.ACTIONNORTH);
+		exp.addKeyAction("s", MacroCellGridWorld.ACTIONSOUTH);
+		exp.addKeyAction("d", MacroCellGridWorld.ACTIONEAST);
+		exp.addKeyAction("a", MacroCellGridWorld.ACTIONWEST);
 
 		List<EpisodeAnalysis> recordedEpisodes = new ArrayList<EpisodeAnalysis>();
 		exp.initGUIAndRecord(recordedEpisodes);
 		return recordedEpisodes;
+	}
+	
+	public void testNewInteractive(){
+		Visualizer v = GridWorldVisualizer.getVisualizer(irlgw.getMap());
+		
+		final VisualExplorer exp = new VisualExplorer(domain, v, initialState);
+		
+		exp.addKeyAction("w", MacroCellGridWorld.ACTIONNORTH);
+		exp.addKeyAction("s", MacroCellGridWorld.ACTIONSOUTH);
+		exp.addKeyAction("d", MacroCellGridWorld.ACTIONEAST);
+		exp.addKeyAction("a", MacroCellGridWorld.ACTIONWEST);
+		
+		exp.enableEpisodeRecording("r", "f");
+		exp.initGUI();
+		
+		Thread t = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				while(exp.isRecording()){
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+			}
+		});
+		
+		t.start();
+		try {
+			t.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		List<EpisodeAnalysis> episodes = exp.getRecordedEpisodes();
+		
+		System.out.println(episodes.size());
+		
+		for(int i = 0; i < episodes.size(); i++){
+			episodes.get(i).writeToFile("myTestRecorder/" + i, this.sp);
+		}
+		
+		Visualizer v2 = GridWorldVisualizer.getVisualizer(irlgw.getMap());
+		
+		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v2, domain, sp, "myTestRecorder");
+		
 	}
 
 
@@ -92,19 +158,20 @@ public class IRLGridWorldDemo {
 	 * @param outputPath the path to the directory containing the saved episode files
 	 */
 	public void visualizeEpisodeWithFeatures(String outputPath){
-		MacroGridWorld.InMacroCellPF[] macroCellFunctions = new MacroGridWorld.InMacroCellPF[this.featureFunctions.length];
+		
+		MacroCellGridWorld.InMacroCellPF[] macroCellFunctions = new MacroCellGridWorld.InMacroCellPF[this.featureFunctions.length];
 		for (int i =0; i < this.featureFunctions.length; i++) {
-			macroCellFunctions[i] = (MacroGridWorld.InMacroCellPF)this.featureFunctions[i];
+			macroCellFunctions[i] = (MacroCellGridWorld.InMacroCellPF)this.featureFunctions[i];
 		}
 
 
-		Visualizer v = MacroCellVisualizer.getVisualizer(domain, irlgw.getMap(), macroCellFunctions, this.rewardMap);
-		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v, domain, sp, outputPath);
+		Visualizer v = MacroCellVisualizer.getVisualizer(irlgw.getMap(), macroCellFunctions, this.rewardMap);
+		new EpisodeSequenceVisualizer(v, domain, sp, outputPath);
 	}
 
 	public void visualizeEpisode(String outputPath) {
-		Visualizer v = GridWorldVisualizer.getVisualizer(domain, irlgw.getMap());
-		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v, domain, sp, outputPath);
+		Visualizer v = GridWorldVisualizer.getVisualizer(irlgw.getMap());
+		new EpisodeSequenceVisualizer(v, domain, sp, outputPath);
 	}
 
 
@@ -115,19 +182,22 @@ public class IRLGridWorldDemo {
 	 */
 	public void runALviaIRLRandomlyGeneratedEpisodes(String outputPath){
 
+		
+		
 		//for consistency make sure the path ends with a '/'
 		if(!outputPath.endsWith("/")){
 			outputPath = outputPath + "/";
 		}
 
-		this.featureFunctions = MacroGridWorld.getPropositionalFunctions(this.domain);
-		this.rewardMap = MacroGridWorld.generateRandomRewards(featureFunctions, MacroGridWorld.MCELL_FILLED);
-		RewardFunction randomReward = new ApprenticeshipLearning.FeatureBasedRewardFunction(featureFunctions, this.rewardMap);
+		
+		StateToFeatureVectorGenerator featureFunction = new PFFeatureVectorGenerator(featureFunctions);
+		RewardFunction randomReward = new LinearInPFRewardFunction(featureFunctions, this.rewardMap);
 		rf = randomReward;
 
 		//create and instance of planner; discount is set to 0.99; the minimum delta threshold is set to 0.001
-		ValueIteration planner = new ValueIteration(domain, randomReward, tf, GAMMA, hashingFactory, .01, 100);		
+		ValueIteration planner = new ValueIteration(domain, randomReward, tf, GAMMA, hashingFactory, .01, 25);		
 
+		
 		//run planner from our initial state
 		planner.planFromState(initialState);
 
@@ -142,7 +212,8 @@ public class IRLGridWorldDemo {
 			episodes.add(episode);
 		}
 
-		this.runALviaIRL(outputPath, planner, featureFunctions, episodes, randomReward);
+		this.runALviaIRL(outputPath, planner, featureFunction, episodes, randomReward);
+		
 	}
 
 	/**
@@ -151,14 +222,16 @@ public class IRLGridWorldDemo {
 	 */
 	public void runALviaIRLWithEpisodes(String outputPath, List<EpisodeAnalysis> expertEpisodes){
 
+		
 		//for consistency make sure the path ends with a '/'
 		if(!outputPath.endsWith("/")){
 			outputPath = outputPath + "/";
 		}
 
-		PropositionalFunction[] featureFunctions = MacroGridWorld.getPropositionalFunctions(this.domain);
-		Map<String, Double> rewards = MacroGridWorld.generateRandomRewards(featureFunctions, MacroGridWorld.MCELL_FILLED);
-		RewardFunction randomReward = new ApprenticeshipLearning.FeatureBasedRewardFunction(featureFunctions, rewards);
+		PropositionalFunction[] featureFunctions = MacroCellGridWorld.getMacroCellPropositionalFunctions(this.domain, this.irlgw);
+		StateToFeatureVectorGenerator featureFunction = new PFFeatureVectorGenerator(featureFunctions);
+		Map<String, Double> rewards = MacroCellGridWorld.generateRandomRewardsMap(featureFunctions);
+		RewardFunction randomReward = new LinearInPFRewardFunction(featureFunctions, rewards);
 
 		//create and instance of planner; discount is set to 0.99; the minimum delta threshold is set to 0.001
 		ValueIteration planner = new ValueIteration(domain, randomReward, tf, GAMMA, hashingFactory, .01, 100);		
@@ -166,10 +239,9 @@ public class IRLGridWorldDemo {
 		//run planner from our initial state
 		planner.planFromState(initialState);
 
-		//create a Q-greedy policy using the Q-values that the planner computes
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
 
-		this.runALviaIRL(outputPath, planner, featureFunctions, expertEpisodes, randomReward);
+		this.runALviaIRL(outputPath, planner, featureFunction, expertEpisodes, randomReward);
+		
 	}
 
 	/**
@@ -182,7 +254,9 @@ public class IRLGridWorldDemo {
 	 * @param randomReward
 	 */
 
-	public void runALviaIRL(String outputPath, ValueIteration planner, PropositionalFunction[] featureFunctions, List<EpisodeAnalysis> expertEpisodes, RewardFunction randomReward) {
+	public void runALviaIRL(String outputPath, ValueIteration planner, StateToFeatureVectorGenerator featureFunctions, List<EpisodeAnalysis> expertEpisodes, RewardFunction randomReward) {
+		
+		
 		//run a sample of the computed policy and write its results to the file "VIResult.episode" in the directory outputPath
 		//a '.episode' extension is automatically added by the writeToFileMethod
 		int index = 0;
@@ -200,12 +274,13 @@ public class IRLGridWorldDemo {
 
 		start = System.currentTimeMillis();
 
+		
 		StateGenerator startStateGenerator = new RandomStartStateGenerator((SADomain)this.domain, this.initialState);
 		ApprenticeshipLearningRequest request = 
 				new ApprenticeshipLearningRequest(this.domain, planner, featureFunctions, expertEpisodes, startStateGenerator);
 		//request.setUsingMaxMargin(true);
 		request.setPolicyCount(60);
-		request.setMaxIterations(40);
+		request.setMaxIterations(3);
 		Policy projectionPolicy = ApprenticeshipLearning.getLearnedPolicy(request);
 		//Policy projectionPolicy = ApprenticeshipLearning.projectionMethod(this.domain, planner, featureFunctions, expertEpisodes, 0.99, 0.01, 100);
 
@@ -215,6 +290,8 @@ public class IRLGridWorldDemo {
 		}
 		end = System.currentTimeMillis();
 		System.out.println("Time to complete projection: " + (end - start)/1000F);
+		
+		
 	}
 
 
@@ -222,11 +299,18 @@ public class IRLGridWorldDemo {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		
+		
 		IRLGridWorldDemo tester = new IRLGridWorldDemo();
-		String outputPath = "output_macro"; //directory to record results
+		
+		tester.testNewInteractive();
+		
+		
+		/*String outputPath = "output_macro"; //directory to record results
 
 
-		tester.runALviaIRLRandomlyGeneratedEpisodes(outputPath);
+		tester.runALviaIRLRandomlyGeneratedEpisodes(outputPath);*/
 		//tester.runALviaIRLWithEpisodes(outputPath, tester.interactive()); //performs planning and save a policy sample in outputPath
 
 		/*
@@ -243,8 +327,10 @@ public class IRLGridWorldDemo {
 			epAnalysis.writeToFile(outputPath + "/random" + i, tester.sp);
 		}
 		*/
+		
 		//tester.visualizeEpisode(outputPath);
-		tester.visualizeEpisodeWithFeatures(outputPath); //visualizers the policy sample
+		//tester.visualizeEpisodeWithFeatures(outputPath); //visualizers the policy sample
+		
 
 	}
 
@@ -255,5 +341,12 @@ public class IRLGridWorldDemo {
 			return false;
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
 	
 }

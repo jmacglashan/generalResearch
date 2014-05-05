@@ -20,9 +20,14 @@ import burlap.behavior.singleagent.planning.deterministic.uninformed.bfs.BFS;
 import burlap.behavior.singleagent.planning.deterministic.uninformed.dfs.DFS;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.oomdp.visualizer.Visualizer;
+import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.auxiliary.StateParser;
+import burlap.oomdp.auxiliary.common.ConstantStateGenerator;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.auxiliary.StateReachability;
+import burlap.behavior.singleagent.auxiliary.performance.LearningAlgorithmExperimenter;
+import burlap.behavior.singleagent.auxiliary.performance.PerformanceMetric;
+import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.*;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.PolicyGlyphPainter2D.PolicyGlyphRenderStyle;
@@ -57,10 +62,13 @@ public class TBasicBehavior {
 		//example.ValueIterationExample(outputPath);
 		//example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
+		//example.experimenterAndPlotter();
 		
 		
-		//run the visualizer
+		//run the visualizer (only use if you don't use the experiment plotter example)
 		example.visualize(outputPath);
+		
+		
 
 	}
 	
@@ -94,8 +102,7 @@ public class TBasicBehavior {
 		//add visual observer
 		VisualActionObserver observer = new VisualActionObserver(domain, 
 			GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		//this.domain.setActionObserverForAllAction(observer);
-		((SADomain)this.domain).addActionObserverForAllAction(observer);
+		((SADomain)this.domain).setActionObserverForAllAction(observer);
 		observer.initGUI();		
 		
 			
@@ -267,7 +274,7 @@ public class TBasicBehavior {
 	
 	public void valueFunctionVisualize(QComputablePlanner planner, Policy p){
 		List <State> allStates = StateReachability.getReachableStates(initialState, 
-				(SADomain)domain, hashingFactory);
+			(SADomain)domain, hashingFactory);
 		LandmarkColorBlendInterpolation rb = new LandmarkColorBlendInterpolation();
 		rb.addNextLandMark(0., Color.RED);
 		rb.addNextLandMark(1., Color.BLUE);
@@ -291,6 +298,65 @@ public class TBasicBehavior {
 		gui.setBgColor(Color.GRAY);
 		gui.initGUI();
 	}
+
+
+
+	public void experimenterAndPlotter(){
+		
+		//custom reward function for more interesting results
+		final RewardFunction rf = new GoalBasedRF(this.goalCondition, 5., -0.1);
+
+		/**
+		 * Create factories for Q-learning agent and SARSA agent to compare
+		 */
+
+		LearningAgentFactory qLearningFactory = new LearningAgentFactory() {
+			
+			@Override
+			public String getAgentName() {
+				return "Q-learning";
+			}
+			
+			@Override
+			public LearningAgent generateAgent() {
+				return new QLearning(domain, rf, tf, 0.99, hashingFactory, 0.3, 0.1);
+			}
+		};
+
+
+		LearningAgentFactory sarsaLearningFactory = new LearningAgentFactory() {
+			
+			@Override
+			public String getAgentName() {
+				return "SARSA";
+			}
+			
+			@Override
+			public LearningAgent generateAgent() {
+				return new SarsaLam(domain, rf, tf, 0.99, hashingFactory, 0.0, 0.1, 1.);
+			}
+		};
+
+		StateGenerator sg = new ConstantStateGenerator(this.initialState);
+
+		LearningAlgorithmExperimenter exp = new LearningAlgorithmExperimenter((SADomain)this.domain, 
+			rf, sg, 10, 100, qLearningFactory, sarsaLearningFactory);
+
+		exp.setUpPlottingConfiguration(500, 250, 2, 1000, 
+			TrialMode.MOSTRECENTANDAVERAGE, 
+			PerformanceMetric.CUMULATIVESTEPSPEREPISODE, 
+			PerformanceMetric.AVERAGEEPISODEREWARD);
+
+		exp.startExperiment();
+
+		exp.writeStepAndEpisodeDataToCSV("expData");
+
+
+	}
+
+
+	
+
 
 	
 }

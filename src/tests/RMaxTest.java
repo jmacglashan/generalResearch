@@ -5,9 +5,9 @@ import burlap.behavior.singleagent.auxiliary.performance.PerformanceMetric;
 import burlap.behavior.singleagent.auxiliary.performance.TrialMode;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.learning.LearningAgentFactory;
-import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
-import burlap.behavior.singleagent.learning.modellearning.artdp.ARTDP;
-import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
+//import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
+//import burlap.behavior.singleagent.learning.modellearning.artdp.ARTDP;
+//import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.shaping.potential.PotentialFunction;
@@ -94,6 +94,7 @@ public class RMaxTest {
 		};
 		
 		
+		/*
 		LearningAgentFactory rMaxFactory = new LearningAgentFactory() {
 			
 			@Override
@@ -165,6 +166,7 @@ public class RMaxTest {
 				return new ARTDP(domain, rf, tf, gamma, hashingFactory, 0);
 			}
 		};
+		*/
 		
 		Visualizer v = GridWorldVisualizer.getVisualizer(domain, this.gwdg.getMap());
 		VisualActionObserver ob = new VisualActionObserver(domain, v);
@@ -172,11 +174,11 @@ public class RMaxTest {
 		//ob.initGUI();
 		//this.domain.addActionObserverForAllAction(ob);
 		
-		LearningAlgorithmExperimenter exp = new LearningAlgorithmExperimenter(domain, rf, new ConstantStateGenerator(initialState), 10, 100, artdpFactory, rMaxFactory);
+		//LearningAlgorithmExperimenter exp = new LearningAlgorithmExperimenter(domain, rf, new ConstantStateGenerator(initialState), 10, 100, artdpFactory, rMaxFactory);
 		//exp.toggleVisualPlots(false);
-		exp.setUpPlottingConfiguration(500, 250, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE, PerformanceMetric.CUMULATIVESTEPSPEREPISODE);
+		//exp.setUpPlottingConfiguration(500, 250, 2, 1000, TrialMode.MOSTRECENTANDAVERAGE, PerformanceMetric.CUMULATIVESTEPSPEREPISODE);
 		
-		exp.startExperiment();
+		//exp.startExperiment();
 		
 	}
 

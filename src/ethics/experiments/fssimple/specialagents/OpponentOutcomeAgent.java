@@ -38,7 +38,7 @@ public class OpponentOutcomeAgent extends Agent {
 	 */
 	protected int [] historyPolicy;
 	
-	protected double epsilon = 0.0;
+	protected double epsilon = 0.1;
 	
 	protected boolean thiefStoleAnyway = false;
 	protected boolean iJustPunished = false;

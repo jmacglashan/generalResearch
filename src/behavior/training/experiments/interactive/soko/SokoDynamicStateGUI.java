@@ -90,6 +90,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	protected JButton					giveCommandButton;
 	protected JButton					finishTrainingButton;
+	protected JButton					finishWithoutLearningButton;
 	protected JButton					rewardButton;
 	protected JButton					punishButton;
 	
@@ -315,7 +316,22 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			}
 		});
 		c.gridx = 1;
+		c.gridy = 7;
 		controlContainer.add(finishTrainingButton,c);
+		
+		
+		finishWithoutLearningButton = new JButton("Finish Without Learning");
+		finishWithoutLearningButton.setEnabled(false);
+		finishWithoutLearningButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				finishWithoutLearning();
+			}
+		});
+		c.gridy = 6;
+		controlContainer.add(finishWithoutLearningButton,c);
+		
 		
 		
 		rewardButton = new JButton("Reward");
@@ -328,7 +344,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		});
 		rewardButton.setEnabled(false);
 		c.gridx = 0;
-		c.gridy = 7;
+		c.gridy = 8;
 		c.insets = new Insets(20, 0, 0, 0);
 		controlContainer.add(rewardButton,c);
 		
@@ -361,7 +377,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			}
 		});
 		c.gridx = 0;
-		c.gridy = 8;
+		c.gridy = 9;
 		c.insets = new Insets(50, 0, 0, 0);
 		controlContainer.add(this.hallucinateButton, c);
 		
@@ -377,7 +393,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 									   "x: delete" +
 									   "</html>");
 		c.gridx = 0;
-		c.gridy = 9;
+		c.gridy = 10;
 		c.gridwidth = 2;
 		c.insets = new Insets(100, 0, 0, 0);
 		controlContainer.add(cheatSheet, c);
@@ -465,6 +481,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		
 		this.giveCommandButton.setEnabled(false);
 		this.finishTrainingButton.setEnabled(true);
+		this.finishWithoutLearningButton.setEnabled(true);
 		this.rewardButton.setEnabled(true);
 		this.punishButton.setEnabled(true);
 		
@@ -524,6 +541,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		
 		this.giveCommandButton.setEnabled(true);
 		this.finishTrainingButton.setEnabled(false);
+		this.finishWithoutLearningButton.setEnabled(false);
 		this.rewardButton.setEnabled(false);
 		this.punishButton.setEnabled(false);
 		
@@ -547,6 +565,39 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		this.lastMostLikelyTask = null;
 		
 		this.commandInterface.addLastTrainingResultToDatasetAndRetrain(this.initialState, this.commandArea.getText(), 5e-5);
+		
+		this.needsRepaint = true;
+		this.updateGUI();
+		
+	}
+	
+	protected void finishWithoutLearning(){
+		
+		this.giveCommandButton.setEnabled(true);
+		this.finishTrainingButton.setEnabled(false);
+		this.finishWithoutLearningButton.setEnabled(false);
+		this.rewardButton.setEnabled(false);
+		this.punishButton.setEnabled(false);
+		
+		this.cLayer.setHidden(false);
+		
+		this.curState = initialState;
+		this.sLayer.updateState(curState);
+		
+		this.env.setTerminal();
+		
+		System.out.println("Waiting...");
+		try {
+			this.agentThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Finished waiting.");
+		
+		this.hLayer.updateState(null);
+		
+		this.lastMostLikelyTask = null;
+		
 		
 		this.needsRepaint = true;
 		this.updateGUI();

@@ -54,6 +54,11 @@ public class FSSMatchCaching {
 	protected SGDomain 								domain;
 	
 	
+	
+	
+	protected boolean								replaceResultsWithAvgOnly = true;
+	
+	
 	/**
 	 * @param args
 	 */
@@ -97,7 +102,8 @@ public class FSSMatchCaching {
 		
 		//this.objectiveReward = new FSSimpleJR();
 		this.objectiveReward = new FSSimpleJR(1., -0.5, -2.5, 0.);
-		this.nTries =  25;
+		//this.nTries =  25;
+		this.nTries = 1000;
 		this.nGames = 1000;
 		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
 		
@@ -206,20 +212,30 @@ public class FSSMatchCaching {
 		//return21,return22,...,return2N
 		
 		buf.append(this.commaDelimString(v1)).append(";").append(this.commaDelimString(v2)).append("::").append(mr.avgA).append(",").append(mr.stdA).append("\n");
-		for(int i = 0; i < mr.results.size(); i++){
-			if(i > 0){
-				buf.append(",");
+		if(!this.replaceResultsWithAvgOnly){
+			for(int i = 0; i < mr.results.size(); i++){
+				if(i > 0){
+					buf.append(",");
+				}
+				buf.append(mr.results.get(i).a);
 			}
-			buf.append(mr.results.get(i).a);
+		}
+		else{
+			buf.append(mr.avgA);
 		}
 		buf.append("\n");
 		
 		buf.append(this.commaDelimString(v2)).append(";").append(this.commaDelimString(v1)).append("::").append(mr.avgB).append(",").append(mr.stdB).append("\n");
-		for(int i = 0; i < mr.results.size(); i++){
-			if(i > 0){
-				buf.append(",");
+		if(!this.replaceResultsWithAvgOnly){
+			for(int i = 0; i < mr.results.size(); i++){
+				if(i > 0){
+					buf.append(",");
+				}
+				buf.append(mr.results.get(i).b);
 			}
-			buf.append(mr.results.get(i).b);
+		}
+		else{
+			buf.append(mr.avgB);
 		}
 		
 		

@@ -24,12 +24,13 @@ import burlap.behavior.singleagent.learning.actorcritic.ActorCritic;
 import burlap.behavior.singleagent.learning.actorcritic.actor.BoltzmannActor;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TDLambda;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TimeIndexedTDLambda;
-import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
-import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
+//import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
+//import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.StateConditionTest;
+import burlap.behavior.singleagent.planning.commonpolicies.EpsilonGreedy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner;
 import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
@@ -50,9 +51,11 @@ import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.auxiliary.common.ConstantStateGenerator;
 import burlap.oomdp.core.AbstractGroundedAction;
+import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.common.SinglePFTF;
@@ -90,9 +93,9 @@ public class BasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		example.QLearningExample(outputPath);
+		//example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
-		//example.BFSExample(outputPath);
+		example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
 		//example.AStarExample(outputPath);
 		//example.ValueIterationExample(outputPath);
@@ -102,7 +105,7 @@ public class BasicBehavior {
 		//example.RMaxExample(outputPath);
 		
 		//run the visualizer
-		//example.visualize(outputPath);
+		example.visualize(outputPath);
 
 		
 		//example.valueIterationAndVisualizeValueFunction();
@@ -128,10 +131,12 @@ public class BasicBehavior {
 		goalCondition = new TFGoalCondition(tf); //create a goal condition that is synonymous with the termination criteria; this is used with deterministic planners
 		
 		//set up the initial state
-		initialState = GridWorldDomain.getOneAgentOneLocationState(domain);
+		//initialState = GridWorldDomain.getOneAgentOneLocationState(domain);
+		initialState = GridWorldDomain.getOneAgentNLocationState(domain, 2);
 		GridWorldDomain.setAgent(initialState, 0, 0);
 		//GridWorldDomain.setAgent(initialState, 10, 5);
 		GridWorldDomain.setLocation(initialState, 0, 10, 10);
+		GridWorldDomain.setLocation(initialState, 1, 10, 7, 1);
 		//GridWorldDomain.setLocation(initialState, 0, 0, 0);
 		//GridWorldDomain.setLocation(initialState, 0, 14, 14);
 		
@@ -140,6 +145,7 @@ public class BasicBehavior {
 		hashingFactory.setAttributesForClass(GridWorldDomain.CLASSAGENT, domain.getObjectClass(GridWorldDomain.CLASSAGENT).attributeList); //optional code line; uses only the agent position to perform hash calculations instead of the agent and all locations
 		
 		
+		System.out.println(this.sp.stateToString(initialState));
 		
 	}
 	
@@ -166,6 +172,7 @@ public class BasicBehavior {
 		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.9
 		LearningAgent agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0.3, 0.9);
 		
+		
 		//run learning for 100 episodes
 		for(int i = 0; i < 10; i++){
 			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState); //run learning episode
@@ -177,7 +184,7 @@ public class BasicBehavior {
 	
 	
 	public void RMaxExample(String outputPath){
-		
+		/*
 		if(!outputPath.endsWith("/")){
 			outputPath = outputPath + "/";
 		}
@@ -218,6 +225,7 @@ public class BasicBehavior {
 			ea.writeToFile(String.format("%se%03d", outputPath, i), sp); //record episode to a file
 			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
 		}
+		*/
 		
 	}
 	
@@ -229,7 +237,7 @@ public class BasicBehavior {
 		}
 		
 		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		this.domain.addActionObserverForAllAction(observer);
+		//this.domain.addActionObserverForAllAction(observer);
 		observer.initGUI();
 		
 		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.5; lambda=1.0 (online Monte carlo at 1.0, one step at 0.0)
@@ -336,7 +344,7 @@ public class BasicBehavior {
 		};
 		
 		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		this.domain.addActionObserverForAllAction(observer);
+		//this.domain.addActionObserverForAllAction(observer);
 		observer.initGUI();
 		
 		//A* will search for a goal condition satisfying state, but also uses the reward function to keep track of the cost of states; A* expects the RF to always return negative values representing the cost
@@ -408,7 +416,7 @@ public class BasicBehavior {
 		};
 		
 		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		this.domain.addActionObserverForAllAction(observer);
+		//this.domain.addActionObserverForAllAction(observer);
 		observer.initGUI();
 		
 		//RTDP planner = new BFSRTDP(domain, rf, tf, 0.99, hashingFactory, 0, 100, 0.001, 300);
@@ -565,6 +573,30 @@ public class BasicBehavior {
 		
 		
 		
+		
+	}
+	
+	
+	public class TmpRF implements RewardFunction{
+
+		@Override
+		public double reward(State s, GroundedAction a, State sprime) {
+			
+			double positiveR = 1.;
+			double negativeR = -1.;
+			double defaultR = 0.;
+			
+			List<GroundedProp> possibleInLocationPFs = sprime.getAllGroundedPropsFor(domain.getPropFunction(GridWorldDomain.PFATLOCATION));
+			for(GroundedProp gp : possibleInLocationPFs){
+				if(gp.isTrue(sprime)){
+					//what is the name of the location where the agent is?
+					String locName = gp.params[1];
+				}
+			}
+			
+			return defaultR;
+			
+		}
 		
 	}
 	
