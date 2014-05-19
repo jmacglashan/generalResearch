@@ -37,7 +37,7 @@ public class VFATest {
 	public static void main(String[] args) {
 		
 		VFATest example = new VFATest();
-		String outputPath = "outputVFA"; //directory to record results
+		String outputPath = "lunarLander"; //directory to record results
 		
 		//example.runCMACVFA(outputPath);
 		example.visualize(outputPath);

@@ -14,6 +14,7 @@ import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.SetStrategyAgent;
@@ -55,9 +56,10 @@ public class SimpleLearningExp {
 		
 		//saTest(false);
 		//saTest2(false);
-		saTest3(false);
+		saTest3(true);
 		//maTest();
 		//maPTTest();
+		//testQLPolicyDist(1000);
 
 	}
 	
@@ -411,14 +413,31 @@ public class SimpleLearningExp {
 	
 	
 	
-	
+	public static void testQLPolicyDist(int n){
+		double sumPunish = 0.;
+		double sumDoNothing = 0.;
+		
+		for(int i = 0; i < n; i++){
+			if(saTest3(false) == 1){
+				sumPunish += 1.;
+			}
+			else{
+				sumDoNothing += 1.;
+			}
+		}
+		
+		double pPunish = sumPunish / (double)n;
+		double pDoNothing = sumDoNothing / (double)n;
+		
+		System.out.println("barplot(c(" + pPunish + ", " + pDoNothing + "), names=c(\"Punish\", \"Do Nothing\"))");
+	}
 	
 	
 	/**
 	 * Use this method for testing a punish learner
 	 * @param useVI
 	 */
-	public static void saTest3(boolean useVI){
+	public static int saTest3(boolean useVI){
 		
 		final double opponetError = 0.1;
 		
@@ -481,7 +500,7 @@ public class SimpleLearningExp {
 			vi.planFromState(s);
 		}
 		else{
-			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 500);
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s, 1000);
 			/*
 			for(int i = 0; i < ea.numTimeSteps()-1; i++){
 				System.out.println("R: " + ea.getReward(i));
@@ -493,6 +512,21 @@ public class SimpleLearningExp {
 		
 
 		State ps = GraphDefinedDomain.getState(domain, 4);
+		
+		
+		/*
+		Policy gp = new GreedyQPolicy(qSource);
+		AbstractGroundedAction aselection = gp.getAction(ps);
+		//System.out.println("Chosen = " + aselection.actionName());
+		if(aselection.actionName().equals("action1")){
+			//System.out.println("Returning 1");
+			return 1;
+		}
+		else{
+			return 0;
+		}
+		*/
+		
 		
 		List<QValue> qs = qSource.getQs(ps);
 		
@@ -536,6 +570,8 @@ public class SimpleLearningExp {
 			System.out.println(q.q + "\t" + "S3");
 		}
 		
+		
+		return 0;
 		
 	}
 	

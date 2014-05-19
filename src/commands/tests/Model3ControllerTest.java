@@ -61,7 +61,8 @@ public class Model3ControllerTest {
 		
 		//uniformTest();
 		//trajectoryTrainingTest(DATASETTESTPATH);
-		trajectoryTrainingTest(args[0]);
+		//trajectoryTrainingTest(args[0]);
+		testMTWords(DATASETTESTPATH);
 		//parallelLOOOutput(args);
 		//parallelBOWLOOOutput(args);
 		//parallelNORLOOOutput(args);
@@ -217,6 +218,29 @@ public class Model3ControllerTest {
 		
 		
 		
+		
+	}
+	
+	public static void testMTWords(String datasetpath){
+		
+		Model3Controller controller = constructController();
+		Domain domain = controller.getDomain();
+		GenerativeModel gm = controller.getGM();
+		StateParser sp = new SokobanOldToNewParser(domain);
+		
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+		
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
+		List<WeightedMTInstance> mtDataset = controller.getWeightedMTDatasetFromTrajectoryDataset(trainingDataset, tokenizer, 1.e-20);
+		
+		controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+		MTModule module = (MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME);
+		Set<String> naturalWords = module.getNaturalWords();
+		for(String s : naturalWords){
+			System.out.println(s);
+		}
 		
 	}
 	

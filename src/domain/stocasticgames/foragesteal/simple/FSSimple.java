@@ -2,6 +2,8 @@ package domain.stocasticgames.foragesteal.simple;
 
 import java.util.List;
 
+import ethics.experiments.fssimple.aux.FSSimpleBTSG;
+
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Attribute.AttributeType;
@@ -133,7 +135,7 @@ public class FSSimple implements DomainGenerator {
 	
 	public static boolean isRootNode(State s){
 		int n = stateNode(s);
-		return n == 0 || n == 1;
+		return n == 0 || n == 1 || n == 3;
 	}
 	
 	
@@ -259,11 +261,13 @@ public class FSSimple implements DomainGenerator {
 	
 	public static void main(String [] args){
 		
-		FSSimple gen = new FSSimple();
+		FSSimple gen = new FSSimple(3);
 		SGDomain domain = (SGDomain)gen.generateDomain();
 		//JointActionModel jam = new FSSimpleJAM();
-		JointActionModel jam = new FSSimpleBTJAM(0.5);
-		JointReward r = new FSSimpleJR();
+		//JointActionModel jam = new FSSimpleBTJAM(0.5);
+		JointActionModel jam = new FSSimpleBTSJAM(0.2, 0.2);
+		//JointReward r = new FSSimpleJR();
+		JointReward r = new FSSimplePOJR(1., -0.5, -2.5, 0.);
 		
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0, 0);
 		

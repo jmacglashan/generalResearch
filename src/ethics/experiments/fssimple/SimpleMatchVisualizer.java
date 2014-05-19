@@ -26,6 +26,7 @@ import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
 import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.auxiliary.common.NullTermination;
+import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.stochasticgames.AgentFactory;
 import burlap.oomdp.stochasticgames.AgentType;
@@ -40,8 +41,9 @@ import burlap.oomdp.stochasticgames.WorldGenerator;
 import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
+import domain.stocasticgames.foragesteal.simple.FSSimpleBTSJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
+import domain.stocasticgames.foragesteal.simple.FSSimplePOJR;
 import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
 import ethics.experiments.fssimple.aux.FSRQInit;
 import ethics.experiments.fssimple.aux.FSSimpleBTSG;
@@ -126,13 +128,15 @@ public class SimpleMatchVisualizer extends JFrame {
 		
 		double backTurnedProb = 0.2;
 		
-		FSSimple dgen = new FSSimple();
+		FSSimple dgen = new FSSimple(3);
 		this.domain = (SGDomain)dgen.generateDomain();
 		//JointActionModel jam = new FSSimpleJAM();
-		JointActionModel jam = new FSSimpleBTJAM(backTurnedProb);
+		//JointActionModel jam = new FSSimpleBTJAM(backTurnedProb);
+		JointActionModel jam = new FSSimpleBTSJAM(0.2, 0.2);
 		
 		//this.objectiveRF = new FSSimpleJR();
-		this.objectiveRF = new FSSimpleJR(1., -0.5, -2.5, 0.);
+		//this.objectiveRF = new FSSimpleJR(1., -0.5, -2.5, 0.);
+		this.objectiveRF = new FSSimplePOJR(1., -0.5, -2.5, 0.);
 		
 		this.hashingFactory = new DiscreteStateHashFactory();
 		//SGStateGenerator sg = new FSSimpleSG(domain);
@@ -489,12 +493,13 @@ public class SimpleMatchVisualizer extends JFrame {
 		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
 		//agent0.setQValueInitializer(v0QInit);
 		agent0.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
-		agent0.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.001));
+		agent0.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.01));
 		
 		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
 		agent1.setQValueInitializer(v1QInit);
-		agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
-		agent1.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.001));
+		agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5)); //caching uses this!
+		//agent1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0));
+		agent1.setLearningRate(new ExponentialDecayLR(learningRate, 0.999, 0.01));
 		
 		
 		World world = worldGenerator.generateWorld();
@@ -704,6 +709,22 @@ public class SimpleMatchVisualizer extends JFrame {
 			res.add(sas1t);
 			
 			
+			State s3 = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0, 0);
+			FSSimple.setStateNode(s3, 3);
+			StateActionSetTuple sas3 = new StateActionSetTuple(s1, "S3");
+			sas3.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
+			sas3.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONSTEAL), ""), "S");
+			res.add(sas3);
+			
+			
+			State s3t = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 1, 0);
+			FSSimple.setStateNode(s3t, 3);
+			StateActionSetTuple sas3t = new StateActionSetTuple(s3t, "S3T");
+			sas3t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONFORAGEBASE+0), ""), "F");
+			sas3t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONSTEAL), ""), "S");
+			res.add(sas3t);
+			
+			
 			
 		}
 		else{
@@ -714,6 +735,17 @@ public class SimpleMatchVisualizer extends JFrame {
 			sas2.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONPUNISH), ""), "P");
 			sas2.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONDONOTHING), ""), "N");
 			res.add(sas2);
+			
+			
+			State s2t = FSSimple.getInitialState(this.domain, agentNames[0], agentNames[1], 0, 0);
+			ObjectInstance p0 = s2t.getObject(agentNames[0]);
+			p0.setValue(FSSimple.ATTBACKTURNED, 1);
+			
+			FSSimple.setStateNode(s2t, 2);
+			StateActionSetTuple sas2t = new StateActionSetTuple(s2t, "S2T");
+			sas2t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONPUNISH), ""), "P");
+			sas2t.addAction(new GroundedSingleAction(agentNames[playerId], this.domain.getSingleAction(FSSimple.ACTIONDONOTHING), ""), "N");
+			res.add(sas2t);
 			
 		}
 		

@@ -439,6 +439,7 @@ public class Model3Controller {
 			TrajectoryValue trajectoryVal = new TrajectoryValue(te.trajectory, this.gm.getRVarWithName(TrajectoryModule.TNAME));
 			Map<String, Double> semanticProbs = this.getSemanticSentenceDistribution(trajectoryVal);
 			WeightedMTInstance instance = new WeightedMTInstance(tokenizer.tokenize(te.command));
+			System.out.println(te.command);
 			for(Map.Entry<String, Double> e : semanticProbs.entrySet()){
 				double p = e.getValue();
 				if(p > threshold){
