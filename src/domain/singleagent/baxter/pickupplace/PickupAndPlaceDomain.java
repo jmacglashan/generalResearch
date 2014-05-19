@@ -41,10 +41,16 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	
 	protected boolean								includeColors;
+	protected boolean								requiresClear = false;
 	
 	
 	public PickupAndPlaceDomain(boolean includeColors){
 		this.includeColors = includeColors;
+	}
+	
+	public PickupAndPlaceDomain(boolean includeColors, boolean requiresClear){
+		this.includeColors = includeColors;
+		this.requiresClear = requiresClear;
 	}
 	
 	@Override
@@ -85,7 +91,7 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 		region.addAttribute(height);
 		
 		
-		new PickAndPlaceAction(domain);
+		new PickAndPlaceAction(domain, this.requiresClear);
 		new InRegionPF(PFINREGION, domain, new String[]{CLASSOBJECT, CLASSREGION});
 		new RegionClearPF(PFREGIONCLEAR, domain, new String[]{CLASSREGION});
 		
@@ -96,14 +102,24 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	public class PickAndPlaceAction extends Action{
 
+		boolean requiresClear = false;
+		
 		public PickAndPlaceAction(Domain domain){
 			super(ACTIONPICKPLACE, domain, new String[]{CLASSOBJECT, CLASSREGION});
 		}
 		
+		public PickAndPlaceAction(Domain domain, boolean requiresClear){
+			super(ACTIONPICKPLACE, domain, new String[]{CLASSOBJECT, CLASSREGION});
+			this.requiresClear = requiresClear;
+		}
+		
 		public boolean applicableInState(State s, String [] params){
-
-			PropositionalFunction rclear = this.domain.getPropFunction(PFREGIONCLEAR);
-			return rclear.isTrue(s, params[1]);
+			
+			if(this.requiresClear){
+				PropositionalFunction rclear = this.domain.getPropFunction(PFREGIONCLEAR);
+				return rclear.isTrue(s, params[1]);
+			}
+			return true;
 		}
 		
 		@Override
