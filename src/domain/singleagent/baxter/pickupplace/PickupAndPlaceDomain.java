@@ -3,6 +3,7 @@ package domain.singleagent.baxter.pickupplace;
 import java.util.List;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
+import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Attribute.AttributeType;
 import burlap.oomdp.core.Domain;
@@ -246,7 +247,7 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 			double y = o.getRealValForAttribute(ATTY);
 			double z = o.getRealValForAttribute(ATTZ);
 			
-			if(x >= rl && x < rr && z >= rb && z < rt && Math.abs(y - rh) > this.fuzzyHeight){
+			if(x >= rl && x < rr && z >= rb && z < rt && Math.abs(y - rh) < this.fuzzyHeight){
 				return true;
 			}
 			
@@ -307,15 +308,20 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 		PickupAndPlaceDomain.setObject(s, 1, 80, 20, 20, "green");
 		PickupAndPlaceDomain.setObject(s, 2, 20, 20, 80, "blue");
 		
+		StateYAMLParser sp = new StateYAMLParser(domain);
+		System.out.println(sp.stateToString(s));
+		
 		//s = domain.getAction(ACTIONPICKPLACE).performAction(s, new String[]{"object0", "region5"});
 		//s = domain.getAction(ACTIONPICKPLACE).performAction(s, new String[]{"object0", "region0"});
 		
+		
+		/*
 		Visualizer v = PickupAndPlaceVisualizer.getVisualizer(0, 100., 0., 100., 20);
 		
 		
 		VisualExplorer exp = new VisualExplorer(domain, v, s);
 		exp.initGUI();
-		
+		*/
 		
 		/*
 		TerminalExplorer exp = new TerminalExplorer(domain);
