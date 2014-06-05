@@ -1,15 +1,22 @@
 package ethics.experiments.fssimple.aux;
 
+import java.util.Map;
+
+import domain.stocasticgames.foragesteal.simple.FSSimple;
+
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.auxiliary.StateAbstraction;
+import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.stochasticgames.Agent;
+import burlap.oomdp.stochasticgames.JointAction;
 import burlap.oomdp.stochasticgames.JointActionModel;
 import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SGStateGenerator;
 import burlap.oomdp.stochasticgames.World;
+import burlap.oomdp.stochasticgames.WorldObserver;
 
 public class PseudoGameCountWorld extends World {
 
@@ -56,5 +63,6 @@ public class PseudoGameCountWorld extends World {
 		DPrint.cl(debugId, currentState.getCompleteStateDescription());
 		
 	}
+	
 
 }

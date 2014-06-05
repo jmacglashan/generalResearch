@@ -52,8 +52,8 @@ public class MCTest {
 		
 		String outputPath = "MCTest/";
 		
-		mctest.runCMACExperimenter();
-		//mctest.runCMACVFA(outputPath, false);
+		//mctest.runCMACExperimenter();
+		mctest.runCMACVFA(outputPath, false);
 		//mctest.visualizeCachedFiles(outputPath);
 
 	}

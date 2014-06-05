@@ -22,17 +22,17 @@ import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SGStateGenerator;
 import burlap.oomdp.stochasticgames.common.AgentFactoryWithSubjectiveReward;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
+import domain.stocasticgames.foragesteal.simple.FSSimpleBTSJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
+import domain.stocasticgames.foragesteal.simple.FSSimplePOJR;
 import ethics.ParameterizedRFFactory;
 import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
-import ethics.experiments.fssimple.aux.FSRQInit;
 import ethics.experiments.fssimple.aux.FSSimpleBTSG;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
 import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
 import ethics.experiments.fssimple.aux.RNPseudoTerm;
 import ethics.experiments.fssimple.specialagents.OpponentOutcomeAgent;
+import ethics.experiments.fssimple.specialagents.OpponentOutcomeDBLStealthAgent;
 import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
 
 public class FSSMatchCaching {
@@ -97,7 +97,9 @@ public class FSSMatchCaching {
 		this.baseLearningRate = learningRate;
 		
 		//this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
-		this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 5)).allRFs;
+		//this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 5)).allRFs;
+		this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 7)).allRFs;
+		
 		
 		
 		//this.objectiveReward = new FSSimpleJR();
@@ -105,14 +107,16 @@ public class FSSMatchCaching {
 		//this.nTries =  25;
 		this.nTries = 1000;
 		this.nGames = 1000;
-		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
+		//this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
+		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(new FSSimplePOJR(1., -0.5, -2.5, 0.));
 		
 		double probBackTurned = 0.2;
 		
-		FSSimple dgen = new FSSimple();
+		FSSimple dgen = new FSSimple(3);
 		this.domain = (SGDomain)dgen.generateDomain();
 		//JointActionModel jam = new FSSimpleJAM();
-		JointActionModel jam = new FSSimpleBTJAM(probBackTurned);
+		//JointActionModel jam = new FSSimpleBTJAM(probBackTurned);
+		JointActionModel jam = new FSSimpleBTSJAM(probBackTurned, probBackTurned);
 		
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
@@ -256,6 +260,7 @@ public class FSSMatchCaching {
 	
 	protected DoublePair runMatch(OptVariables v1, OptVariables v2){
 		
+		//return this.runMatchLearning(v1, v2);
 		return this.runMatchHardCoded(v1, v2);
 		
 	}
@@ -323,7 +328,9 @@ public class FSSMatchCaching {
 		
 		DoublePair res = new DoublePair(a1r, a2r);
 		
-		
+		if(Double.isNaN(a1r) || Double.isNaN(a2r)){
+			throw new RuntimeException("NaN Return.");
+		}
 		
 		return res;
 	}
@@ -334,8 +341,10 @@ public class FSSMatchCaching {
 		int [] hp1 = this.doubleToIntArray(v1.vars);
 		int [] hp2 = this.doubleToIntArray(v2.vars);
 		
-		OpponentOutcomeAgent a1 = new OpponentOutcomeAgent(this.domain, hp1);
-		OpponentOutcomeAgent a2 = new OpponentOutcomeAgent(this.domain, hp2);
+		//OpponentOutcomeAgent a1 = new OpponentOutcomeAgent(this.domain, hp1);
+		//OpponentOutcomeAgent a2 = new OpponentOutcomeAgent(this.domain, hp2);
+		OpponentOutcomeDBLStealthAgent a1 = new OpponentOutcomeDBLStealthAgent(this.domain, hp1);
+		OpponentOutcomeDBLStealthAgent a2 = new OpponentOutcomeDBLStealthAgent(this.domain, hp2);
 		
 		PseudoGameCountWorld w1 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
 		a1.joinWorld(w1, this.fsAgentType);
@@ -347,8 +356,10 @@ public class FSSMatchCaching {
 		double a2r1 = w1.getCumulativeRewardForAgent(a2.getAgentName());
 		
 		
-		OpponentOutcomeAgent a12 = new OpponentOutcomeAgent(this.domain, hp1);
-		OpponentOutcomeAgent a22 = new OpponentOutcomeAgent(this.domain, hp2);
+		//OpponentOutcomeAgent a12 = new OpponentOutcomeAgent(this.domain, hp1);
+		//OpponentOutcomeAgent a22 = new OpponentOutcomeAgent(this.domain, hp2);
+		OpponentOutcomeDBLStealthAgent a12 = new OpponentOutcomeDBLStealthAgent(this.domain, hp1);
+		OpponentOutcomeDBLStealthAgent a22 = new OpponentOutcomeDBLStealthAgent(this.domain, hp2);
 		
 		PseudoGameCountWorld w2 = (PseudoGameCountWorld)this.worldGenerator.generateWorld();
 		a22.joinWorld(w2, this.fsAgentType); //switch join order

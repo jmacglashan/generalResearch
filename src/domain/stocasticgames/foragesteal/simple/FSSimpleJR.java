@@ -85,6 +85,12 @@ public class FSSimpleJR implements JointReward {
 			
 		}
 		
+		for(Double d : r.values()){
+			if(Double.isNaN(d)){
+				throw new RuntimeException("NaN reward");
+			}
+		}
+		
 		
 		return r;
 	}

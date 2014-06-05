@@ -417,10 +417,10 @@ public class BasicBehavior {
 		
 		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
 		//this.domain.addActionObserverForAllAction(observer);
-		observer.initGUI();
+		//observer.initGUI();
 		
-		//RTDP planner = new BFSRTDP(domain, rf, tf, 0.99, hashingFactory, 0, 100, 0.001, 300);
-		RTDP planner = new RTDP(domain, rf, tf, 0.99, hashingFactory, manDist, 100, 0.001, 300);
+		RTDP planner = new RTDP(domain, rf, tf, 0.99, hashingFactory, 0, 100, 0.001, 300);
+		//RTDP planner = new RTDP(domain, rf, tf, 0.99, hashingFactory, manDist, 100, 0.001, 300);
 		//planner.toggleUseCachedTransitionDynamics(false);
 		planner.planFromState(initialState);
 		

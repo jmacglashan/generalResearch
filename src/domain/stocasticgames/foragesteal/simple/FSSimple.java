@@ -2,8 +2,6 @@ package domain.stocasticgames.foragesteal.simple;
 
 import java.util.List;
 
-import ethics.experiments.fssimple.aux.FSSimpleBTSG;
-
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Attribute;
 import burlap.oomdp.core.Attribute.AttributeType;
@@ -16,6 +14,7 @@ import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.stochasticgames.explorers.SGTerminalExplorer;
+import ethics.experiments.fssimple.aux.FSSubjectiveRF;
 
 
 /**
@@ -265,9 +264,10 @@ public class FSSimple implements DomainGenerator {
 		SGDomain domain = (SGDomain)gen.generateDomain();
 		//JointActionModel jam = new FSSimpleJAM();
 		//JointActionModel jam = new FSSimpleBTJAM(0.5);
-		JointActionModel jam = new FSSimpleBTSJAM(0.2, 0.2);
+		JointActionModel jam = new FSSimpleBTSJAM(0.5, 0.5);
 		//JointReward r = new FSSimpleJR();
-		JointReward r = new FSSimplePOJR(1., -0.5, -2.5, 0.);
+		JointReward r = new FSSubjectiveRF(new FSSimplePOJR(1., -0.5, -2.5, 0.));
+		((FSSubjectiveRF)r).setParameters(new double[]{0.,0.});
 		
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0, 0);
 		

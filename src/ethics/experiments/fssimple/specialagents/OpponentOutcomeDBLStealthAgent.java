@@ -2,36 +2,28 @@ package ethics.experiments.fssimple.specialagents;
 
 import java.util.Map;
 
-import burlap.debugtools.DPrint;
+import domain.stocasticgames.foragesteal.simple.FSSimple;
+
 import burlap.debugtools.RandomFactory;
-import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.stochasticgames.Agent;
-import burlap.oomdp.stochasticgames.AgentType;
 import burlap.oomdp.stochasticgames.GroundedSingleAction;
 import burlap.oomdp.stochasticgames.JointAction;
-import burlap.oomdp.stochasticgames.JointActionModel;
-import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
-import burlap.oomdp.stochasticgames.SGStateGenerator;
-import burlap.oomdp.stochasticgames.World;
-import domain.stocasticgames.foragesteal.simple.FSSimple;
-import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
-import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
 
-public class OpponentOutcomeAgent extends Agent {
+public class OpponentOutcomeDBLStealthAgent extends Agent {
 
-	
 	/**
 	 * state order: 
 	 * 				0: (thief) punisher's back is turned
 	 * 				1: (theif) punisher punished for theft
 	 * 				2: (theif) punisher did not respond to theft
-	 * 				3: (punisher) thief did not steal after punishment
-	 * 				4: (punisher) thief did steal after punishment
+	 * 				3: (thief) I slept through last interaction
+	 * 				4: (punisher) thief did not steal after punishment
+	 * 				5: (punisher) thief did steal after punishment
+	 * 				6: (punisher) thief is asleep
 	 * 
 	 * value 0 corresponds to forage/do nothing
 	 * value 1 correspodns to steal/punish
@@ -44,8 +36,10 @@ public class OpponentOutcomeAgent extends Agent {
 	protected boolean iJustPunished = false;
 	
 	
-	
-	public OpponentOutcomeAgent(Domain domain, int [] historyPolicy){
+	public OpponentOutcomeDBLStealthAgent(Domain domain, int [] historyPolicy){
+		if(historyPolicy.length != 7){
+			throw new RuntimeException("History policy must be of length 7; input is length: " + historyPolicy.length);
+		}
 		this.domain = (SGDomain)domain;
 		this.historyPolicy = historyPolicy.clone();
 	}
@@ -59,6 +53,7 @@ public class OpponentOutcomeAgent extends Agent {
 
 	@Override
 	public GroundedSingleAction getAction(State s) {
+		
 		
 		int pNum = this.getMyPlayerNum(s);
 		
@@ -85,7 +80,7 @@ public class OpponentOutcomeAgent extends Agent {
 					}
 				}
 				else{
-					return this.nothingAction();
+					selection = this.nothingAction();
 				}
 			}
 			else{
@@ -99,12 +94,14 @@ public class OpponentOutcomeAgent extends Agent {
 				else if(sn == 1){
 					selection = this.thiefSelection(1);
 				}
+				else if(sn == 3){
+					selection = this.thiefSelection(3);
+				}
 				else{
 					selection = this.nothingAction();
 				}
 				
 			}
-			
 			
 		}
 		else{
@@ -125,11 +122,14 @@ public class OpponentOutcomeAgent extends Agent {
 			}
 			else{
 				if(sn == 2){
-					if(this.thiefStoleAnyway){
-						selection = this.punisherSelection(4);
+					if(this.thiefIsSleeping(s)){
+						selection = this.punisherSelection(6);
+					}
+					else if(this.thiefStoleAnyway){
+						selection = this.punisherSelection(5);
 					}
 					else{
-						selection = this.punisherSelection(3);
+						selection = this.punisherSelection(4);
 					}
 				}
 				else{
@@ -139,19 +139,25 @@ public class OpponentOutcomeAgent extends Agent {
 			
 		}
 		
+		if(!selection.action.isApplicableInState(s, worldAgentName, selection.params)){
+			throw new RuntimeException("Error in action selection return.");
+		}
+		
 		
 		return selection;
 	}
 
 	@Override
-	public void observeOutcome(State s, JointAction jointAction, Map<String, Double> jointReward, State sprime, boolean isTerminal) {
+	public void observeOutcome(State s, JointAction jointAction,
+			Map<String, Double> jointReward, State sprime, boolean isTerminal) {
+		
 		int pNum = this.getMyPlayerNum(s);
 		if(pNum == 1){
 			//I am punisher
 			
-			//are we observing a subsequent action selection after my punishment?
+			//are we observing a subsequent action selection after my punishment and from which the agent did not sleep?
 			int sn = FSSimple.stateNode(s);
-			if(sn != 2){
+			if(sn != 2 && sn != 3){
 				
 				//do I need to record the immediate result of my punishment?
 				if(this.iJustPunished){
@@ -174,13 +180,16 @@ public class OpponentOutcomeAgent extends Agent {
 				}
 				
 				
-				
+			}
+			else if(sn == 3){
+				this.iJustPunished = false;
 			}
 			
 			
 			
 		}
 		
+
 	}
 
 	@Override
@@ -211,6 +220,19 @@ public class OpponentOutcomeAgent extends Agent {
 		}
 		
 		return punisher.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 1;
+	}
+	
+	protected boolean thiefIsSleeping(State s){
+		ObjectInstance thief = null;
+		for(ObjectInstance player : s.getObjectsOfTrueClass(FSSimple.CLASSPLAYER)){
+			int pNum = player.getDiscValForAttribute(FSSimple.ATTPN);
+			if(pNum == 0){
+				thief = player;
+				break;
+			}
+		}
+		
+		return thief.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 1;
 	}
 	
 	
@@ -249,31 +271,4 @@ public class OpponentOutcomeAgent extends Agent {
 		return new GroundedSingleAction(this.worldAgentName, this.domain.getSingleAction(FSSimple.ACTIONPUNISH), "");
 	}
 
-	
-	
-	public static void main(String [] args){
-		FSSimple gen = new FSSimple();
-		SGDomain domain = (SGDomain)gen.generateDomain();
-		JointActionModel jam = new FSSimpleBTJAM(0.0);
-		JointReward r = new FSSimpleJR();
-		AgentType at = new AgentType("player", domain.getObjectClass(FSSimple.CLASSPLAYER), domain.getSingleActions());
-		SGStateGenerator sg = new FSSimpleSG(domain);
-		
-		Agent a1 = new OpponentOutcomeAgent(domain, new int[]{1,0,1,1,0});
-		Agent a2 = new OpponentOutcomeAgent(domain, new int[]{1,1,1,0,1});
-		
-		Agent human = new HumanAgent(domain);
-		
-		World w = new World(domain, jam, r, new NullTermination(), sg);
-		
-		DPrint.toggleCode(w.getDebugId(), false);
-		
-		//a1.joinWorld(w, at);
-		human.joinWorld(w, at);
-		a2.joinWorld(w, at);
-		
-		w.runGame(50);
-		
-	}
-	
 }

@@ -284,7 +284,8 @@ public class TBFSOptimizerExp {
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator();
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1, 2, 1., 3);
 		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2);
-		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(0, 1, 1, 5);
+		//RFParamVarEnumerator rfenum = new RFParamVarEnumerator(0, 1, 1, 5);
+		RFParamVarEnumerator rfenum = new RFParamVarEnumerator(0, 1, 1, 7);
 		
 		
 		//List<OptVariables> selectHCAgents = rfenum.allRFs;
