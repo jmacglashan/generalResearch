@@ -27,11 +27,11 @@ import domain.stocasticgames.foragesteal.simple.FSSimpleTerminatingJAM;
 import ethics.ParameterizedRFFactory;
 import ethics.experiments.fssimple.FSSMatchCaching.DoublePair;
 import ethics.experiments.fssimple.FSSMatchCaching.MatchResult;
-import ethics.experiments.fssimple.aux.FSRQInit;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
-import ethics.experiments.fssimple.aux.FSSubjectiveRF;
-import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
-import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
+import ethics.experiments.fssimple.auxiliary.FSRQInit;
+import ethics.experiments.fssimple.auxiliary.FSSimpleSG;
+import ethics.experiments.fssimple.auxiliary.FSSubjectiveRF;
+import ethics.experiments.fssimple.auxiliary.PseudoGameCountWorld;
+import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
 
 public class FSSTermMatchCaching {
 

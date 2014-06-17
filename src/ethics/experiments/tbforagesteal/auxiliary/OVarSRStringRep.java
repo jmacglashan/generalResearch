@@ -1,4 +1,4 @@
-package ethics.experiments.tbforagesteal.aux;
+package ethics.experiments.tbforagesteal.auxiliary;
 
 import optimization.OVarStringRep;
 import optimization.OptVariables;

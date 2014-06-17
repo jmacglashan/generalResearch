@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import optimization.OptVariables;
-import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
+import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
 import ethics.experiments.tbforagesteal.evaluators.FullyCachedMatchEvaluation;
 import ethics.experiments.tbforagesteal.evaluators.FullyCachedMatchEvaluation.MatchPerformanceGenerator;
 

@@ -1,35 +1,35 @@
-package ethics.experiments.tbforagesteal.aux;
+package ethics.experiments.tbforagesteal.auxiliary;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import domain.stocasticgames.foragesteal.TBForageSteal;
+
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.stochasticgames.JointAction;
 import burlap.oomdp.stochasticgames.JointReward;
-import domain.stocasticgames.foragesteal.TBForageSteal;
 import ethics.ParameterizedRF;
 
-public class TBFSSubjectiveRF implements ParameterizedRF {
+public class TBFSSRFWS4Param implements ParameterizedRF {
 
-	
 	protected JointReward			objectiveRewardFunction;
 	
-	//0: steal; 1: punch for steal; 2: punch for punch
+	//0: steal (alpha); 1: punch for he stole (gamma); 2: punch for he stole and punched (theta); 3: punch for I started it (beta)
 	protected double []				params;
 	
-	public TBFSSubjectiveRF(JointReward objectiveRewardFunction){
+	
+	public TBFSSRFWS4Param(JointReward objectiveRewardFunction){
 		this.objectiveRewardFunction = objectiveRewardFunction;
-		this.params = new double[3];
+		this.params = new double[4];
 	}
 	
-	public TBFSSubjectiveRF(JointReward objectiveRewardFunction, double [] params){
+	public TBFSSRFWS4Param(JointReward objectiveRewardFunction, double [] params){
 		this.objectiveRewardFunction = objectiveRewardFunction;
 		this.params = params.clone();
 	}
-	
-	
+
 	@Override
 	public Map<String, Double> reward(State s, JointAction ja, State sp) {
 		
@@ -51,7 +51,8 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 			}
 		}
 		
-	
+		ObjectInstance a1Ob = s.getObject(a1name);
+		ObjectInstance a2Ob = s.getObject(a2name);
 		
 		Map <String, Double> orewards = objectiveRewardFunction.reward(s, ja, sp);
 		
@@ -61,16 +62,13 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 			a2or = orewards.get(a2name);
 		}
 		
-		int a1pa = this.getPreviousTurnAction(a1name, s);
-		int a2pa = this.getPreviousTurnAction(a2name, s);
-		
-		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a2pa);
+		double a1sr = a1or + this.getSubjectiveBias(s, a1Ob, ja.action(a1name).action.actionName);
 		double a2sr = 0.;
 		if(agents.size() > 1){
-			a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a1pa);
+			a2sr = a2or + this.getSubjectiveBias(s, a2Ob, ja.action(a2name).action.actionName);
 		}
 		
-		
+
 		Map <String, Double> srewards = new HashMap<String, Double>();
 		srewards.put(a1name, a1sr);
 		srewards.put(a2name, a2sr);
@@ -82,63 +80,79 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 	@Override
 	public void setParameters(double[] params) {
 		this.params = params.clone();
+
 	}
 
 	@Override
 	public int parameterSize() {
-		return 3;
+		return 4;
 	}
 
 	@Override
 	public double[] getParameters() {
-		return params.clone();
-	}
-
-	@Override
-	public void printParameters() {
-		//System.out.println("Steal bias:           " + params[0]);
-		//System.out.println("Punch for steal bias: " + params[1]);
-		//System.out.println("Punch for punch bias: " + params[2]);
-
-		System.out.println(this.toString());
-		
+		return this.params.clone();
 	}
 	
 	@Override
 	public String toString(){
 		StringBuffer sbuf = new StringBuffer(256);
-		sbuf.append("Steal bias:           ").append(params[0]).append("\n");
-		sbuf.append("Punch for steal bias: ").append(params[1]).append("\n");
-		sbuf.append("Punch for punch bias: ").append(params[2]);
+		sbuf.append("Steal bias:                     ").append(params[0]).append("\n");
+		sbuf.append("Punch for he stole:             ").append(params[1]).append("\n");
+		sbuf.append("Punch for he stole and punched: ").append(params[2]).append("\n");
+		sbuf.append("Punch for I started it :        ").append(params[2]);
 		
 		return sbuf.toString();
-		
+	}
+
+	@Override
+	public void printParameters() {
+		System.out.println(this.toString());
 	}
 
 	
 	
-	protected double subjectiveBias(String actionName, int previousOpponentAction){
+	protected double getSubjectiveBias(State s, ObjectInstance actingAgent, String actionName){
 		
 		if(actionName.equals(TBForageSteal.ACTIONSTEAL)){
-			return params[0];
+			return this.params[0];
 		}
 		else if(actionName.equals(TBForageSteal.ACTIONPUNCH)){
-			if(previousOpponentAction == 2){ //opponent stole in previous turn
-				return params[1];
+			
+			int actPN = actingAgent.getDiscValForAttribute(TBForageSteal.ATTPN);
+			int actSA = actingAgent.getDiscValForAttribute(TBForageSteal.ATTPTA);
+			if(actPN == 0){
+				
+				
+				if(actSA == 3){
+					return this.params[3];
+				}
+				else if(actSA == 0){
+					return this.params[1];
+				}
+				else{
+					return this.params[2];
+				}
+				
 			}
-			else if(previousOpponentAction == 3){ //opponent punched in previous turn
-				return params[2];
+			else{
+				
+				if(actSA == 4){
+					return this.params[3];
+				}
+				else if(actSA == 0){
+					return this.params[1];
+				}
+				else{
+					return this.params[2];
+				}
+				
 			}
+			
+			
 		}
 		
 		return 0.;
 	}
 	
-	protected int getPreviousTurnAction(String aname, State s){
-		
-		ObjectInstance o = s.getObject(aname);
-		int pa = o.getDiscValForAttribute(TBForageSteal.ATTPTA);
-		
-		return pa;
-	}
+	
 }

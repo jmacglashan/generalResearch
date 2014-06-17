@@ -33,7 +33,7 @@ import burlap.oomdp.stochasticgames.World;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
 import domain.stocasticgames.foragesteal.simple.FSSimpleBTJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
+import ethics.experiments.fssimple.auxiliary.FSSimpleSG;
 
 public class StrategyOutcome {
 

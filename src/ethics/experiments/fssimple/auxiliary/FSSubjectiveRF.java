@@ -1,4 +1,4 @@
-package ethics.experiments.fssimple.aux;
+package ethics.experiments.fssimple.auxiliary;
 
 import java.util.HashMap;
 import java.util.Map;

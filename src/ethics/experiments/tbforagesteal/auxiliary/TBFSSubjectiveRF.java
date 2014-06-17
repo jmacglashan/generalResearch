@@ -1,4 +1,4 @@
-package ethics.experiments.tbforagesteal.aux;
+package ethics.experiments.tbforagesteal.auxiliary;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,24 +11,25 @@ import burlap.oomdp.stochasticgames.JointReward;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import ethics.ParameterizedRF;
 
-public class TBFSSubjectiveRFWS implements ParameterizedRF {
+public class TBFSSubjectiveRF implements ParameterizedRF {
 
 	
 	protected JointReward			objectiveRewardFunction;
 	
-	//0: steal; 1: punch for he started it; 2: punch for I started it
+	//0: steal; 1: punch for steal; 2: punch for punch
 	protected double []				params;
 	
-	public TBFSSubjectiveRFWS(JointReward objectiveRewardFunction){
+	public TBFSSubjectiveRF(JointReward objectiveRewardFunction){
 		this.objectiveRewardFunction = objectiveRewardFunction;
 		this.params = new double[3];
 	}
 	
-	public TBFSSubjectiveRFWS(JointReward objectiveRewardFunction, double [] params){
+	public TBFSSubjectiveRF(JointReward objectiveRewardFunction, double [] params){
 		this.objectiveRewardFunction = objectiveRewardFunction;
 		this.params = params.clone();
 	}
-
+	
+	
 	@Override
 	public Map<String, Double> reward(State s, JointAction ja, State sp) {
 		
@@ -50,8 +51,7 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 			}
 		}
 		
-		ObjectInstance a1Ob = s.getObject(a1name);
-		ObjectInstance a2Ob = s.getObject(a2name);
+	
 		
 		Map <String, Double> orewards = objectiveRewardFunction.reward(s, ja, sp);
 		
@@ -61,16 +61,13 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 			a2or = orewards.get(a2name);
 		}
 		
-		int a1pn = a1Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
-		int a2pn = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
+		int a1pa = this.getPreviousTurnAction(a1name, s);
+		int a2pa = this.getPreviousTurnAction(a2name, s);
 		
-		int a1pa = a1Ob.getDiscValForAttribute(TBForageSteal.ATTPTA);
-		int a2pa = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPTA);
-		
-		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a1pn, a2pa);
+		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a2pa);
 		double a2sr = 0.;
 		if(agents.size() > 1){
-			a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a2pn, a1pa);
+			a2sr = a2or + this.subjectiveBias(ja.action(a2name).action.actionName, a1pa);
 		}
 		
 		
@@ -79,6 +76,7 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		srewards.put(a2name, a2sr);
 		
 		return srewards;
+		
 	}
 
 	@Override
@@ -109,9 +107,9 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 	@Override
 	public String toString(){
 		StringBuffer sbuf = new StringBuffer(256);
-		sbuf.append("Steal bias:              ").append(params[0]).append("\n");
-		sbuf.append("Punch for he started it: ").append(params[1]).append("\n");
-		sbuf.append("Punch for I started it : ").append(params[2]);
+		sbuf.append("Steal bias:           ").append(params[0]).append("\n");
+		sbuf.append("Punch for steal bias: ").append(params[1]).append("\n");
+		sbuf.append("Punch for punch bias: ").append(params[2]);
 		
 		return sbuf.toString();
 		
@@ -119,16 +117,16 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 
 	
 	
-	protected double subjectiveBias(String actionName, int actingPlayerNum, int previousOpponentAction){
+	protected double subjectiveBias(String actionName, int previousOpponentAction){
 		
 		if(actionName.equals(TBForageSteal.ACTIONSTEAL)){
 			return params[0];
 		}
 		else if(actionName.equals(TBForageSteal.ACTIONPUNCH)){
-			if(previousOpponentAction == 2 || (actingPlayerNum == 0 && previousOpponentAction == 4) || (actingPlayerNum == 1 && previousOpponentAction == 3)){ //opponent started it
+			if(previousOpponentAction == 2){ //opponent stole in previous turn
 				return params[1];
 			}
-			else{ //acting player started it
+			else if(previousOpponentAction == 3){ //opponent punched in previous turn
 				return params[2];
 			}
 		}
@@ -143,5 +141,4 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		
 		return pa;
 	}
-
 }

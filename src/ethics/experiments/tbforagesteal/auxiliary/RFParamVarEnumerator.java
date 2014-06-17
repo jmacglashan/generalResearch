@@ -1,4 +1,4 @@
-package ethics.experiments.tbforagesteal.aux;
+package ethics.experiments.tbforagesteal.auxiliary;
 
 import java.util.ArrayList;
 import java.util.List;

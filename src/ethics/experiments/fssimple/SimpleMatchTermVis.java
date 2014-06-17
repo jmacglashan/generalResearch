@@ -3,7 +3,7 @@ package ethics.experiments.fssimple;
 import burlap.oomdp.stochasticgames.JointActionModel;
 import burlap.oomdp.stochasticgames.tournament.common.ConstantWorldGenerator;
 import domain.stocasticgames.foragesteal.simple.FSSimpleTerminatingJAM;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
+import ethics.experiments.fssimple.auxiliary.FSSimpleSG;
 
 public class SimpleMatchTermVis extends SimpleMatchVisualizer {
 

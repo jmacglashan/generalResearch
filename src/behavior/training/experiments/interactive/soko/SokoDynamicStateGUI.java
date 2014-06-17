@@ -169,7 +169,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		this.agent = new DynamicPlanISABL(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, new ArrayList<TaskDescription>(), 
 			new MAPMixtureModelPolicy());
 		this.agent.setNoopAction(noopAction);
-		this.agent.useSeperatePlanningDomain(domain);
+		//this.agent.useSeperatePlanningDomain(domain);
+		this.agent.useSeperatePlanningDomain(this.planningDomain);
 		this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.7, 0.1)); 
 		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.05, 0.7, 0.1));
 		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.05, 0.1));

@@ -28,10 +28,10 @@ import domain.stocasticgames.foragesteal.TBFSWhoStartedMechanics;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import ethics.ParameterizedRFFactory;
-import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
-import ethics.experiments.tbforagesteal.aux.TBFSSubRFFactory;
-import ethics.experiments.tbforagesteal.aux.TBFSSubRFWSFactory;
-import ethics.experiments.tbforagesteal.aux.TBFSSubRFWSFactory4P;
+import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubRFFactory;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubRFWSFactory;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubRFWSFactory4P;
 
 public class MatchCaching {
 

@@ -40,9 +40,9 @@ import burlap.oomdp.stochasticgames.WorldObserver;
 import domain.stocasticgames.foragesteal.simple.FSSimple;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
-import ethics.experiments.fssimple.aux.FSSimpleSG;
-import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
-import ethics.experiments.fssimple.aux.RNPseudoTerm;
+import ethics.experiments.fssimple.auxiliary.FSSimpleSG;
+import ethics.experiments.fssimple.auxiliary.PseudoGameCountWorld;
+import ethics.experiments.fssimple.auxiliary.RNPseudoTerm;
 
 public class SimpleLearningExp {
 

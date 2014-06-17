@@ -93,9 +93,9 @@ public class BasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		//example.QLearningExample(outputPath);
+		example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
-		example.BFSExample(outputPath);
+		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
 		//example.AStarExample(outputPath);
 		//example.ValueIterationExample(outputPath);
@@ -165,16 +165,16 @@ public class BasicBehavior {
 			outputPath = outputPath + "/";
 		}
 		
-		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		this.domain.addActionObserverForAllAction(observer);
-		observer.initGUI();
+		//VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
+		//this.domain.addActionObserverForAllAction(observer);
+		//observer.initGUI();
 				
 		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.9
 		LearningAgent agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0.3, 0.9);
 		
 		
 		//run learning for 100 episodes
-		for(int i = 0; i < 10; i++){
+		for(int i = 0; i < 200; i++){
 			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState); //run learning episode
 			ea.writeToFile(String.format("%se%03d", outputPath, i), sp); //record episode to a file
 			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode

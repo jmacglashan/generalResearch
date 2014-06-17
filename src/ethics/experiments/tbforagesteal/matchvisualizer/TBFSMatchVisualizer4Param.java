@@ -35,9 +35,9 @@ import domain.stocasticgames.foragesteal.TBFSStandardReward;
 import domain.stocasticgames.foragesteal.TBFSWhoStartedMechanics;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
-import ethics.experiments.tbforagesteal.aux.TBFSSRFWS4Param;
-import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRF;
-import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRFWS;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSRFWS4Param;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRF;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRFWS;
 
 public class TBFSMatchVisualizer4Param extends TBFSMatchVisualizer3Param {
 

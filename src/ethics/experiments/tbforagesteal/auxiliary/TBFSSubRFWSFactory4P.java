@@ -1,25 +1,25 @@
-package ethics.experiments.tbforagesteal.aux;
+package ethics.experiments.tbforagesteal.auxiliary;
 
 import burlap.oomdp.stochasticgames.JointReward;
 import ethics.ParameterizedRF;
 import ethics.ParameterizedRFFactory;
 
-public class TBFSSubRFWSFactory implements ParameterizedRFFactory {
+public class TBFSSubRFWSFactory4P implements ParameterizedRFFactory {
 
 	JointReward objectiveRF;
 	
-	public TBFSSubRFWSFactory(JointReward objectiveRF){
+	public TBFSSubRFWSFactory4P(JointReward objectiveRF) {
 		this.objectiveRF = objectiveRF;
 	}
 
 	@Override
 	public ParameterizedRF generateRF(double[] params) {
-		return new TBFSSubjectiveRFWS(objectiveRF, params);
+		return new TBFSSRFWS4Param(this.objectiveRF, params);
 	}
 
 	@Override
 	public int parameterSize() {
-		return 3;
+		return 4;
 	}
 
 }

@@ -14,7 +14,7 @@ import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.stochasticgames.explorers.SGTerminalExplorer;
-import ethics.experiments.fssimple.aux.FSSubjectiveRF;
+import ethics.experiments.fssimple.auxiliary.FSSubjectiveRF;
 
 
 /**

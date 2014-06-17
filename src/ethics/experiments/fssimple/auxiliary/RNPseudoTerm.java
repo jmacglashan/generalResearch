@@ -1,4 +1,4 @@
-package ethics.experiments.fssimple.aux;
+package ethics.experiments.fssimple.auxiliary;
 
 import domain.stocasticgames.foragesteal.simple.FSSimple;
 import burlap.behavior.singleagent.planning.StateConditionTest;

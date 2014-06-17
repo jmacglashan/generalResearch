@@ -30,7 +30,7 @@ import domain.stocasticgames.foragesteal.TBFSStandardMechanics;
 import domain.stocasticgames.foragesteal.TBFSStandardReward;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
-import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRF;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRF;
 
 public class MatchAnalizer {
 

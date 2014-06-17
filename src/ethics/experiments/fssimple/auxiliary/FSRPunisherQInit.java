@@ -1,4 +1,4 @@
-package ethics.experiments.fssimple.aux;
+package ethics.experiments.fssimple.auxiliary;
 
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;

@@ -14,8 +14,8 @@ import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.stochasticgames.common.UniversalSingleAction;
 import burlap.oomdp.stochasticgames.explorers.SGTerminalExplorer;
-import ethics.experiments.tbforagesteal.aux.TBFSSRFWS4Param;
-import ethics.experiments.tbforagesteal.aux.TBFSSubjectiveRFWS;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSRFWS4Param;
+import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRFWS;
 
 public class TBForageSteal {
 

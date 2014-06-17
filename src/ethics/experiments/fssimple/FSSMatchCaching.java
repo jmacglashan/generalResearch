@@ -26,14 +26,14 @@ import domain.stocasticgames.foragesteal.simple.FSSimpleBTSJAM;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
 import domain.stocasticgames.foragesteal.simple.FSSimplePOJR;
 import ethics.ParameterizedRFFactory;
-import ethics.experiments.fssimple.aux.ConsantPsudoTermWorldGenerator;
-import ethics.experiments.fssimple.aux.FSSimpleBTSG;
-import ethics.experiments.fssimple.aux.FSSubjectiveRF;
-import ethics.experiments.fssimple.aux.PseudoGameCountWorld;
-import ethics.experiments.fssimple.aux.RNPseudoTerm;
+import ethics.experiments.fssimple.auxiliary.ConsantPsudoTermWorldGenerator;
+import ethics.experiments.fssimple.auxiliary.FSSimpleBTSG;
+import ethics.experiments.fssimple.auxiliary.FSSubjectiveRF;
+import ethics.experiments.fssimple.auxiliary.PseudoGameCountWorld;
+import ethics.experiments.fssimple.auxiliary.RNPseudoTerm;
 import ethics.experiments.fssimple.specialagents.OpponentOutcomeAgent;
 import ethics.experiments.fssimple.specialagents.OpponentOutcomeDBLStealthAgent;
-import ethics.experiments.tbforagesteal.aux.RFParamVarEnumerator;
+import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
 
 public class FSSMatchCaching {
 
