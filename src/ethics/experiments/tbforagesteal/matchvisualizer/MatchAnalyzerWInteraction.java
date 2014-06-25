@@ -3,7 +3,7 @@ package ethics.experiments.tbforagesteal.matchvisualizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -21,7 +21,7 @@ public class MatchAnalyzerWInteraction extends MatchAnalizer {
 	
 	
 
-	public MatchAnalyzerWInteraction(World world, SGQLAgent agent0, SGQLAgent agent1,
+	public MatchAnalyzerWInteraction(World world, SGNaiveQLAgent agent0, SGNaiveQLAgent agent1,
 			List<State> agent0qQueryStates, List<State> agent1qQueryStates) {
 		
 		super(world, agent0, agent1, agent0qQueryStates, agent1qQueryStates);

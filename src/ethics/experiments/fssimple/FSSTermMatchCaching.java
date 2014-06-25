@@ -8,8 +8,8 @@ import java.util.List;
 
 import optimization.OptVariables;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.stochasticgames.AgentFactory;
 import burlap.oomdp.stochasticgames.AgentType;
@@ -25,12 +25,9 @@ import domain.stocasticgames.foragesteal.simple.FSSimple;
 import domain.stocasticgames.foragesteal.simple.FSSimpleJR;
 import domain.stocasticgames.foragesteal.simple.FSSimpleTerminatingJAM;
 import ethics.ParameterizedRFFactory;
-import ethics.experiments.fssimple.FSSMatchCaching.DoublePair;
-import ethics.experiments.fssimple.FSSMatchCaching.MatchResult;
 import ethics.experiments.fssimple.auxiliary.FSRQInit;
 import ethics.experiments.fssimple.auxiliary.FSSimpleSG;
 import ethics.experiments.fssimple.auxiliary.FSSubjectiveRF;
-import ethics.experiments.fssimple.auxiliary.PseudoGameCountWorld;
 import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
 
 public class FSSTermMatchCaching {
@@ -96,7 +93,7 @@ public class FSSTermMatchCaching {
 		
 		double discount = 0.99;
 		
-		this.baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory);
+		this.baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory);
 		
 		SGStateGenerator sg = new FSSimpleSG(domain);
 		
@@ -236,10 +233,10 @@ public class FSSTermMatchCaching {
 		
 		//role 1
 		
-		SGQLAgent a1 = (SGQLAgent)factV1.generateAgent();
+		SGNaiveQLAgent a1 = (SGNaiveQLAgent)factV1.generateAgent();
 		a1.setQValueInitializer(v1QInit);
 		
-		SGQLAgent a2 = (SGQLAgent)factV2.generateAgent();
+		SGNaiveQLAgent a2 = (SGNaiveQLAgent)factV2.generateAgent();
 		a2.setQValueInitializer(v2QInit);
 		
 		World w1 = this.worldGenerator.generateWorld();
@@ -255,10 +252,10 @@ public class FSSTermMatchCaching {
 		
 		//role 2
 		
-		SGQLAgent a12 = (SGQLAgent)factV1.generateAgent();
+		SGNaiveQLAgent a12 = (SGNaiveQLAgent)factV1.generateAgent();
 		a12.setQValueInitializer(v1QInit);
 		
-		SGQLAgent a22 = (SGQLAgent)factV2.generateAgent();
+		SGNaiveQLAgent a22 = (SGNaiveQLAgent)factV2.generateAgent();
 		a22.setQValueInitializer(v2QInit);
 		
 		World w2 = this.worldGenerator.generateWorld();

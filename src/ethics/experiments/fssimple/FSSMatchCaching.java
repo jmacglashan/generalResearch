@@ -10,8 +10,8 @@ import optimization.OptVariables;
 import burlap.behavior.learningrate.ExponentialDecayLR;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.stochasticgames.AgentFactory;
@@ -31,7 +31,6 @@ import ethics.experiments.fssimple.auxiliary.FSSimpleBTSG;
 import ethics.experiments.fssimple.auxiliary.FSSubjectiveRF;
 import ethics.experiments.fssimple.auxiliary.PseudoGameCountWorld;
 import ethics.experiments.fssimple.auxiliary.RNPseudoTerm;
-import ethics.experiments.fssimple.specialagents.OpponentOutcomeAgent;
 import ethics.experiments.fssimple.specialagents.OpponentOutcomeDBLStealthAgent;
 import ethics.experiments.tbforagesteal.auxiliary.RFParamVarEnumerator;
 
@@ -122,7 +121,7 @@ public class FSSMatchCaching {
 		
 		double discount = 0.95;
 		
-		this.baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory);
+		this.baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory);
 		
 		//SGStateGenerator sg = new FSSimpleSG(domain);
 		SGStateGenerator sg = new FSSimpleBTSG(domain, probBackTurned);
@@ -279,12 +278,12 @@ public class FSSMatchCaching {
 		
 		//role 1
 		
-		SGQLAgent a1 = (SGQLAgent)factV1.generateAgent();
+		SGNaiveQLAgent a1 = (SGNaiveQLAgent)factV1.generateAgent();
 		//a1.setQValueInitializer(v1QInit);
 		a1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
 		a1.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
-		SGQLAgent a2 = (SGQLAgent)factV2.generateAgent();
+		SGNaiveQLAgent a2 = (SGNaiveQLAgent)factV2.generateAgent();
 		//a2.setQValueInitializer(v2QInit);
 		a2.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
 		a2.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
@@ -304,12 +303,12 @@ public class FSSMatchCaching {
 		//FSRQInit v12QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV1);
 		//FSRQInit v22QInit = new FSRQInit(this.objectiveReward, (FSSubjectiveRF)subjectiveRewardV2);
 		
-		SGQLAgent a12 = (SGQLAgent)factV1.generateAgent();
+		SGNaiveQLAgent a12 = (SGNaiveQLAgent)factV1.generateAgent();
 		//a12.setQValueInitializer(v12QInit);
 		a12.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(-6.5));
 		a12.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));
 		
-		SGQLAgent a22 = (SGQLAgent)factV2.generateAgent();
+		SGNaiveQLAgent a22 = (SGNaiveQLAgent)factV2.generateAgent();
 		//a22.setQValueInitializer(v22QInit);
 		a22.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.));
 		a22.setLearningRate(new ExponentialDecayLR(this.baseLearningRate, 0.999, 0.01));

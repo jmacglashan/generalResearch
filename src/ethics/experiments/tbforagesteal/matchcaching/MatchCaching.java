@@ -8,7 +8,7 @@ import java.util.List;
 
 import optimization.OptVariables;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.singleagent.common.SinglePFTF;
 import burlap.oomdp.stochasticgames.AgentFactory;
@@ -116,7 +116,7 @@ public class MatchCaching {
 		
 		double discount = 0.99;
 		
-		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveReward, 
 				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
@@ -145,7 +145,7 @@ public class MatchCaching {
 		
 		double discount = 0.99;
 		
-		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveReward, 
 				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));
@@ -175,7 +175,7 @@ public class MatchCaching {
 		
 		double discount = 0.99;
 		
-		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSWhoStartedMechanics(), objectiveReward, 
 				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain, new double[]{1., 0.5, 0.5, 0., 0.}));

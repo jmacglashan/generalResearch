@@ -7,8 +7,8 @@ import javax.management.RuntimeErrorException;
 
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
@@ -34,8 +34,8 @@ import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRF;
 
 public class MatchAnalizer {
 
-	protected SGQLAgent					agent0;
-	protected SGQLAgent					agent1;
+	protected SGNaiveQLAgent				agent0;
+	protected SGNaiveQLAgent				agent1;
 	protected World						world;
 	
 	protected List <State>				agent0QQueryStates;
@@ -62,7 +62,7 @@ public class MatchAnalizer {
 		double discount = 0.99;
 		double learningRate = 0.1;
 		
-		AgentFactory af = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		AgentFactory af = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 
 		
 		JointReward rf = new TBFSStandardReward();
@@ -74,8 +74,8 @@ public class MatchAnalizer {
 		
 		AgentFactory afpf = new AgentFactoryWithSubjectiveReward(af, punchFavored);
 		
-		SGQLAgent agent0 = (SGQLAgent)af.generateAgent();
-		SGQLAgent agent1 = (SGQLAgent)afpf.generateAgent();
+		SGNaiveQLAgent agent0 = (SGNaiveQLAgent)af.generateAgent();
+		SGNaiveQLAgent agent1 = (SGNaiveQLAgent)afpf.generateAgent();
 		
 		World world = worldGenerator.generateWorld();
 		agent0.joinWorld(world, at);
@@ -151,7 +151,7 @@ public class MatchAnalizer {
 	
 	
 	
-	public MatchAnalizer(World world, SGQLAgent agent0, SGQLAgent agent1, List <State> agent0QQueryStates, List <State> agent1QQueryStates) {
+	public MatchAnalizer(World world, SGNaiveQLAgent agent0, SGNaiveQLAgent agent1, List <State> agent0QQueryStates, List <State> agent1QQueryStates) {
 		
 		this.world = world;
 		

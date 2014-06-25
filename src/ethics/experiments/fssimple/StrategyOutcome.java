@@ -10,19 +10,14 @@ import burlap.behavior.learningrate.ExponentialDecayLR;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
-import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.datastructures.HashedAggregator;
 import burlap.debugtools.DPrint;
 import burlap.debugtools.RandomFactory;
-import burlap.domain.singleagent.graphdefined.GraphDefinedDomain;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.AbstractGroundedAction;
-import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
-import burlap.oomdp.singleagent.GroundedAction;
-import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.stochasticgames.AgentType;
 import burlap.oomdp.stochasticgames.GroundedSingleAction;
 import burlap.oomdp.stochasticgames.JointActionModel;
@@ -181,11 +176,11 @@ public class StrategyOutcome {
 	
 	public JointStrategy objectiveZeroQ(){
 		
-		SGQLAgent a0 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
+		SGNaiveQLAgent a0 = new SGNaiveQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
 		a0.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
 		//SGQLAgent a1 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
-		SGQLAgent a1 = new SGQLAgent(domain, this.discount, 0.0, -6.5, hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, this.discount, 0.0, -6.5, hashingFactory);
 		a1.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
 		
@@ -210,11 +205,11 @@ public class StrategyOutcome {
 	
 	public JointStrategy objectiveConstantQ(double a0Q, double a1Q){
 		
-		SGQLAgent a0 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
+		SGNaiveQLAgent a0 = new SGNaiveQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
 		a0.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(a0Q));
 		a0.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
-		SGQLAgent a1 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
 		a1.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization(a1Q));
 		a1.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
@@ -245,12 +240,12 @@ public class StrategyOutcome {
 		double a1minq = (-this.discount) / (1. - this.discount*this.discount);
 		double a1maxq = 0.;
 
-		SGQLAgent a0 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
+		SGNaiveQLAgent a0 = new SGNaiveQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
 		//a0.setQValueInitializer(new RRangeQInit(a0minq, a0maxq));
 		a0.setQValueInitializer(new ValueFunctionInitialization.ConstantValueFunctionInitialization());
 		a0.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
-		SGQLAgent a1 = new SGQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, this.discount, 0.0, 0., hashingFactory);
 		a1.setQValueInitializer(new RRangeQInit(a1minq, a1maxq));
 		a1.setLearningRate(new ExponentialDecayLR(0.1, 0.999, 0.01));
 		
@@ -288,7 +283,7 @@ public class StrategyOutcome {
 	 * @param a the agnet
 	 * @return policy label where 1s indicate whether stealing is chosen
 	 */
-	protected int [] classifyThief(SGQLAgent a0, SGQLAgent a1){
+	protected int [] classifyThief(SGNaiveQLAgent a0, SGNaiveQLAgent a1){
 		GreedyQPolicy p = new GreedyQPolicy(a0);
 		int [] label = new int[4];
 		
@@ -301,7 +296,7 @@ public class StrategyOutcome {
 		return label;
 	}
 	
-	protected int classifyPunisher(SGQLAgent a0, SGQLAgent a1){
+	protected int classifyPunisher(SGNaiveQLAgent a0, SGNaiveQLAgent a1){
 		GreedyQPolicy p = new GreedyQPolicy(a1);
 		return isPunish(p, this.getState(a0.getAgentName(), a1.getAgentName(), 2, 0));
 	}

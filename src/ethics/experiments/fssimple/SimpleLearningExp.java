@@ -14,11 +14,10 @@ import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
-import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.agents.SetStrategyAgent;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.debugtools.RandomFactory;
 import burlap.domain.singleagent.graphdefined.GraphDefinedDomain;
@@ -80,7 +79,7 @@ public class SimpleLearningExp {
 		ConditionalStealStrategy cs = new ConditionalStealStrategy("player0", domain, 0.1);
 		SetStrategyAgent a0 = new SetStrategyAgent(domain, cs);
 		
-		SGQLAgent a1 = new SGQLAgent(domain, .99, 0.1, -27., hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, .99, 0.1, -27., hashingFactory);
 		//a1.setStrategy(new SGEQGreedy(a1, 0.));
 		
 		World w = new World(domain, jam, r, new NullTermination(), sg);
@@ -128,7 +127,7 @@ public class SimpleLearningExp {
 		ConditionalStealStrategy cs = new ConditionalStealStrategy("player0", domain, 0.1);
 		SetStrategyAgent a0 = new SetStrategyAgent(domain, cs);
 		
-		SGQLAgent a1 = new SGQLAgent(domain, .99, 0.1, -27., hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, .99, 0.1, -27., hashingFactory);
 		//a1.setStrategy(new SGEQGreedy(a1, 0.));
 		
 		PseudoGameCountWorld w = new PseudoGameCountWorld(domain, jam, r, new NullTermination(), sg, new RNPseudoTerm());

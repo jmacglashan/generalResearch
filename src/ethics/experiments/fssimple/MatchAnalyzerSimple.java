@@ -2,18 +2,16 @@ package ethics.experiments.fssimple;
 
 import java.util.List;
 
-import domain.stocasticgames.foragesteal.TBForageSteal;
-import domain.stocasticgames.foragesteal.simple.FSSimple;
-
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.stochasticgames.World;
+import domain.stocasticgames.foragesteal.simple.FSSimple;
 import ethics.experiments.tbforagesteal.matchvisualizer.MatchAnalyzerWInteraction;
 
 public class MatchAnalyzerSimple extends MatchAnalyzerWInteraction {
 
-	public MatchAnalyzerSimple(World world, SGQLAgent agent0, SGQLAgent agent1,
+	public MatchAnalyzerSimple(World world, SGNaiveQLAgent agent0, SGNaiveQLAgent agent1,
 			List<State> agent0qQueryStates, List<State> agent1qQueryStates) {
 		super(world, agent0, agent1, agent0qQueryStates, agent1qQueryStates);
 	}

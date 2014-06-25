@@ -8,7 +8,7 @@ import java.util.Map;
 import optimization.OptVariables;
 import optimization.VarEvaluaiton;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
 import burlap.oomdp.singleagent.common.SinglePFTF;
 import burlap.oomdp.stochasticgames.AgentFactory;
 import burlap.oomdp.stochasticgames.AgentType;
@@ -57,7 +57,7 @@ public class LazyRoundRobinEval implements VarEvaluaiton {
 		
 		double discount = 0.99;
 		
-		baseFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		worldGenerator = new ConstantWorldGenerator(domain, new TBFSStandardMechanics(), objectiveReward, 
 				new SinglePFTF(domain.getPropFunction(TBForageSteal.PFGAMEOVER)), new TBFSAlternatingTurnSG(domain));

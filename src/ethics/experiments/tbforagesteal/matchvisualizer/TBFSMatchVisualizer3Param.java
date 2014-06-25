@@ -23,8 +23,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -436,7 +436,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		double oldLearningRate = learningRate;
 		learningRate = Double.parseDouble(lrField.getText());
 		
-		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseAgentFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		
 		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PSField.getText()), Double.parseDouble(a0PPField.getText())};
@@ -465,8 +465,8 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		AgentFactory a0Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a0SRF);
 		AgentFactory a1Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a1SRF);
 		
-		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
-		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
+		SGNaiveQLAgent agent0 = (SGNaiveQLAgent)a0Factory.generateAgent();
+		SGNaiveQLAgent agent1 = (SGNaiveQLAgent)a1Factory.generateAgent();
 		
 		World world = worldGenerator.generateWorld();
 		agent0.joinWorld(world, at);
@@ -525,7 +525,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		
 	}
 	
-	protected MatchAnalizer getMatchAnalyzer(World world, SGQLAgent agent0, SGQLAgent agent1){
+	protected MatchAnalizer getMatchAnalyzer(World world, SGNaiveQLAgent agent0, SGNaiveQLAgent agent1){
 		return new MatchAnalyzerWInteraction(world, agent0, agent1, extractStatesFromQuery(agent0QueryStates), extractStatesFromQuery(agent1QueryStates));
 	}
 	
@@ -546,7 +546,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		
 		learningRate = Double.parseDouble(lrField.getText());
 		
-		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseAgentFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		
 		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PSField.getText()), Double.parseDouble(a0PPField.getText())};
@@ -581,8 +581,8 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		
 		for(int i = 0; i < n; i++){
 			
-			SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
-			SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
+			SGNaiveQLAgent agent0 = (SGNaiveQLAgent)a0Factory.generateAgent();
+			SGNaiveQLAgent agent1 = (SGNaiveQLAgent)a1Factory.generateAgent();
 			
 			World world = worldGenerator.generateWorld();
 			agent0.joinWorld(world, at);

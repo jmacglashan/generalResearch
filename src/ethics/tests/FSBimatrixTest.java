@@ -3,7 +3,7 @@ package ethics.tests;
 import java.util.List;
 
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.domain.stochasticgames.normalform.SingleStageNormalFormGame;
 import burlap.oomdp.auxiliary.common.NullTermination;
@@ -47,9 +47,9 @@ public class FSBimatrixTest {
 		DiscreteStateHashFactory hashingFactory = new DiscreteStateHashFactory();
 		
 		//SGQLAgent a0 = new SGQLAgent(domain, 0.99, 0.01, hashingFactory);
-		SGQLAgent a0 = new SGQLAgent(domain, .99, 0.1, 1., hashingFactory);
+		SGNaiveQLAgent a0 = new SGNaiveQLAgent(domain, .99, 0.1, 1., hashingFactory);
 		//SGQLAgent a1 = new SGQLAgent(domain, 0.99, 0.01, hashingFactory);
-		SGQLAgent a1 = new SGQLAgent(domain, .99, 0.1, 1., hashingFactory);
+		SGNaiveQLAgent a1 = new SGNaiveQLAgent(domain, .99, 0.1, 1., hashingFactory);
 		
 		
 		a0.joinWorld(w, at);

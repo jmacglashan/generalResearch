@@ -24,8 +24,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQFactory;
-import burlap.behavior.stochasticgame.agents.naiveq.SGQLAgent;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQFactory;
+import burlap.behavior.stochasticgame.agents.naiveq.SGNaiveQLAgent;
 import burlap.debugtools.DPrint;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -46,7 +46,6 @@ import domain.stocasticgames.foragesteal.TBFSStandardReward;
 import domain.stocasticgames.foragesteal.TBForageSteal;
 import domain.stocasticgames.foragesteal.TBForageStealFAbstraction;
 import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRF;
-import ethics.experiments.tbforagesteal.auxiliary.TBFSSubjectiveRFWS;
 import ethics.experiments.tbforagesteal.matchvisualizer.ColoredTableRenderer.ColoredTableCell;
 import ethics.experiments.tbforagesteal.matchvisualizer.ColoredTableRenderer.TableLabel;
 
@@ -465,7 +464,7 @@ private static final long serialVersionUID = 1L;
 		double oldLearningRate = learningRate;
 		learningRate = Double.parseDouble(lrField.getText());
 		
-		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseAgentFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		
 		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PSField.getText()), Double.parseDouble(a0PPField.getText())};
@@ -485,8 +484,8 @@ private static final long serialVersionUID = 1L;
 		AgentFactory a0Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a0SRF);
 		AgentFactory a1Factory = new AgentFactoryWithSubjectiveReward(baseAgentFactory, a1SRF);
 		
-		SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
-		SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
+		SGNaiveQLAgent agent0 = (SGNaiveQLAgent)a0Factory.generateAgent();
+		SGNaiveQLAgent agent1 = (SGNaiveQLAgent)a1Factory.generateAgent();
 		
 		World world = worldGenerator.generateWorld();
 		agent0.joinWorld(world, at);
@@ -540,7 +539,7 @@ private static final long serialVersionUID = 1L;
 		
 	}
 	
-	protected MatchAnalizer getMatchAnalyzer(World world, SGQLAgent agent0, SGQLAgent agent1){
+	protected MatchAnalizer getMatchAnalyzer(World world, SGNaiveQLAgent agent0, SGNaiveQLAgent agent1){
 		return new MatchAnalyzerWInteraction(world, agent0, agent1, agent0QueryStates, agent1QueryStates);
 	}
 	
@@ -553,7 +552,7 @@ private static final long serialVersionUID = 1L;
 		
 		learningRate = Double.parseDouble(lrField.getText());
 		
-		baseAgentFactory = new SGQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
+		baseAgentFactory = new SGNaiveQFactory(domain, discount, learningRate, 1.5, hashingFactory, new TBForageStealFAbstraction());
 		
 		
 		double [] a0SRParams = new double[]{Double.parseDouble(a0SField.getText()), Double.parseDouble(a0PSField.getText()), Double.parseDouble(a0PPField.getText())};
@@ -579,8 +578,8 @@ private static final long serialVersionUID = 1L;
 		
 		for(int i = 0; i < n; i++){
 			
-			SGQLAgent agent0 = (SGQLAgent)a0Factory.generateAgent();
-			SGQLAgent agent1 = (SGQLAgent)a1Factory.generateAgent();
+			SGNaiveQLAgent agent0 = (SGNaiveQLAgent)a0Factory.generateAgent();
+			SGNaiveQLAgent agent1 = (SGNaiveQLAgent)a1Factory.generateAgent();
 			
 			World world = worldGenerator.generateWorld();
 			agent0.joinWorld(world, at);
