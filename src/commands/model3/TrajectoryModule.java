@@ -271,6 +271,16 @@ public class TrajectoryModule extends GMModule{
 			this.gps = new ArrayList<GroundedProp>(rf.gps);
 		}
 		
+		@Override
+		public String toString(){
+			StringBuffer buf = new StringBuffer();
+			buf.append(gps.get(0).toString());
+			for(int i = 1; i < gps.size(); i++){
+				buf.append(" ^ ").append(gps.get(i).toString());
+			}
+			return buf.toString();
+		}
+		
 		
 		@Override
 		public boolean isTerminal(State s) {

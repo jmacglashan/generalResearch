@@ -3,6 +3,7 @@ package tests;
 import java.awt.Color;
 import java.util.List;
 
+import burlap.behavior.learningrate.SoftTimeInverseDecayLR;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.Policy;
@@ -24,13 +25,10 @@ import burlap.behavior.singleagent.learning.actorcritic.ActorCritic;
 import burlap.behavior.singleagent.learning.actorcritic.actor.BoltzmannActor;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TDLambda;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TimeIndexedTDLambda;
-//import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
-//import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.StateConditionTest;
-import burlap.behavior.singleagent.planning.commonpolicies.EpsilonGreedy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner;
 import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
@@ -42,7 +40,6 @@ import burlap.behavior.singleagent.planning.deterministic.uninformed.dfs.DFS;
 import burlap.behavior.singleagent.planning.stochastic.policyiteration.PolicyIteration;
 import burlap.behavior.singleagent.planning.stochastic.rtdp.RTDP;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
-import burlap.behavior.singleagent.shaping.potential.PotentialFunction;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldStateParser;
@@ -62,6 +59,8 @@ import burlap.oomdp.singleagent.common.SinglePFTF;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 import burlap.oomdp.singleagent.common.VisualActionObserver;
 import burlap.oomdp.visualizer.Visualizer;
+//import burlap.behavior.singleagent.learning.modellearning.ModeledDomainGenerator;
+//import burlap.behavior.singleagent.learning.modellearning.rmax.PotentialShapedRMax;
 
 
 
@@ -93,8 +92,8 @@ public class BasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		example.QLearningExample(outputPath);
-		//example.SarsaLearningExample(outputPath);
+		//example.QLearningExample(outputPath);
+		example.SarsaLearningExample(outputPath);
 		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
 		//example.AStarExample(outputPath);
@@ -105,7 +104,7 @@ public class BasicBehavior {
 		//example.RMaxExample(outputPath);
 		
 		//run the visualizer
-		example.visualize(outputPath);
+		//example.visualize(outputPath);
 
 		
 		//example.valueIterationAndVisualizeValueFunction();
@@ -132,11 +131,11 @@ public class BasicBehavior {
 		
 		//set up the initial state
 		//initialState = GridWorldDomain.getOneAgentOneLocationState(domain);
-		initialState = GridWorldDomain.getOneAgentNLocationState(domain, 2);
+		initialState = GridWorldDomain.getOneAgentNLocationState(domain, 1);
 		GridWorldDomain.setAgent(initialState, 0, 0);
 		//GridWorldDomain.setAgent(initialState, 10, 5);
 		GridWorldDomain.setLocation(initialState, 0, 10, 10);
-		GridWorldDomain.setLocation(initialState, 1, 10, 7, 1);
+		//GridWorldDomain.setLocation(initialState, 1, 10, 7, 1);
 		//GridWorldDomain.setLocation(initialState, 0, 0, 0);
 		//GridWorldDomain.setLocation(initialState, 0, 14, 14);
 		
@@ -170,7 +169,8 @@ public class BasicBehavior {
 		//observer.initGUI();
 				
 		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.9
-		LearningAgent agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0.3, 0.9);
+		QLearning agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0.3, 0.9);
+		agent.setLearningRateFunction(new SoftTimeInverseDecayLR(1., 100, hashingFactory, false));
 		
 		
 		//run learning for 100 episodes
@@ -236,12 +236,13 @@ public class BasicBehavior {
 			outputPath = outputPath + "/";
 		}
 		
-		VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
+		//VisualActionObserver observer = new VisualActionObserver(domain, GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
 		//this.domain.addActionObserverForAllAction(observer);
-		observer.initGUI();
+		//observer.initGUI();
 		
 		//creating the learning algorithm object; discount= 0.99; initialQ=0.0; learning rate=0.5; lambda=1.0 (online Monte carlo at 1.0, one step at 0.0)
-		LearningAgent agent = new SarsaLam(domain, rf, tf, 0.99, hashingFactory, -50, 0.5, 1.0);
+		SarsaLam agent = new SarsaLam(domain, rf, tf, 0.99, hashingFactory, -50, 0.5, 1.0);
+		agent.setLearningRateFunction(new SoftTimeInverseDecayLR(0.5, 100, hashingFactory, false));
 		
 		//run learning for 100 episodes
 		for(int i = 0; i < 100; i++){

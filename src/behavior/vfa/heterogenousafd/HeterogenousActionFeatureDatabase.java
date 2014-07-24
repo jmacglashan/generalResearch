@@ -105,6 +105,11 @@ public class HeterogenousActionFeatureDatabase implements FeatureDatabase {
 		return result;
 		
 	}
+
+	@Override
+	public int numberOfFeatures() {
+		return nextActionId;
+	}
 	
 	
 	

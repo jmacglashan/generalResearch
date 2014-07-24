@@ -6,6 +6,7 @@ import burlap.behavior.singleagent.learning.tdmethods.vfa.GradientDescentSarsaLa
 import burlap.behavior.singleagent.vfa.ValueFunctionApproximation;
 import burlap.behavior.singleagent.vfa.cmac.CMACFeatureDatabase;
 import burlap.behavior.singleagent.vfa.cmac.CMACFeatureDatabase.TilingArrangement;
+import burlap.debugtools.MyTimer;
 import burlap.domain.singleagent.lunarlander.LLStateParser;
 import burlap.domain.singleagent.lunarlander.LLVisualizer;
 import burlap.domain.singleagent.lunarlander.LunarLanderDomain;
@@ -16,9 +17,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
-import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.common.SinglePFTF;
-import burlap.oomdp.singleagent.common.VisualActionObserver;
 import burlap.oomdp.visualizer.Visualizer;
 
 public class VFATest {
@@ -39,8 +38,9 @@ public class VFATest {
 		VFATest example = new VFATest();
 		String outputPath = "lunarLander"; //directory to record results
 		
-		//example.runCMACVFA(outputPath);
-		example.visualize(outputPath);
+		example.runCMACVFA(outputPath);
+		//example.runFVCMACVFA(outputPath);
+		//example.visualize(outputPath);
 
 	}
 	
@@ -91,16 +91,65 @@ public class VFATest {
 		
 		GradientDescentSarsaLam agent = new GradientDescentSarsaLam(domain, rf, tf, 0.99, vfa, 0.02, 10000, 0.5);
 		
+		MyTimer timer = new MyTimer();
+		timer.start();
+		
 		for(int i = 0; i < 5000; i++){
 			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState); //run learning episode
-			ea.writeToFile(String.format("%se%04d", outputPath, i), sp); //record episode to a file
+			//ea.writeToFile(String.format("%se%04d", outputPath, i), sp); //record episode to a file
 			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
 		}
+		
+		timer.stop();
+		
+		System.out.println("time orignal: " + timer.getTime());
 		
 		
 		
 	}
 	
+	
+	/*
+	public void runFVCMACVFA(String outputPath){
+		
+		if(!outputPath.endsWith("/")){
+			outputPath = outputPath + "/";
+		}
+		
+		ConcatenatedObjectFeatureVectorGenerator sfv = new ConcatenatedObjectFeatureVectorGenerator(LunarLanderDomain.AGENTCLASS);
+		double resolution = 10.;
+		double [] widths = new double[]{
+				(lld.getXmax() - lld.getXmin()) / resolution,
+				(lld.getYmax() - lld.getYmin()) / resolution,
+				2*lld.getVmax() / resolution,
+				2*lld.getVmax() / resolution,
+				2*lld.getAngmax() / resolution};
+		
+		FVCMACFeatureDatabase cmac = new FVCMACFeatureDatabase(sfv);
+		int nTilings = 5;
+		cmac.addTilingsForAllDimensionsWithWidths(widths, nTilings, TilingArrangement.RANDOMJITTER);
+		
+		double defaultQ = 0.5;
+		ValueFunctionApproximation vfa = new LinearVFA(cmac, defaultQ/nTilings);
+		
+		GradientDescentSarsaLam agent = new GradientDescentSarsaLam(domain, rf, tf, 0.99, vfa, 0.02, 10000, 0.5);
+		
+		MyTimer timer = new MyTimer();
+		timer.start();
+		
+		for(int i = 0; i < 5000; i++){
+			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState); //run learning episode
+			//ea.writeToFile(String.format("%se%04d", outputPath, i), sp); //record episode to a file
+			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
+		}
+		
+		timer.stop();
+		
+		System.out.println("time: " + timer.getTime());
+		
+		
+	}
+	*/
 	
 	class LLRF implements RewardFunction{
 

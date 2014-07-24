@@ -6,6 +6,7 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.PlannerDerivedPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 
@@ -16,7 +17,12 @@ public class DynamicDVIPolicy extends Policy implements PlannerDerivedPolicy {
 	
 	public DynamicDVIPolicy(DeterministicGoalDirectedPartialVI planner, double boltzTemp){
 		this.planner = planner;
-		this.vfPolicy = new BoltzmannQPolicy(planner, boltzTemp);
+		if(boltzTemp == 0.){
+			this.vfPolicy = new GreedyQPolicy(planner);
+		}
+		else{
+			this.vfPolicy = new BoltzmannQPolicy(planner, boltzTemp);
+		}
 	}
 	
 	@Override

@@ -29,9 +29,25 @@ public class DTVisualizer {
 		
 		v.addStaticPainter(new MapPainter(d, map));
 		
+		v.addObjectClassPainter(DogTraining.CLASSLOCATION, new LocationPainter(map));
 		v.addObjectClassPainter(DogTraining.CLASSDOG, new DogPainter(map));
 		v.addObjectClassPainter(DogTraining.CLASSTOY, new ToyPainter(map));
+		
+		
+		
+		return v;
+	}
+	
+	public static Visualizer getVisualizer(Domain d, int [][] map, String imagePath){
+		
+		Visualizer v = new Visualizer();
+		
+		v.addStaticPainter(new MapPainter(d, map));
+		
 		v.addObjectClassPainter(DogTraining.CLASSLOCATION, new LocationPainter(map));
+		v.addObjectClassPainter(DogTraining.CLASSDOG, new DogPainter(map, imagePath));
+		v.addObjectClassPainter(DogTraining.CLASSTOY, new ToyPainter(map));
+		
 		
 		
 		return v;
@@ -156,17 +172,25 @@ public class DTVisualizer {
 		protected BufferedImage []			dogImages;
 		
 		public DogPainter(int [][] map) {
+			this(map, "dataFiles/Resources/dogimages/");
+		}
+		
+		public DogPainter(int [][] map, String imagePath) {
 			this.dwidth = map.length;
 			this.dheight = map[0].length;
 			this.map = map;
 			
+			if(!imagePath.endsWith("/")){
+				imagePath = imagePath + "/";
+			}
+			
 			dogImages = new BufferedImage[5];
 			try{
-				dogImages[0] = ImageIO.read(new File("dataFiles/Resources/dogimages/dognorth.png"));
-				dogImages[1] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogsouth.png"));
-				dogImages[2] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogeast.png"));
-				dogImages[3] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogwest.png"));
-				dogImages[4] = ImageIO.read(new File("dataFiles/Resources/dogimages/dogwait.png"));
+				dogImages[0] = ImageIO.read(new File(imagePath + "dognorth.png"));
+				dogImages[1] = ImageIO.read(new File(imagePath + "dogsouth.png"));
+				dogImages[2] = ImageIO.read(new File(imagePath + "dogeast.png"));
+				dogImages[3] = ImageIO.read(new File(imagePath + "dogwest.png"));
+				dogImages[4] = ImageIO.read(new File(imagePath + "dogwait.png"));
 			}catch(Exception e){
 				System.out.println(e);
 			}

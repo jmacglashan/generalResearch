@@ -26,6 +26,16 @@ public class GPConjunction implements Iterable<GroundedProp>{
 		}
 		return true;
 	}
+	
+	@Override
+	public String toString(){
+		StringBuffer buf = new StringBuffer();
+		buf.append(gps.toString());
+		for(int i = 1; i < gps.size(); i++){
+			buf.append(" ^ ").append(gps.get(i).toString());
+		}
+		return buf.toString();
+	}
 
 	@Override
 	public Iterator<GroundedProp> iterator() {

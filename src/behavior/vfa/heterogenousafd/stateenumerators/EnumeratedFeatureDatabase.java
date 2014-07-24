@@ -125,6 +125,11 @@ public class EnumeratedFeatureDatabase implements FeatureDatabase{
 		}
 		
 	}
+
+	@Override
+	public int numberOfFeatures() {
+		return this.nextActionFeatureId;
+	}
 	
 
 }

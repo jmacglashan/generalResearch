@@ -54,8 +54,8 @@ public class SimulatedHumanGrid {
 	public static void main(String[] args) {
 		
 		SimulatedHumanGrid shg = new SimulatedHumanGrid();
-		shg.runVisualExplorer();
-		//shg.runInteractiveTraining();
+		//shg.runVisualExplorer();
+		shg.runInteractiveTraining();
 		
 		//shg.experimentFixedCustomDriver("dataFiles/trainOutput/custom2/actual", 0.3, 0.7, 0.05);
 		

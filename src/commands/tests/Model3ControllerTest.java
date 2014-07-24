@@ -60,9 +60,9 @@ public class Model3ControllerTest {
 		//getLatexDatasetTable();
 		
 		//uniformTest();
-		//trajectoryTrainingTest(DATASETTESTPATH);
+		trajectoryTrainingTest(DATASETTESTPATH);
 		//trajectoryTrainingTest(args[0]);
-		testMTWords(DATASETTESTPATH);
+		//testMTWords(DATASETTESTPATH);
 		//parallelLOOOutput(args);
 		//parallelBOWLOOOutput(args);
 		//parallelNORLOOOutput(args);

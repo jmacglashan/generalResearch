@@ -113,6 +113,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		
 		Sokoban2Domain dgen = new Sokoban2Domain();
 		dgen.includeDirectionAttribute(true);
+		dgen.includePullAction(true);
 		
 		StateRenderLayer abSL = new StateRenderLayer();
 		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("robotImages", maxX, maxY));

@@ -37,6 +37,7 @@ public class Sokoban2Domain implements DomainGenerator {
 	public static final String					ACTIONSOUTH = "south";
 	public static final String					ACTIONEAST = "east";
 	public static final String					ACTIONWEST = "west";
+	public static final String					ACTIONPULL = "pull";
 	
 	public static final String					PFAGENTINROOM = "agentInRoom";
 	public static final String					PFBLOCKINROOM = "blockInRoom";
@@ -63,7 +64,8 @@ public class Sokoban2Domain implements DomainGenerator {
 	
 	protected int								maxX = 24;
 	protected int								maxY = 24;
-	protected boolean							includeDirectionAttribute = false;;
+	protected boolean							includeDirectionAttribute = false;
+	protected boolean							includePullAction = false;
 	
 	
 	public void setMaxX(int maxX){
@@ -76,6 +78,10 @@ public class Sokoban2Domain implements DomainGenerator {
 	
 	public void includeDirectionAttribute(boolean includeDirectionAttribute){
 		this.includeDirectionAttribute = includeDirectionAttribute;
+	}
+	
+	public void includePullAction(boolean includePullAction){
+		this.includePullAction = includePullAction;
 	}
 	
 	
@@ -135,26 +141,28 @@ public class Sokoban2Domain implements DomainGenerator {
 		this.addRectAtts(domain, door);
 		
 		
-		Action northAction = new MovementAction(ACTIONNORTH, domain, 0, 1);
-		Action southAction = new MovementAction(ACTIONSOUTH, domain, 0, -1);
-		Action eastAction = new MovementAction(ACTIONEAST, domain, 1, 0);
-		Action westAction = new MovementAction(ACTIONWEST, domain, -1, 0);
+		new MovementAction(ACTIONNORTH, domain, 0, 1);
+		new MovementAction(ACTIONSOUTH, domain, 0, -1);
+		new MovementAction(ACTIONEAST, domain, 1, 0);
+		new MovementAction(ACTIONWEST, domain, -1, 0);
+		if(this.includePullAction){
+			new PullAction(domain);
+		}
 		
 		
+		new PFInRegion(PFAGENTINROOM, domain, new String[]{CLASSAGENT, CLASSROOM}, false);
+		new PFInRegion(PFBLOCKINROOM, domain, new String[]{CLASSBLOCK, CLASSROOM}, false);
 		
-		PropositionalFunction air = new PFInRegion(PFAGENTINROOM, domain, new String[]{CLASSAGENT, CLASSROOM}, false);
-		PropositionalFunction bir = new PFInRegion(PFBLOCKINROOM, domain, new String[]{CLASSBLOCK, CLASSROOM}, false);
-		
-		PropositionalFunction aid = new PFInRegion(PFAGENTINDOOR, domain, new String[]{CLASSAGENT, CLASSDOOR}, true);
-		PropositionalFunction bid = new PFInRegion(PFBLOCKINDOOR, domain, new String[]{CLASSBLOCK, CLASSDOOR}, true);
+		new PFInRegion(PFAGENTINDOOR, domain, new String[]{CLASSAGENT, CLASSDOOR}, true);
+		new PFInRegion(PFBLOCKINDOOR, domain, new String[]{CLASSBLOCK, CLASSDOOR}, true);
 		
 		for(String col : COLORS){
-			PropositionalFunction pfr = new PFIsColor(PFRoomColorName(col), domain, new String[]{CLASSROOM}, col);
-			PropositionalFunction pfb = new PFIsColor(PFBlockColorName(col), domain, new String[]{CLASSBLOCK}, col);
+			new PFIsColor(PFRoomColorName(col), domain, new String[]{CLASSROOM}, col);
+			new PFIsColor(PFBlockColorName(col), domain, new String[]{CLASSBLOCK}, col);
 		}
 		
 		for(String shape : SHAPES){
-			PropositionalFunction pf = new PFIsShape(PFBlockShapeName(shape), domain, new String[]{CLASSBLOCK}, shape);
+			new PFIsShape(PFBlockShapeName(shape), domain, new String[]{CLASSBLOCK}, shape);
 		}
 		
 		
@@ -489,6 +497,101 @@ public class Sokoban2Domain implements DomainGenerator {
 		
 	}
 	
+	public class PullAction extends Action{
+
+		public PullAction(Domain domain){
+			super(ACTIONPULL, domain, "");
+		}
+		
+		@Override
+		public boolean applicableInState(State s, String [] params){
+			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
+			int ax = agent.getDiscValForAttribute(ATTX);
+			int ay = agent.getDiscValForAttribute(ATTY);
+			
+			return this.blockToSwap(s, ax, ay) != null;
+		}
+		
+		@Override
+		protected State performActionHelper(State s, String[] params) {
+			
+			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
+			int ax = agent.getDiscValForAttribute(ATTX);
+			int ay = agent.getDiscValForAttribute(ATTY);
+			
+			ObjectInstance block = this.blockToSwap(s, ax, ay);
+			int bx = block.getDiscValForAttribute(ATTX);
+			int by = block.getDiscValForAttribute(ATTY);
+			
+			agent.setValue(ATTX, bx);
+			agent.setValue(ATTY, by);
+			
+			block.setValue(ATTX, ax);
+			block.setValue(ATTY, ay);
+			
+			if(Sokoban2Domain.this.includeDirectionAttribute){
+				
+				//face in direction of the block movement
+				if(by - ay > 0){
+					agent.setValue(ATTDIR, "south");
+				}
+				else if(by - ay < 0){
+					agent.setValue(ATTDIR, "north");
+				}
+				else if(bx - ax > 0){
+					agent.setValue(ATTDIR, "west");
+				}
+				else if(bx - ax < 0){
+					agent.setValue(ATTDIR, "east");
+				}
+				
+			}
+			
+			return s;
+		}
+		
+		
+		protected ObjectInstance blockToSwap(State s, int ax, int ay){
+			//ObjectInstance roomContaining = roomContainingPoint(s, ax, ay);
+			ObjectInstance roomContaining = regionContainingPoint(s.getObjectsOfTrueClass(CLASSROOM), ax, ay, true);
+
+			
+			ObjectInstance blockToSwap = null;
+			//check if there is a block against the wall to the north south east or west
+			if(wallAt(s, roomContaining, ax, ay+2)){
+				blockToSwap = blockAtPoint(s, ax, ay+1);
+				if(blockToSwap != null){
+					return blockToSwap;
+				}
+			}
+			if(wallAt(s, roomContaining, ax, ay-2)){
+				blockToSwap = blockAtPoint(s, ax, ay-1);
+				if(blockToSwap != null){
+					return blockToSwap;
+				}
+			}
+			if(wallAt(s, roomContaining, ax+2, ay)){
+				blockToSwap = blockAtPoint(s, ax+1, ay);
+				if(blockToSwap != null){
+					return blockToSwap;
+				}
+			}
+			if(wallAt(s, roomContaining, ax-2, ay)){
+				blockToSwap = blockAtPoint(s, ax-1, ay);
+				if(blockToSwap != null){
+					return blockToSwap;
+				}
+			}
+			
+			
+			
+			return blockToSwap;
+		}
+		
+		
+		
+	}
+	
 	
 	
 	public class PFInRegion extends PropositionalFunction{
@@ -566,6 +669,7 @@ public class Sokoban2Domain implements DomainGenerator {
 		
 		Sokoban2Domain dgen = new Sokoban2Domain();
 		dgen.includeDirectionAttribute(true);
+		dgen.includePullAction(true);
 		Domain domain = dgen.generateDomain();
 		
 		State s = Sokoban2Domain.getClassicState(domain);
@@ -581,6 +685,7 @@ public class Sokoban2Domain implements DomainGenerator {
 		exp.addKeyAction("s", ACTIONSOUTH);
 		exp.addKeyAction("d", ACTIONEAST);
 		exp.addKeyAction("a", ACTIONWEST);
+		exp.addKeyAction("r", ACTIONPULL);
 		
 		exp.initGUI();
 		
