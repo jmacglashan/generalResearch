@@ -24,6 +24,23 @@ public abstract class DifferentiableRF implements RewardFunction {
               return this.dim;
       }
       
+      public double [] getParameters(){
+    	  return this.parameters;
+      }
+      
+      @Override
+      public String toString(){
+    	  StringBuffer buf = new StringBuffer();
+    	  for(int i = 0; i < this.parameters.length; i++){
+    		  if(i > 0){
+    			  buf.append(", ");
+    		  }
+    		  buf.append(this.parameters[i]);
+    	  }
+    	  
+    	  return buf.toString();
+      }
+      
       
       
       public static class LinearStateDifferentiableRF extends DifferentiableRF{

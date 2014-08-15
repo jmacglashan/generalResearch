@@ -19,6 +19,12 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 	protected double										boltzBeta;
 	
 	
+	@Override
+	public void resetPlannerResults(){
+		super.resetPlannerResults();
+		this.valueGradient.clear();
+	}
+	
 	
 	protected double performBellmanUpdateOn(StateHashTuple sh){
 	    
@@ -108,27 +114,6 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 			pg[j] *= constantPart;
 		}
 		
-		/* this is wrong and the approach wont work anyway
-		double [] upperExpSum = new double[pg.length];
-		for(int i = 0; i < qs.length; i++){
-			
-			for(int j = 0; j < d; j++){
-				upperExpSum[j] += this.boltzBeta * (gqs[aInd][j] - gqs[i][j]) * Math.exp(this.boltzBeta * qs[i] - maxBetaScaled);
-				
-			}
-		}
-		 
-
-		for(int i = 0; i < d; i++){
-			double upperLogSum = maxBetaScaled + Math.log(upperExpSum[i]);
-			double totalLogged = (this.boltzBeta * qs[aInd]) + upperLogSum - (2*logSum);
-			pg[i] = Math.exp(totalLogged);
-			if(Double.isNaN(pg[i])){
-				System.out.println("Error in policy gradient compute");
-			}
-			
-		}
-		*/
 		
 		return pg;
 	}
