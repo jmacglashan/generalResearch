@@ -4,7 +4,7 @@ import java.util.List;
 
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
-import burlap.behavior.singleagent.QValue;
+import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.oomdp.auxiliary.common.NullTermination;
@@ -15,7 +15,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 public class MLIRL {
 
 	protected DifferentiableRF					curRF;
-	protected DifferentiableVFPlanner			planner;
+	protected QGradientPlanner					planner;
 	protected Domain							domain;
 	protected double							gamma;
 	protected double							boltzBeta;
@@ -35,8 +35,12 @@ public class MLIRL {
 		this.planner = new DifferentiableVI(domain, rf, new NullTermination(), gamma, boltzBeta, hashingFactory, 0.01, 500);
 	}
 	
+	public void setPlanner(QGradientPlanner planner){
+		this.planner = planner;
+	}
+	
 	public void runPlanner(){
-		this.planner.planFromState(this.exampleTrajectories.get(0).getState(0));
+		((OOMDPPlanner)this.planner).planFromState(this.exampleTrajectories.get(0).getState(0));
 	}
 	
 	public double logLikelihoodOfTrajectory(EpisodeAnalysis ea){
@@ -60,7 +64,7 @@ public class MLIRL {
 	public void runGradientAscent(double alpha, int iterations){
 		for(int i = 0; i < iterations; i++){
 			double [] params = this.curRF.getParameters();
-			this.planner.resetPlannerResults();
+			((OOMDPPlanner)this.planner).resetPlannerResults();
 			this.runPlanner();
 			System.out.println("RF: " + this.curRF.toString());
 			System.out.println("Log likelihood: " + this.logLikelihood());
@@ -73,11 +77,12 @@ public class MLIRL {
 			
 		}
 		
-		this.planner.resetPlannerResults();
+		((OOMDPPlanner)this.planner).resetPlannerResults();
 		this.runPlanner();
 		System.out.println("RF: " + this.curRF.toString());
 		System.out.println("Log likelihood: " + this.logLikelihood());
 	}
+	
 	
 	
 	public double [] logLikelihoodGradient(){
@@ -93,6 +98,15 @@ public class MLIRL {
 	
 	public double [] logPolicyGrad(State s, GroundedAction ga){
 		
+		Policy p = new BoltzmannQPolicy(this.planner, 1./this.boltzBeta);
+		double invActProb = 1./p.getProbOfAction(s, ga);
+		double [] gradient = BoltzmannPolicyGradient.computeBoltzmannPolicyGradient(s, ga, this.planner, this.boltzBeta);
+		for(int f = 0; f < gradient.length; f++){
+			gradient[f] *= invActProb;
+		}
+		return gradient;
+		
+		/*
 		List<QValue> qs = this.planner.getQs(s);
 		List<QGradientTuple> qGrads = this.planner.getAllQGradients(s);
 		QGradientTuple qGradQuery = this.planner.getQGradient(s, ga);
@@ -116,19 +130,16 @@ public class MLIRL {
 				coeff[i] = this.boltzBeta * qGrads.get(i).gradient[f];
 			}
 			
-			double numLogSum = this.logSumExp(qsb, coeff, mxqb);
 			
-			double sumRatio = Math.exp(numLogSum - denomLogSum);
+			double numExpSum = this.shiftedExponentialSum(qsb, coeff, mxqb);
+			double sumRatio = Math.exp(mxqb - denomLogSum);
+			grad[f] = (this.boltzBeta * qGradQuery.gradient[f]) - (numExpSum * sumRatio);
 			
-			grad[f] = (this.boltzBeta * qGradQuery.gradient[f]) - sumRatio;
-			if(Double.isNaN(grad[f])){
-				System.out.println("Uh-oh");
-				this.logSumExp(qsb, coeff, mxqb);
-			}
 			
 		}
 		
 		return grad;
+		*/
 	}
 	
 	
@@ -152,6 +163,14 @@ public class MLIRL {
 		double v = m + Math.log(sum);
 		
 		return v;
+	}
+	
+	protected double shiftedExponentialSum(double [] eng, double [] coeff, double m){
+		double sum = 0.;
+		for(int i = 0; i < eng.length; i++){
+			sum += coeff[i] * Math.exp(eng[i] - m);
+		}
+		return sum;
 	}
 	
 	

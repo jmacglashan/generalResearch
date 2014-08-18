@@ -9,6 +9,7 @@ import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
+import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
@@ -21,8 +22,71 @@ public class MLIRLTest {
 	 */
 	public static void main(String[] args) {
 		
-		System.out.println("LOG: " + Math.log(-0.07278339112565912));
+		//CSABLTest();
+		MLIRLTest();
 		
+		
+		
+	}
+	
+	
+	public static void CSABLTest(){
+		
+		GridWorldDomain gwd = new GridWorldDomain(3, 3);
+		gwd.makeEmptyMap();
+		Domain domain = gwd.generateDomain();
+		State s = GridWorldDomain.getOneAgentNoLocationState(domain);
+		GridWorldDomain.setAgent(s, 0, 1);
+		
+		State tmpS = s.copy();
+		
+		List<FeedbackTuple> feedbacks = new ArrayList<FeedbackTuple>();
+		
+		GroundedAction tmpGA = new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), "");
+		feedbacks.add(new FeedbackTuple(tmpS, tmpGA, 1.));
+		
+		tmpGA = new GroundedAction(domain.getAction(GridWorldDomain.ACTIONSOUTH), "");
+		tmpS = s.copy();
+		GridWorldDomain.setAgent(tmpS, 1, 2);
+		feedbacks.add(new FeedbackTuple(tmpS, tmpGA, -1.));
+		
+		tmpGA = new GroundedAction(domain.getAction(GridWorldDomain.ACTIONSOUTH), "");
+		tmpS = s.copy();
+		GridWorldDomain.setAgent(tmpS, 2, 2);
+		feedbacks.add(new FeedbackTuple(tmpS, tmpGA, 1.));
+		
+		
+		List<FeedbackTuple> noFeedbacks = new ArrayList<FeedbackTuple>();
+		
+		tmpS = s.copy();
+		noFeedbacks.add(new FeedbackTuple(tmpS, new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), ""), 0.));
+		
+		tmpS = s.copy();
+		GridWorldDomain.setAgent(tmpS, 0, 2);
+		noFeedbacks.add(new FeedbackTuple(tmpS, new GroundedAction(domain.getAction(GridWorldDomain.ACTIONEAST), ""), 0.));
+		
+		tmpS = s.copy();
+		GridWorldDomain.setAgent(tmpS, 1, 2);
+		noFeedbacks.add(new FeedbackTuple(tmpS, new GroundedAction(domain.getAction(GridWorldDomain.ACTIONEAST), ""), 0.));
+		
+		tmpS = s.copy();
+		GridWorldDomain.setAgent(tmpS, 2, 2);
+		noFeedbacks.add(new FeedbackTuple(tmpS, new GroundedAction(domain.getAction(GridWorldDomain.ACTIONSOUTH), ""), 0.));
+		
+		
+		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(new PuddleFV(new Point(2, 1), new Point(1, 1)), 2);
+		rf.setParameters(new double[]{0., 0.});
+		
+		HardCSABL csable = new HardCSABL(rf, feedbacks, domain, 0.99, 0.5, new DiscreteStateHashFactory(), 0.1, 0.1);
+		
+		
+		//csable.runGradientAscent(0.1, 100);
+		csable.runStochasticGradientAscent(0.1, 100);
+		
+		
+	}
+	
+	public static void MLIRLTest(){
 		GridWorldDomain gwd = new GridWorldDomain(3, 3);
 		gwd.makeEmptyMap();
 		Domain domain = gwd.generateDomain();
@@ -63,26 +127,18 @@ public class MLIRLTest {
 		
 
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		List<EpisodeAnalysis> trajectories = new ArrayList<EpisodeAnalysis>();
 		trajectories.add(ea);
 		
 		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(new PuddleFV(new Point(2, 1), new Point(1, 1)), 2);
-		rf.setParameters(new double[]{-1.22324615291754, 1.600363058210203});
+		//rf.setParameters(new double[]{-1.22324615291754, 1.600363058210203});
+		rf.setParameters(new double[]{0., 0.});
 		
 		
 		MLIRL mlirl = new MLIRL(rf, trajectories, domain, 0.99, 0.5, new DiscreteStateHashFactory());
+		//mlirl.setPlanner(new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new DiscreteStateHashFactory(), 5, 1, 0.5));
 		
-		mlirl.runGradientAscent(0.1, 1);
+		mlirl.runGradientAscent(0.1, 100);
 		
 		/*
 		mlirl.runPlanner();
@@ -90,7 +146,6 @@ public class MLIRLTest {
 		
 		System.out.println("Liklihood: " + Math.exp(mlirl.logLikelihoodOfTrajectory(eaBad)));
 		*/
-		
 	}
 	
 	

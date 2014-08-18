@@ -13,7 +13,7 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.GroundedAction;
 
-public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
+public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner implements QGradientPlanner {
 
 	protected Map <StateHashTuple, double[]>				valueGradient = new HashMap<StateHashTuple, double[]>();
 	protected double										boltzBeta;
@@ -52,7 +52,7 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 	}
 	
 	protected double [] performDPValueGradientUpdateOn(StateHashTuple sh){
-    	//updates graient of value function for the given state using bellman-like method
+    	//updates gradient of value function for the given state using bellman-like method
 		
 		//prepare value function gradient double array
 		int d = ((DifferentiableRF)this.rf).getParameterDimension();
@@ -78,13 +78,13 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 			}
 		}
 		
-		double maxBetaScaled = this.maxBetaScaled(qs);
-		double logSum = this.logSum(qs, maxBetaScaled);
+		double maxBetaScaled = BoltzmannPolicyGradient.maxBetaScaled(qs, this.boltzBeta);
+		double logSum = BoltzmannPolicyGradient.logSum(qs, maxBetaScaled, this.boltzBeta);
 		
 		for(int i = 0; i < qs.length; i++){
 			
 			double probA = Math.exp(this.boltzBeta * qs[i] - logSum);
-			double [] policyGradient = this.policyGradient(qs, maxBetaScaled, logSum, gqs, i);
+			double [] policyGradient = BoltzmannPolicyGradient.computePolicyGradient((DifferentiableRF)this.rf, this.boltzBeta, qs, maxBetaScaled, logSum, gqs, i);
 			
 			for(int j = 0; j < d; j++){
 				gv[j] += (probA * gqs[i][j]) + qs[i] * policyGradient[j];
@@ -97,60 +97,6 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 		return gv;
 	}
 	
-	protected double [] policyGradient(double [] qs, double maxBetaScaled, double logSum, double [][] gqs, int aInd){
-		
-		int d = ((DifferentiableRF)this.rf).getParameterDimension();
-		double [] pg = new double[d];
-		
-		double constantPart = this.boltzBeta * Math.exp(this.boltzBeta*qs[aInd] + maxBetaScaled - logSum - logSum);
-		
-		for(int i = 0; i < qs.length; i++){
-			for(int j = 0; j < d; j++){
-				pg[j] += (gqs[aInd][j] - gqs[i][j]) * Math.exp(this.boltzBeta * qs[i] - maxBetaScaled);
-			}
-		}
-		
-		for(int j = 0; j < d; j++){
-			pg[j] *= constantPart;
-		}
-		
-		
-		return pg;
-	}
-	
-	protected double maxBetaScaled(double [] qs){
-		double max = Double.NEGATIVE_INFINITY;
-		for(double q : qs){
-			if(q > max){
-				max = q;
-			}
-		}
-		return this.boltzBeta*max;
-	}
-	
-	protected double logSum(double [] qs, double maxBetaScaled){
-		
-		double expSum = 0.;
-		for(int i = 0; i < qs.length; i++){
-			expSum += Math.exp(this.boltzBeta * qs[i] - maxBetaScaled);
-		}
-		double v = maxBetaScaled + Math.log(expSum);
-		return v;
-		
-	}
-	
-	protected double [] shiftedAndBetaScaledElements(double [] qs, double maxBetaScaled){
-		
-		double [] res = new double[qs.length];
-		for(int i = 0; i < qs.length; i++){
-			res[i] = this.boltzBeta * qs[i] - maxBetaScaled;
-		}
-		
-		return res;
-		
-	}
-	
-	
 	
 	public double [] getValueGradient(State s){
         //returns deriviate value
@@ -162,6 +108,7 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 		return grad;
 	}
 	
+	@Override
 	public List<QGradientTuple> getAllQGradients(State s){
 		List<GroundedAction> gas = this.getAllGroundedActions(s);
 		List<QGradientTuple> res = new ArrayList<QGradientTuple>(gas.size());
@@ -171,6 +118,7 @@ public abstract class DifferentiableVFPlanner extends ValueFunctionPlanner {
 		return res;
 	}
 	
+	@Override
 	public QGradientTuple getQGradient(State s, GroundedAction a){
 
 		double [] gradient = this.computeQGradient(s, a);
