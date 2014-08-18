@@ -62,7 +62,12 @@ public abstract class DifferentiableRF implements RewardFunction {
     	  }
     	  
           public double [] getGradient(State s, GroundedAction ga, State sp){
-        	  return fvGen.generateFeatureVectorFrom(s);
+        	  if(featuresAreForNextState){
+        		  return fvGen.generateFeatureVectorFrom(sp);
+        	  }
+        	  else{
+        		  return fvGen.generateFeatureVectorFrom(s);
+        	  }
           }
 
           @Override

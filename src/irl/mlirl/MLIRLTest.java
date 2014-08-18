@@ -22,8 +22,8 @@ public class MLIRLTest {
 	 */
 	public static void main(String[] args) {
 		
-		//CSABLTest();
-		MLIRLTest();
+		CSABLTest();
+		//MLIRLTest();
 		
 		
 		
@@ -77,11 +77,12 @@ public class MLIRLTest {
 		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(new PuddleFV(new Point(2, 1), new Point(1, 1)), 2);
 		rf.setParameters(new double[]{0., 0.});
 		
-		HardCSABL csable = new HardCSABL(rf, feedbacks, domain, 0.99, 0.5, new DiscreteStateHashFactory(), 0.1, 0.1);
+		CSABL csable = new CSABL(rf, noFeedbacks, domain, 0.99, 0.5, new DiscreteStateHashFactory(), 1.0, 0.1);
+		csable.setPlanner(new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new DiscreteStateHashFactory(), 5, 1, 0.5));
 		
 		
-		//csable.runGradientAscent(0.1, 100);
-		csable.runStochasticGradientAscent(0.1, 100);
+		csable.runGradientAscent(0.1, 100);
+		//csable.runStochasticGradientAscent(0.1, 100);
 		
 		
 	}
@@ -136,7 +137,7 @@ public class MLIRLTest {
 		
 		
 		MLIRL mlirl = new MLIRL(rf, trajectories, domain, 0.99, 0.5, new DiscreteStateHashFactory());
-		//mlirl.setPlanner(new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new DiscreteStateHashFactory(), 5, 1, 0.5));
+		mlirl.setPlanner(new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new DiscreteStateHashFactory(), 5, 1, 0.5));
 		
 		mlirl.runGradientAscent(0.1, 100);
 		

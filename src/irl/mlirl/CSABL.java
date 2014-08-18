@@ -10,7 +10,7 @@ import burlap.debugtools.RandomFactory;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
 
-public class HardCSABL {
+public class CSABL {
 
 	
 	protected DifferentiableRF					curRF;
@@ -26,7 +26,8 @@ public class HardCSABL {
 	List<FeedbackTuple>							feedbacks;
 	
 	
-	public HardCSABL(DifferentiableRF rf, List<FeedbackTuple> feedbackTuples, Domain domain, double gamma, double boltzBeta, StateHashFactory hashingFactory,
+	
+	public CSABL(DifferentiableRF rf, List<FeedbackTuple> feedbackTuples, Domain domain, double gamma, double boltzBeta, StateHashFactory hashingFactory,
 			double muPlus, double muMinus){
 		this.curRF = rf;
 		this.gamma = gamma;
@@ -38,6 +39,12 @@ public class HardCSABL {
 		this.muMinus = muMinus;
 		
 		this.planner = new DifferentiableVI(domain, rf, new NullTermination(), gamma, boltzBeta, hashingFactory, 0.01, 500);
+		((OOMDPPlanner)this.planner).toggleDebugPrinting(false);
+	}
+	
+	public void setPlanner(QGradientPlanner planner){
+		this.planner = planner;
+		((OOMDPPlanner)this.planner).toggleDebugPrinting(false);
 	}
 	
 	public void runPlanner(){
@@ -48,11 +55,12 @@ public class HardCSABL {
 		for(int i = 0; i < iterations; i++){
 			double [] params = this.curRF.getParameters();
 			((OOMDPPlanner)this.planner).resetPlannerResults();
-			this.runPlanner();
+
 			System.out.println("RF: " + this.curRF.toString());
-			System.out.println("Log likelihood: " + this.logLikelihood());
+			
 			
 			double [] gradient = this.logLikelihoodGradient();
+			System.out.println("Log likelihood: " + this.logLikelihood());
 			
 			for(int f = 0; f < params.length; f++){
 				params[f] += alpha*gradient[f];
@@ -61,7 +69,6 @@ public class HardCSABL {
 		}
 		
 		((OOMDPPlanner)this.planner).resetPlannerResults();
-		this.runPlanner();
 		System.out.println("RF: " + this.curRF.toString());
 		System.out.println("Log likelihood: " + this.logLikelihood());
 	}
@@ -71,17 +78,35 @@ public class HardCSABL {
 		for(int i = 0; i < iterations; i++){
 			double [] params = this.curRF.getParameters();
 			((OOMDPPlanner)this.planner).resetPlannerResults();
-			this.runPlanner();
+
 			System.out.println("RF: " + this.curRF.toString());
-			System.out.println("Log likelihood: " + this.logLikelihood());
+			
 			
 			FeedbackTuple randFeedback = this.feedbacks.get(RandomFactory.getMapped(0).nextInt(this.feedbacks.size()));
 			double [] gradient = this.logLikelihoodFeedbackGradient(randFeedback);
+			System.out.println("Log likelihood: " + this.logLikelihood());
 			
 			for(int f = 0; f < params.length; f++){
 				params[f] += alpha*gradient[f];
 			}
 			
+		}
+		
+		((OOMDPPlanner)this.planner).resetPlannerResults();
+		System.out.println("RF: " + this.curRF.toString());
+		System.out.println("Log likelihood: " + this.logLikelihood());
+		
+	}
+	
+	public void stochasticGradientAscentOnInstance(FeedbackTuple ft, double alpha){
+		
+		((OOMDPPlanner)this.planner).resetPlannerResults();
+		
+		double [] gradient = this.logLikelihoodFeedbackGradient(ft);
+		
+		double [] params = this.curRF.getParameters();
+		for(int f = 0; f < params.length; f++){
+			params[f] += alpha*gradient[f];
 		}
 		
 	}
@@ -90,6 +115,7 @@ public class HardCSABL {
 	public double logLikelihood(){
 		double sum = 0.;
 		for(FeedbackTuple ft : this.feedbacks){
+			((OOMDPPlanner)this.planner).planFromState(ft.s);
 			sum += this.logLikelihoodFeedback(ft);
 		}
 		return sum;
@@ -143,6 +169,7 @@ public class HardCSABL {
 		
 		double [] gradient = new double[this.curRF.dim];
 		for(FeedbackTuple ft : this.feedbacks){
+			((OOMDPPlanner)this.planner).planFromState(ft.s);
 			this.addToVector(gradient, this.logLikelihoodFeedbackGradient(ft));
 		}
 		

@@ -71,10 +71,7 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements
 	 */
 	protected int numUpdates = 0;
 	
-	/**
-	 * The debug code used for printing planning information.
-	 */
-	protected int debugCode = 6237592;
+	
 	
 	
 	public DifferentiableSparseSampling(Domain domain, DifferentiableRF rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory, int h, int c, double boltzBeta){
@@ -85,6 +82,8 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements
 		this.nodesByHeight = new HashMap<SparseSampling.HashedHeightState, DifferentiableSparseSampling.DiffStateNode>();
 		this.rootLevelQValues = new HashMap<StateHashTuple, DifferentiableSparseSampling.QAndQGradient>();
 		this.rfDim = rf.getParameterDimension();
+		
+		this.debugCode = 6368290;
 	}
 	
 	

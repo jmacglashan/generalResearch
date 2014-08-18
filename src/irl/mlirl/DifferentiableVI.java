@@ -115,7 +115,8 @@ public class DifferentiableVI extends DifferentiableVFPlanner {
 	@Override
 	public void planFromState(State initialState){
 		this.initializeOptionsForExpectationComputations();
-		if(this.performReachabilityFrom(initialState) || !this.hasRunVI){
+		if(!this.valueFunction.containsKey(this.hashingFactory.hashState(initialState))){
+			this.performReachabilityFrom(initialState);
 			this.runVI();
 		}
 			
@@ -150,7 +151,7 @@ public class DifferentiableVI extends DifferentiableVFPlanner {
 				
 				double v = this.value(sh);
 				double newV = this.performBellmanUpdateOn(sh);
-				this.performDPValueGradientUpdateOn(sh);
+				double [] ng = this.performDPValueGradientUpdateOn(sh);
 				delta = Math.max(Math.abs(newV - v), delta);
 				
 			}
@@ -191,10 +192,6 @@ public class DifferentiableVI extends DifferentiableVFPlanner {
 		
 		
 		StateHashTuple sih = this.stateHash(si);
-		//if this is not a new state and we are not required to perform a new reachability analysis, then this method does not need to do anything.
-		if(mapToStateIndex.containsKey(sih) && this.foundReachableStates){
-			return false; //no need for additional reachability testing
-		}
 		
 		DPrint.cl(this.debugCode, "Starting reachability analysis");
 		
@@ -209,11 +206,9 @@ public class DifferentiableVI extends DifferentiableVFPlanner {
 			StateHashTuple sh = openList.poll();
 			
 			//skip this if it's already been expanded
-			if(mapToStateIndex.containsKey(sh)){
-				continue;
+			if(!mapToStateIndex.containsKey(sh)){
+				mapToStateIndex.put(sh, sh);
 			}
-			
-			mapToStateIndex.put(sh, sh);
 			
 			//do not need to expand from terminal states if set to prune
 			if(this.tf.isTerminal(sh.s) && stopReachabilityFromTerminalStates){

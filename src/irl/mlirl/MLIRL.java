@@ -25,6 +25,7 @@ public class MLIRL {
 	
 	
 	
+	
 	public MLIRL(DifferentiableRF rf, List<EpisodeAnalysis> exampleTrajectories, Domain domain, double gamma, double boltzBeta, StateHashFactory hashingFactory){
 		this.curRF = rf;
 		this.exampleTrajectories = exampleTrajectories;
@@ -33,10 +34,12 @@ public class MLIRL {
 		this.hashingFactory = hashingFactory;
 		
 		this.planner = new DifferentiableVI(domain, rf, new NullTermination(), gamma, boltzBeta, hashingFactory, 0.01, 500);
+		((OOMDPPlanner)this.planner).toggleDebugPrinting(false);
 	}
 	
 	public void setPlanner(QGradientPlanner planner){
 		this.planner = planner;
+		((OOMDPPlanner)this.planner).toggleDebugPrinting(false);
 	}
 	
 	public void runPlanner(){
@@ -47,6 +50,7 @@ public class MLIRL {
 		double logLike = 0.;
 		Policy p = new BoltzmannQPolicy(this.planner, 1./this.boltzBeta);
 		for(int i = 0; i < ea.numTimeSteps()-1; i++){
+			((OOMDPPlanner)this.planner).planFromState(ea.getState(i));
 			double actProb = p.getProbOfAction(ea.getState(i), ea.getAction(i));
 			logLike += Math.log(actProb);
 		}
@@ -65,11 +69,11 @@ public class MLIRL {
 		for(int i = 0; i < iterations; i++){
 			double [] params = this.curRF.getParameters();
 			((OOMDPPlanner)this.planner).resetPlannerResults();
-			this.runPlanner();
 			System.out.println("RF: " + this.curRF.toString());
-			System.out.println("Log likelihood: " + this.logLikelihood());
+			
 			
 			double [] gradient = this.logLikelihoodGradient();
+			System.out.println("Log likelihood: " + this.logLikelihood());
 			
 			for(int f = 0; f < params.length; f++){
 				params[f] += alpha*gradient[f];
@@ -78,7 +82,6 @@ public class MLIRL {
 		}
 		
 		((OOMDPPlanner)this.planner).resetPlannerResults();
-		this.runPlanner();
 		System.out.println("RF: " + this.curRF.toString());
 		System.out.println("Log likelihood: " + this.logLikelihood());
 	}
@@ -87,8 +90,10 @@ public class MLIRL {
 	
 	public double [] logLikelihoodGradient(){
 		double [] gradient = new double[this.curRF.dim];
+		this.runPlanner();
 		for(EpisodeAnalysis ea : this.exampleTrajectories){
 			for(int t = 0; t < ea.numTimeSteps()-1; t++){
+				((OOMDPPlanner)this.planner).planFromState(ea.getState(t));
 				this.addToVector(gradient,this.logPolicyGrad(ea.getState(t), ea.getAction(t)));
 			}
 		}
@@ -106,40 +111,6 @@ public class MLIRL {
 		}
 		return gradient;
 		
-		/*
-		List<QValue> qs = this.planner.getQs(s);
-		List<QGradientTuple> qGrads = this.planner.getAllQGradients(s);
-		QGradientTuple qGradQuery = this.planner.getQGradient(s, ga);
-		
-		double [] grad = new double[qGradQuery.gradient.length];
-	
-		double [] qsb = new double[qs.size()];
-		double mxqb = Double.NEGATIVE_INFINITY;
-		for(int i = 0; i < qs.size(); i++){
-			qsb[i] = qs.get(i).q * this.boltzBeta;
-			mxqb = Math.max(mxqb, qsb[i]);
-		}
-		
-		double denomLogSum = this.logSumExp(qsb, mxqb);
-		
-		
-		for(int f = 0; f < qGradQuery.gradient.length; f++){
-
-			double [] coeff = new double[qGrads.size()];
-			for(int i = 0; i < qGrads.size(); i++){
-				coeff[i] = this.boltzBeta * qGrads.get(i).gradient[f];
-			}
-			
-			
-			double numExpSum = this.shiftedExponentialSum(qsb, coeff, mxqb);
-			double sumRatio = Math.exp(mxqb - denomLogSum);
-			grad[f] = (this.boltzBeta * qGradQuery.gradient[f]) - (numExpSum * sumRatio);
-			
-			
-		}
-		
-		return grad;
-		*/
 	}
 	
 	
