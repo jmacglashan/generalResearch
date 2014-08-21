@@ -31,8 +31,8 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 	protected int											cHeight = 800;
 	
 	
-	protected char punishKey = 'a';
-	protected char rewardKey = 'd';
+	protected char punishKey = 'z';
+	protected char rewardKey = '/';
 	protected char temrinateKey = 's';
 	
 	public DynamicFeedbackGUI(Visualizer v, DynamicVisualFeedbackEnvironment env) {
