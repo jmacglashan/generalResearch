@@ -116,6 +116,23 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 		return vc;
 	}
 	
+	/**
+	 * Either returns, or creates, indexes, and returns, the state node for the given state at the given height in the tree
+	 * @param sh the hased state
+	 * @param height the height (distance from leaf node) of the node.
+	 * @return the state node for the given state at the given height in the tree
+	 */
+	protected FSSSStateNode getStateNode(StateHashTuple sh, int height){
+		HashedHeightState hhs = new HashedHeightState(sh, height);
+		FSSSStateNode sn = this.nodesByHeight.get(hhs);
+		if(sn == null){
+			sn = new FSSSStateNode(sh, height);
+			this.nodesByHeight.put(hhs, sn);
+		}
+		
+		return sn;
+	}
+	
 	
 	protected class FSSSStateNode{
 		
@@ -149,6 +166,10 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 				this.initActions();
 			}
 			
+			if(this.closed()){
+				return;
+			}
+			
 			//select action with largest upper val
 			
 			//select next state node given action with largest margin
@@ -161,7 +182,14 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 		}
 		
 		public void initActions(){
-			
+			List<GroundedAction> gas = FSSS.this.getAllGroundedActions(this.sh.s);
+			this.actionsByLower = new HashIndexedHeap<FSSS.FSSSActionNode>(new ActionLowerComparator(), gas.size());
+			this.actionsByUpper = new HashIndexedHeap<FSSS.FSSSActionNode>(new ActionUpperComparator(), gas.size());
+			for(GroundedAction ga : gas){
+				FSSSActionNode node = new FSSSActionNode(this.sh.s, ga, this.height);
+				this.actionsByLower.insert(node);
+				this.actionsByUpper.insert(node);
+			}
 		}
 		
 	}
@@ -195,7 +223,21 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 				if(a.action instanceof Option){
 					k = ((Option)a.action).getLastNumSteps();
 				}
+				HashedHeightState hhs = new HashedHeightState(FSSS.this.hashingFactory.hashState(ns), this.height-k);
+				FSSSTransition trans = sampledTransitions.get(hhs);
+				if(trans == null){
+					FSSSStateNode sn = FSSS.this.getStateNode(hhs.sh, hhs.height);
+					trans = new FSSSTransition(sn);
+					sampledTransitions.put(hhs, trans);
+				}
 				
+				trans.addTransition(r);
+				
+			}
+			
+			this.samples = new HashIndexedHeap<FSSS.FSSSTransition>(new TransitionMarginComparator(), sampledTransitions.size());
+			for(FSSSTransition trans : sampledTransitions.values()){
+				this.samples.insert(trans);
 			}
 			
 		}
@@ -208,9 +250,12 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 		List<Double> reward;
 		FSSSStateNode node;
 		
-		public FSSSTransition(FSSSStateNode stateNode, double r){
+		public FSSSTransition(FSSSStateNode stateNode){
 			this.node = stateNode;
 			this.reward = new LinkedList<Double>();
+		}
+		
+		public void addTransition(double r){
 			this.reward.add(r);
 		}
 		
