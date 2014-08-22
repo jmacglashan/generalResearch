@@ -70,6 +70,8 @@ public class FSSS extends OOMDPPlanner {
 	protected int debugCode = 7369430;
 	
 	
+	protected int numClosed = 0;
+	
 	public FSSS(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory, int h, int c, double rMax, double rMin){
 		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
 		this.h = h;
@@ -97,6 +99,10 @@ public class FSSS extends OOMDPPlanner {
 	public State getStoredStateRepresentation(State s){
 		return this.mapToStateIndex.get(this.hashingFactory.hashState(s)).s;
 	}
+	
+	public int getNumberOfStateNodesCreated(){
+		return this.nodesByHeight.size();
+	}
 
 	@Override
 	public void planFromState(State initialState) {
@@ -111,15 +117,17 @@ public class FSSS extends OOMDPPlanner {
 		FSSSStateNode sn = this.getStateNode(sh, this.h);
 		int nr = 0;
 		while(sn.maxActionDominates() == null){
+			int priorClosed = this.numClosed;
 			//System.out.println("++++++++++++++++++++++++\nStarting rollout (" + nr + ")\n++++++++++++++++++++++++");
 			sn.rollout();
+			System.out.println("Rollout " + nr + " closed " + (this.numClosed - priorClosed) + " for a total of " + this.numClosed + " closed.");
 			nr++;
 		}
 		DPrint.cl(this.debugCode, "Finished Planning with " + (this.numUpdates - oldUpdates) + " value esitmates; for a cumulative total of: " + this.numUpdates);
 		sn.maxActionDominates();
 		
-		this.nodesByHeight.clear();
-		this.nodesByHeight.put(new HashedHeightState(sn.sh, sn.height), sn);
+		//this.nodesByHeight.clear();
+		//this.nodesByHeight.put(new HashedHeightState(sn.sh, sn.height), sn);
 		
 		this.mapToStateIndex.put(sh, sh);
 		
@@ -177,6 +185,8 @@ public class FSSS extends OOMDPPlanner {
 		double lowerBound;
 		double upperBound;
 		int height;
+		
+		boolean visited = false;
 		
 		HashIndexedHeap<FSSSActionNode> actionsByUpper;
 		HashIndexedHeap<FSSSActionNode> actionsByLower;
@@ -248,6 +258,15 @@ public class FSSS extends OOMDPPlanner {
 		}
 		
 		public void rollout(){
+			
+			if(this.closed()){
+				if(this.height < 1 && !this.visited){
+					this.visited = true;
+					FSSS.this.numClosed++;
+				}
+				return;
+			}
+			
 			if(this.actionsByUpper == null){
 				this.initActions();
 			}
@@ -258,16 +277,18 @@ public class FSSS extends OOMDPPlanner {
 			}
 			
 			
-			if(this.closed()){
-				return;
-			}
+			
 			
 			//select action with largest upper val
 			FSSSActionNode a = this.actionsByUpper.peek();
 			
+			String prePoll = a.heapStructure();
+			
 			//select next state node given action with largest margin
-			FSSSTransition stn = a.samples.peek();
+			FSSSTransition stn = a.samples.poll();
 			FSSSStateNode s = stn.node;
+			
+			String postPoll = a.heapStructure();
 			
 			//System.out.println("Selecting: " + a.a.toString());
 			
@@ -275,7 +296,18 @@ public class FSSS extends OOMDPPlanner {
 			s.rollout();
 			
 			//refresh transitions position in aciton's heap
-			a.samples.refreshPriority(stn);
+			//a.samples.refreshPriority(stn);
+			a.samples.insert(stn);
+			
+			String postInsert = a.heapStructure();
+			
+			if(!a.checkHeapIntegrity()){
+				System.out.println("Heap is malformed!");
+				System.out.println("Insert Value: " + (stn.node.upperBound - stn.node.lowerBound));
+				System.out.println("Pre Poll: " + prePoll);
+				System.out.println("Post Poll: " + postPoll);
+				System.out.println("Post Insert: " + postInsert);
+			}
 			
 			//update upper and lower Q-value for selected action
 			double sumLowerA = 0.;
@@ -304,6 +336,10 @@ public class FSSS extends OOMDPPlanner {
 			if(this.height == FSSS.this.h){
 				//System.out.println("Unrolling:");
 				//System.out.println(this.toString());
+			}
+			
+			if(this.closed()){
+				FSSS.this.numClosed++;
 			}
 			
 		}
@@ -335,6 +371,8 @@ public class FSSS extends OOMDPPlanner {
 			
 			return buf.toString();
 		}
+		
+		
 		
 	}
 	
@@ -394,6 +432,28 @@ public class FSSS extends OOMDPPlanner {
 			return "[" + this.a.toString() + ": " + this.lowerBound + ", " + this.upperBound + "]";
 		}
 		
+		
+		protected boolean checkHeapIntegrity(){
+			FSSSTransition max = this.samples.peek();
+			double maxMargin = max.node.upperBound - max.node.lowerBound;
+			for(FSSSTransition t : this.samples){
+				double margin = t.node.upperBound-t.node.lowerBound;
+				if(margin > maxMargin){
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		protected String heapStructure(){
+			StringBuffer buf = new StringBuffer();
+			for(FSSSTransition t : this.samples){
+				double margin = t.node.upperBound-t.node.lowerBound;
+				buf.append(margin).append(" ");
+			}
+			
+			return buf.toString();
+		}
 		
 		
 	}

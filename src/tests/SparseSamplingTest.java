@@ -17,14 +17,18 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.UniformCostRF;
+import domain.paintpolish.PaintPolish;
+import domain.paintpolish.PaintPolish.PaintPolishRF;
+import domain.paintpolish.PaintPolish.PaintPolishTF;
 
 public class SparseSamplingTest {
 
 	public static void main(String [] args){
 		
-		ss();
+		//ss();
 		//fsss();
 		//fsssSimple();
+		ppComparison();
 	}
 	
 	public static void ss(){
@@ -83,6 +87,50 @@ public class SparseSamplingTest {
 		
 		EpisodeAnalysis ea = p.evaluateBehavior(s, rf, tf, 10);
 		System.out.println(ea.getActionSequenceString("\n"));
+		
+	}
+	
+	
+	public static void ppComparison(){
+		
+		PaintPolish pp = new PaintPolish();
+		Domain domain = pp.generateDomain();
+		TerminalFunction tf = new PaintPolishTF();
+		RewardFunction rf = new PaintPolishRF();
+		//RewardFunction rf = new UniformCostRF();
+		
+		State s = PaintPolish.getInitialState(domain, 1);
+		
+		
+		//SS
+		SparseSampling ss = new SparseSampling(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 10, 20);
+		Policy p = new GreedyQPolicy(ss);
+		
+		//p.getAction(s);
+		//System.out.println("Num SS State nodes: " + ss.getNumberOfStateNodesCreated());
+		
+		/*
+		EpisodeAnalysis eass = p.evaluateBehavior(s, rf, tf, 50);
+		System.out.println(eass.getActionSequenceString("\n"));
+		System.out.println("Num SS Steps: " + eass.numTimeSteps());
+		System.out.println("SS Average Reward: " + eass.getDiscountedReturn(1.));
+		*/
+		
+		
+		//FSSS
+		FSSS fsss = new FSSS(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 10, 20, 10, -1);
+		Policy fsp = new FSSSPolicy(fsss);
+		
+		fsp.getAction(s);
+		System.out.println("Num FSSS State nodes: " + fsss.getNumberOfStateNodesCreated());
+		
+		/*
+		EpisodeAnalysis eafsss = fsp.evaluateBehavior(s, rf, tf, 50);
+		System.out.println(eafsss.getActionSequenceString("\n"));
+		System.out.println("Num FSSS Steps: " + eafsss.numTimeSteps());
+		System.out.println("FSSS Average Reward: " + eafsss.getDiscountedReturn(1.));
+		*/
+		
 		
 	}
 	
