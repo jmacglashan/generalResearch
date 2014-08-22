@@ -1,8 +1,8 @@
 package behavior.planning;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,13 +13,21 @@ import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.stochastic.sparsesampling.SparseSampling;
 import burlap.behavior.singleagent.planning.stochastic.sparsesampling.SparseSampling.HashedHeightState;
+import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.datastructures.HashIndexedHeap;
+import burlap.debugtools.DPrint;
 import burlap.oomdp.core.AbstractGroundedAction;
+import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
+import burlap.oomdp.singleagent.RewardFunction;
 
-public class FSSS extends OOMDPPlanner implements QComputablePlanner {
+
+//shouldn't vmin and vmax be based on height in the tree?
+
+public class FSSS extends OOMDPPlanner {
 
 	/**
 	 * The height of the tree
@@ -41,23 +49,14 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 	 */
 	protected boolean forgetPreviousPlanResults = false;
 	
-	/**
-	 * The state value used for leaf nodes; default is zero.
-	 */
-	protected ValueFunctionInitialization vinit;
-	
-	protected double vMin;
+	protected double rMin;
+	protected double rMax;
 	
 	
 	/**
 	 * The tree nodes indexed by state and height.
 	 */
 	protected Map<HashedHeightState, FSSSStateNode> nodesByHeight;
-	
-	/**
-	 * The root state node Q-values that have been estimated by previous planning calls.
-	 */
-	protected Map<StateHashTuple, List<QValue>> rootLevelQValues;
 	
 	
 	/**
@@ -71,21 +70,59 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 	protected int debugCode = 7369430;
 	
 	
-	@Override
-	public List<QValue> getQs(State s) {
-		// TODO Auto-generated method stub
-		return null;
+	public FSSS(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, StateHashFactory hashingFactory, int h, int c, double rMax, double rMin){
+		this.plannerInit(domain, rf, tf, gamma, hashingFactory);
+		this.h = h;
+		this.c = c;
+		this.nodesByHeight = new HashMap<SparseSampling.HashedHeightState, FSSS.FSSSStateNode>();
+		
+		this.rMin = rMin;
+		this.rMax = rMax;
 	}
-
-	@Override
-	public QValue getQ(State s, AbstractGroundedAction a) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	
+	public GroundedAction getAction(State s){
+		StateHashTuple sh = this.hashingFactory.hashState(s);
+		HashedHeightState hhs = new HashedHeightState(sh, this.h);
+		FSSSStateNode sn = this.nodesByHeight.get(hhs);
+		if(sn == null){
+			this.planFromState(s);
+			sn = this.nodesByHeight.get(hhs);
+		}
+		return sn.maxActionDominates();
+	}
+	
+	
+	
+	public State getStoredStateRepresentation(State s){
+		return this.mapToStateIndex.get(this.hashingFactory.hashState(s)).s;
 	}
 
 	@Override
 	public void planFromState(State initialState) {
-		// TODO Auto-generated method stub
+		StateHashTuple sh = this.hashingFactory.hashState(initialState);
+		HashedHeightState hhs = new HashedHeightState(sh, this.h);
+		if(nodesByHeight.containsKey(hhs)){
+			return; //no planning needed
+		}
+		
+		DPrint.cl(this.debugCode, "Beginning Planning.");
+		int oldUpdates = this.numUpdates;
+		FSSSStateNode sn = this.getStateNode(sh, this.h);
+		int nr = 0;
+		while(sn.maxActionDominates() == null){
+			//System.out.println("++++++++++++++++++++++++\nStarting rollout (" + nr + ")\n++++++++++++++++++++++++");
+			sn.rollout();
+			nr++;
+		}
+		DPrint.cl(this.debugCode, "Finished Planning with " + (this.numUpdates - oldUpdates) + " value esitmates; for a cumulative total of: " + this.numUpdates);
+		sn.maxActionDominates();
+		
+		this.nodesByHeight.clear();
+		this.nodesByHeight.put(new HashedHeightState(sn.sh, sn.height), sn);
+		
+		this.mapToStateIndex.put(sh, sh);
+		
 
 	}
 
@@ -147,12 +184,15 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 		public FSSSStateNode(StateHashTuple sh, int height){
 			this.sh = sh;
 			this.height = height;
-			if(height < 1){
+			if(height < 1 || FSSS.this.tf.isTerminal(sh.s)){
 				this.upperBound = this.lowerBound = 0.;
 			}
 			else{
-				this.upperBound = FSSS.this.vinit.value(this.sh.s);
-				this.lowerBound = FSSS.this.vMin;
+				double gamma = FSSS.this.gamma;
+				double gammaK = Math.pow(gamma, this.height);
+				double discountedFuture = (1. - gammaK) / (1. - gamma);
+				this.upperBound = FSSS.this.rMax * discountedFuture;
+				this.lowerBound = FSSS.this.rMin * discountedFuture;
 			}
 		}
 		
@@ -161,24 +201,111 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 			return this.lowerBound==this.upperBound;
 		}
 		
+		public GroundedAction maxActionDominates(){
+			
+			//first find the action nodes with the max upper bound
+			//of those, find the action with the max lower bound
+			//if the lower bound is the upper bound, done (closed case)
+			//if the lower bound is greater than all other actions upper bound, done
+			//planner should store this action; there are not meaningful Q-values to return so disable QComputeable planner implementation
+			
+			if(this.actionsByUpper == null){
+				return null;
+			}
+			
+			FSSSActionNode maxLowerOfUpperNode = null;
+			double maxVal = Double.NEGATIVE_INFINITY;
+			for(FSSSActionNode cand : this.actionsByUpper){
+				if(cand.upperBound > maxVal){
+					maxVal = cand.upperBound;
+					maxLowerOfUpperNode = cand;
+				}
+				else if(cand.upperBound == maxVal){
+					if(cand.lowerBound > maxLowerOfUpperNode.lowerBound){
+						maxLowerOfUpperNode = cand;
+					}
+				}
+			}
+			
+			if(maxLowerOfUpperNode.lowerBound == maxLowerOfUpperNode.upperBound){
+				return maxLowerOfUpperNode.a;
+			}
+			
+			
+			
+			for(FSSSActionNode o : this.actionsByUpper){
+				if(maxLowerOfUpperNode == o){
+					continue;
+				}
+				if(maxLowerOfUpperNode.lowerBound < o.upperBound){
+					return null;
+				}
+			}
+			
+			return maxLowerOfUpperNode.a;
+			
+			
+		}
+		
 		public void rollout(){
 			if(this.actionsByUpper == null){
 				this.initActions();
 			}
+			
+			if(this.height == FSSS.this.h){
+				//System.out.println("Entering:");
+				//System.out.println(this.toString());
+			}
+			
 			
 			if(this.closed()){
 				return;
 			}
 			
 			//select action with largest upper val
+			FSSSActionNode a = this.actionsByUpper.peek();
 			
 			//select next state node given action with largest margin
+			FSSSTransition stn = a.samples.peek();
+			FSSSStateNode s = stn.node;
+			
+			//System.out.println("Selecting: " + a.a.toString());
 			
 			//recurse
+			s.rollout();
+			
+			//refresh transitions position in aciton's heap
+			a.samples.refreshPriority(stn);
 			
 			//update upper and lower Q-value for selected action
+			double sumLowerA = 0.;
+			double sumUpperA = 0.;
+			int c = 0;
+			for(FSSSTransition trans : a.samples){
+				double discount = Math.pow(FSSS.this.gamma, this.height - trans.node.height);
+				sumLowerA += trans.sumReward + (trans.numTransitions * discount*trans.node.lowerBound);
+				sumUpperA += trans.sumReward + (trans.numTransitions * discount*trans.node.upperBound);
+				c += trans.numTransitions;
+			}
+			a.lowerBound = sumLowerA / (double)c;
+			a.upperBound = sumUpperA / (double)c;
+			
+			//refresh action position in heap
+			this.actionsByLower.refreshPriority(a);
+			this.actionsByUpper.refreshPriority(a);
 			
 			//update upper and lower for this state
+			this.lowerBound = this.actionsByLower.peek().lowerBound;
+			this.upperBound = this.actionsByUpper.peek().upperBound;
+			
+			
+			FSSS.this.numUpdates++;
+			
+			if(this.height == FSSS.this.h){
+				//System.out.println("Unrolling:");
+				//System.out.println(this.toString());
+			}
+			
 		}
 		
 		public void initActions(){
@@ -190,6 +317,23 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 				this.actionsByLower.insert(node);
 				this.actionsByUpper.insert(node);
 			}
+		}
+		
+		
+		@Override
+		public String toString(){
+			StringBuffer buf = new StringBuffer();
+			buf.append("=================================\n");
+			buf.append("Height: " + this.height + "\n");
+			buf.append(this.sh.s.toString() + "\n");
+			buf.append("Lower: " + this.lowerBound + "\n");
+			buf.append("Upper: " + this.upperBound + "\n");
+			for(FSSSActionNode a : this.actionsByUpper){
+				buf.append(a.toString() + "\n");
+			}
+			buf.append("=================================\n");
+			
+			return buf.toString();
 		}
 		
 	}
@@ -208,8 +352,11 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 		public FSSSActionNode(State sourceState, GroundedAction a, int height){
 			this.a = a;
 			this.height = height;
-			this.upperBound = FSSS.this.vinit.value(sourceState);
-			this.lowerBound = FSSS.this.vMin;
+			double gamma = FSSS.this.gamma;
+			double gammaK = Math.pow(gamma, this.height);
+			double discountedFuture = (1. - gammaK) / (1. - gamma);
+			this.upperBound = FSSS.this.rMax * discountedFuture;
+			this.lowerBound = FSSS.this.rMin * discountedFuture;
 			
 			int c = FSSS.this.getCAtHeight(height);
 			Map<HashedHeightState, FSSSTransition> sampledTransitions = new HashMap<SparseSampling.HashedHeightState, FSSS.FSSSTransition>(c);
@@ -242,21 +389,27 @@ public class FSSS extends OOMDPPlanner implements QComputablePlanner {
 			
 		}
 		
+		@Override
+		public String toString(){
+			return "[" + this.a.toString() + ": " + this.lowerBound + ", " + this.upperBound + "]";
+		}
+		
 		
 		
 	}
 	
 	protected class FSSSTransition{
-		List<Double> reward;
+		double sumReward = 0.;
+		int numTransitions = 0;
 		FSSSStateNode node;
 		
 		public FSSSTransition(FSSSStateNode stateNode){
 			this.node = stateNode;
-			this.reward = new LinkedList<Double>();
 		}
 		
 		public void addTransition(double r){
-			this.reward.add(r);
+			sumReward += r;
+			numTransitions++;
 		}
 		
 		@Override
