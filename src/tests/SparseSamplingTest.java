@@ -93,21 +93,23 @@ public class SparseSamplingTest {
 	
 	public static void ppComparison(){
 		
+		RandomFactory.seedMapped(0, 848);
+		
 		PaintPolish pp = new PaintPolish();
 		Domain domain = pp.generateDomain();
 		TerminalFunction tf = new PaintPolishTF();
 		RewardFunction rf = new PaintPolishRF();
 		//RewardFunction rf = new UniformCostRF();
 		
-		State s = PaintPolish.getInitialState(domain, 1);
+		State s = PaintPolish.getInitialState(domain, 4);
 		
 		
 		//SS
 		SparseSampling ss = new SparseSampling(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 10, 20);
 		Policy p = new GreedyQPolicy(ss);
 		
-		//p.getAction(s);
-		//System.out.println("Num SS State nodes: " + ss.getNumberOfStateNodesCreated());
+		p.getAction(s);
+		System.out.println("Num SS State nodes: " + ss.getNumberOfStateNodesCreated());
 		
 		/*
 		EpisodeAnalysis eass = p.evaluateBehavior(s, rf, tf, 50);

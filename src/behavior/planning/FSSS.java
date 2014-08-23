@@ -120,7 +120,7 @@ public class FSSS extends OOMDPPlanner {
 			int priorClosed = this.numClosed;
 			//System.out.println("++++++++++++++++++++++++\nStarting rollout (" + nr + ")\n++++++++++++++++++++++++");
 			sn.rollout();
-			System.out.println("Rollout " + nr + " closed " + (this.numClosed - priorClosed) + " for a total of " + this.numClosed + " closed.");
+			//System.out.println("Rollout " + nr + " closed " + (this.numClosed - priorClosed) + " for a total of " + this.numClosed + " closed.");
 			nr++;
 		}
 		DPrint.cl(this.debugCode, "Finished Planning with " + (this.numUpdates - oldUpdates) + " value esitmates; for a cumulative total of: " + this.numUpdates);
@@ -276,38 +276,24 @@ public class FSSS extends OOMDPPlanner {
 				//System.out.println(this.toString());
 			}
 			
-			
-			
+		
 			
 			//select action with largest upper val
 			FSSSActionNode a = this.actionsByUpper.peek();
 			
-			String prePoll = a.heapStructure();
 			
 			//select next state node given action with largest margin
-			FSSSTransition stn = a.samples.poll();
+			FSSSTransition stn = a.getMaxTransition();
 			FSSSStateNode s = stn.node;
-			
-			String postPoll = a.heapStructure();
 			
 			//System.out.println("Selecting: " + a.a.toString());
 			
 			//recurse
 			s.rollout();
 			
-			//refresh transitions position in aciton's heap
-			//a.samples.refreshPriority(stn);
-			a.samples.insert(stn);
+
 			
-			String postInsert = a.heapStructure();
 			
-			if(!a.checkHeapIntegrity()){
-				System.out.println("Heap is malformed!");
-				System.out.println("Insert Value: " + (stn.node.upperBound - stn.node.lowerBound));
-				System.out.println("Pre Poll: " + prePoll);
-				System.out.println("Post Poll: " + postPoll);
-				System.out.println("Post Insert: " + postInsert);
-			}
 			
 			//update upper and lower Q-value for selected action
 			double sumLowerA = 0.;
@@ -384,7 +370,7 @@ public class FSSS extends OOMDPPlanner {
 		double upperBound;
 		int height;
 		
-		HashIndexedHeap<FSSSTransition> samples;
+		List<FSSSTransition> samples;
 		
 		
 		public FSSSActionNode(State sourceState, GroundedAction a, int height){
@@ -420,10 +406,12 @@ public class FSSS extends OOMDPPlanner {
 				
 			}
 			
-			this.samples = new HashIndexedHeap<FSSS.FSSSTransition>(new TransitionMarginComparator(), sampledTransitions.size());
+			this.samples = new ArrayList<FSSS.FSSSTransition>(sampledTransitions.size());
 			for(FSSSTransition trans : sampledTransitions.values()){
-				this.samples.insert(trans);
+				this.samples.add(trans);
 			}
+			
+			
 			
 		}
 		
@@ -433,16 +421,17 @@ public class FSSS extends OOMDPPlanner {
 		}
 		
 		
-		protected boolean checkHeapIntegrity(){
-			FSSSTransition max = this.samples.peek();
-			double maxMargin = max.node.upperBound - max.node.lowerBound;
-			for(FSSSTransition t : this.samples){
-				double margin = t.node.upperBound-t.node.lowerBound;
+		protected FSSSTransition getMaxTransition(){
+			FSSSTransition maxTrans = null;
+			double maxMargin = Double.NEGATIVE_INFINITY;
+			for(FSSSTransition ft : this.samples){
+				double margin = ft.node.upperBound - ft.node.lowerBound;
 				if(margin > maxMargin){
-					return false;
+					maxMargin = margin;
+					maxTrans = ft;
 				}
 			}
-			return true;
+			return maxTrans;
 		}
 		
 		protected String heapStructure(){
