@@ -13,7 +13,9 @@ import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.deterministic.informed.NullHeuristic;
 import burlap.behavior.singleagent.planning.deterministic.informed.astar.AStar;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
+import burlap.debugtools.MyTimer;
 import burlap.oomdp.auxiliary.StateParser;
+import burlap.oomdp.auxiliary.common.StateJSONParser;
 import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
@@ -104,11 +106,18 @@ public class BlockDudePlan {
 		//((SADomain)d).addActionObserverForAllAction(obs);
 		
 		AStar astar = new AStar(d, rf, sc, new DiscreteStateHashFactory(), h);
+		MyTimer timer = new MyTimer();
+		timer.start();
 		astar.planFromState(s);
+		timer.stop();
 		
-		StateParser sp = new StateYAMLParser(d);
+		System.out.println("Time: " + timer.getTime());
+		
+		//StateParser sp = new StateYAMLParser(d);
+		StateParser sp = new StateJSONParser(d);
 		Policy p = new SDPlannerPolicy(astar);
 		EpisodeAnalysis ea = p.evaluateBehavior(s, rf, tf);
+		System.out.println(ea.getActionSequenceString("\n"));
 		ea.writeToFile("blockDude/plan", sp);
 		
 		

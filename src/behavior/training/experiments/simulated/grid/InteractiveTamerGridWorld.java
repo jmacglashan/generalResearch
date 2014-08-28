@@ -31,6 +31,7 @@ import burlap.behavior.singleagent.vfa.rbf.metrics.EuclideanDistance;
 import burlap.behavior.statehashing.DiscreteMaskHashingFactory;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
+import burlap.domain.singleagent.gridworld.GridWorldTerminalFunction;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.Domain;
@@ -57,10 +58,11 @@ public class InteractiveTamerGridWorld {
 	public static void main(String [] args){
 		InteractiveTamerGridWorld e = new InteractiveTamerGridWorld();
 		//e.runInteractiveTraining();
-		//e.interactiveCSABL();
+		e.interactiveCSABL();
 		//e.testCSABLPlanner();
-		e.testHardCodedCSABL();
+		//e.testHardCodedCSABL();
 		//e.testHardCodedCSABL2();
+		//e.testHardCodedCSABL3();
 	}
 	
 	
@@ -81,7 +83,7 @@ public class InteractiveTamerGridWorld {
 		this.initialState = GridWorldDomain.getOneAgentNLocationState(domain, 0);
 		GridWorldDomain.setAgent(this.initialState, 4, 5);
 		
-		//this.visualizer = GridWorldVisualizer.getVisualizer(domain, gwg.getMap());
+		this.visualizer = GridWorldVisualizer.getVisualizer(domain, gwg.getMap());
 		
 		this.hashingFactory = new DiscreteMaskHashingFactory();
 		this.hashingFactory.addAttributeForClass(GridWorldDomain.CLASSAGENT, this.domain.getAttribute(GridWorldDomain.ATTX));
@@ -272,6 +274,58 @@ public class InteractiveTamerGridWorld {
 		
 	}
 	
+	
+	public void testHardCodedCSABL3(){
+		
+		
+		double boltzBeta = 10;
+		
+		//first get plan:
+		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
+		DifferentiableRF planningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		double [] rfParams = planningRF.getParameters();
+		rfParams[25] = 1.;
+		DifferentiableSparseSampling planner = new DifferentiableSparseSampling(this.domain, planningRF, new NullTermination(), 1, hashingFactory, 19, 1, boltzBeta);
+		planner.toggleDebugPrinting(false);
+		Policy p = new GreedyQPolicy(planner);
+		
+		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		double [] lparams = learningRF.getParameters();
+		DifferentiableSparseSampling learningPlanner = new DifferentiableSparseSampling(this.domain, learningRF, new NullTermination(), 1, hashingFactory, 22, 1, boltzBeta);
+		Policy lp = new GreedyQPolicy(learningPlanner);
+		
+		//get trajectory
+		EpisodeAnalysis ea = p.evaluateBehavior(initialState, planningRF, 20);
+		
+		CSABL csabl = new CSABL(learningRF, domain, 1., boltzBeta, hashingFactory, 0.0, 0.0);
+		csabl.setPlanner(learningPlanner);
+		
+		double alpha = 0.1;
+		
+		State curState = this.initialState;
+		
+		List<FeedbackTuple> feedbacks = new ArrayList<FeedbackTuple>();
+		
+		//now single goal feedback
+		FeedbackTuple rewardFB = new FeedbackTuple(ea.getState(ea.numTimeSteps()-2), ea.getAction(ea.numTimeSteps()-2), 1.);
+		feedbacks.add(rewardFB);
+		System.out.println(rewardFB.s.toString() + "\n" + rewardFB.a.toString() + "\n-------------------");
+		
+		
+		csabl.setFeedbacks(feedbacks);
+		
+		csabl.runGradientAscent(alpha, 100);
+		//System.out.println(curState.toString());
+		for(int i = 0; i < lparams.length; i++){
+			System.out.println(i + ": " + lparams[i]);
+		}
+		learningPlanner.resetPlannerResults();
+		EpisodeAnalysis lea = lp.evaluateBehavior(this.initialState, learningRF, new GridWorldTerminalFunction(5, 5), 22);
+		System.out.println("Result:");
+		System.out.println(lea.getActionSequenceString("\n"));
+		
+	}
+	
 	protected void resetParams(double [] params){
 		for(int i = 0; i < params.length; i++){
 			params[i] = 0.;
@@ -290,8 +344,8 @@ public class InteractiveTamerGridWorld {
 		DynamicFeedbackGUI gui = new DynamicFeedbackGUI(this.visualizer, env);
 		env.setGUI(gui);
 		
-		//StateToFeatureVectorGenerator rfFV = this.getRBFsForEachState(this.initialState, this.domain, 0.1);
-		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
+		StateToFeatureVectorGenerator rfFV = this.getRBFsForEachState(this.initialState, this.domain, 0.1);
+		//StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
 		//StateToFeatureVectorGenerator rfFV = new InitialAndGoalFV();
 		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] rfParams = learningRF.getParameters();
