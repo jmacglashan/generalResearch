@@ -78,7 +78,7 @@ public class BlockDude implements DomainGenerator {
 		xAtt.setDiscValuesForRange(minx, maxx, 1);
 		
 		Attribute yAtt = new Attribute(domain, ATTY, Attribute.AttributeType.DISC);
-		yAtt.setDiscValuesForRange(miny, miny, 1);
+		yAtt.setDiscValuesForRange(miny, maxy, 1);
 		
 		Attribute dirAtt = new Attribute(domain, ATTDIR, Attribute.AttributeType.DISC);
 		dirAtt.setDiscValuesForRange(0, 1, 1);
@@ -395,6 +395,7 @@ public class BlockDude implements DomainGenerator {
 		}
 
 		
+		/*
 		@Override
 		public State performAction(State s, String [] params){
 			
@@ -423,6 +424,7 @@ public class BlockDude implements DomainGenerator {
 			}
 			return super.performAction(s, params);
 		}
+		*/
 		
 		@Override
 		protected State performActionHelper(State st, String[] params) {
@@ -444,6 +446,7 @@ public class BlockDude implements DomainGenerator {
 			super(name, domain, parameterClasses);
 		}
 		
+		/*
 		@Override
 		public State performAction(State s, String [] params){
 			
@@ -472,6 +475,7 @@ public class BlockDude implements DomainGenerator {
 			}
 			return super.performAction(s, params);
 		}
+		*/
 
 		@Override
 		protected State performActionHelper(State st, String[] params) {
@@ -493,6 +497,7 @@ public class BlockDude implements DomainGenerator {
 			super(name, domain, parameterClasses);
 		}
 		
+		/*
 		@Override
 		public State performAction(State s, String [] params){
 			
@@ -521,6 +526,7 @@ public class BlockDude implements DomainGenerator {
 			}
 			return super.performAction(s, params);
 		}
+		*/
 
 		@Override
 		protected State performActionHelper(State st, String[] params) {
@@ -542,6 +548,8 @@ public class BlockDude implements DomainGenerator {
 			super(name, domain, parameterClasses);
 		}
 		
+		
+		/*
 		@Override
 		public State performAction(State s, String [] params){
 			
@@ -575,6 +583,8 @@ public class BlockDude implements DomainGenerator {
 			}
 			return super.performAction(s, params);
 		}
+		*/
+
 
 		@Override
 		protected State performActionHelper(State st, String[] params) {
@@ -598,6 +608,7 @@ public class BlockDude implements DomainGenerator {
 		}
 		
 		
+		/*
 		@Override
 		public State performAction(State s, String [] params){
 			
@@ -626,7 +637,7 @@ public class BlockDude implements DomainGenerator {
 			}
 			return super.performAction(s, params);
 		}
-		
+		*/
 
 		@Override
 		protected State performActionHelper(State st, String[] params) {

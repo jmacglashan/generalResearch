@@ -111,10 +111,12 @@ public class BlockDudePlan {
 		astar.planFromState(s);
 		timer.stop();
 		
+		
+		
 		System.out.println("Time: " + timer.getTime());
 		
-		//StateParser sp = new StateYAMLParser(d);
-		StateParser sp = new StateJSONParser(d);
+		StateParser sp = new StateYAMLParser(d);
+		//StateParser sp = new StateJSONParser(d);
 		Policy p = new SDPlannerPolicy(astar);
 		EpisodeAnalysis ea = p.evaluateBehavior(s, rf, tf);
 		System.out.println(ea.getActionSequenceString("\n"));
@@ -122,7 +124,7 @@ public class BlockDudePlan {
 		
 		
 		new EpisodeSequenceVisualizer(v, d, sp, "blockDude");
-
+		
 	}
 
 }
