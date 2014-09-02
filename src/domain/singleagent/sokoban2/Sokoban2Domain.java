@@ -44,6 +44,11 @@ public class Sokoban2Domain implements DomainGenerator {
 	public static final String					PFAGENTINDOOR = "agentInDoor";
 	public static final String					PFBLOCKINDOOR = "blockInDoor";
 	
+	public static final String					PFWALLNORTH = "wallNorth";
+	public static final String					PFWALLSOUTH = "wallSouth";
+	public static final String					PFWALLEAST = "wallEast";
+	public static final String					PFWALLWEST = "wallWest";
+	
 	
 	public static final String[] 				COLORS = new String[]{"blue",
 														"green", "magenta", 
@@ -66,7 +71,12 @@ public class Sokoban2Domain implements DomainGenerator {
 	protected int								maxY = 24;
 	protected boolean							includeDirectionAttribute = false;
 	protected boolean							includePullAction = false;
+	protected boolean							includeWallPFs = false;
 	
+	
+	public void includeWallPFs(boolean includeWallPFs){
+		this.includeWallPFs = includeWallPFs;
+	}
 	
 	public void setMaxX(int maxX){
 		this.maxX = maxX;
@@ -163,6 +173,13 @@ public class Sokoban2Domain implements DomainGenerator {
 		
 		for(String shape : SHAPES){
 			new PFIsShape(PFBlockShapeName(shape), domain, new String[]{CLASSBLOCK}, shape);
+		}
+		
+		if(this.includeWallPFs){
+			new PFWallTest(PFWALLNORTH, domain, 0, 1);
+			new PFWallTest(PFWALLSOUTH, domain, 0, -1);
+			new PFWallTest(PFWALLEAST, domain, 1, 0);
+			new PFWallTest(PFWALLWEST, domain, -1, 0);
 		}
 		
 		
@@ -663,6 +680,35 @@ public class Sokoban2Domain implements DomainGenerator {
 	}
 	
 	
+	public class PFWallTest extends PropositionalFunction{
+		
+		protected int dx;
+		protected int dy;
+		
+		public PFWallTest(String name, Domain domain, int dx, int dy){
+			super(name, domain, CLASSAGENT);
+			this.dx = dx;
+			this.dy = dy;
+		}
+
+		@Override
+		public boolean isTrue(State s, String[] params) {
+			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
+			int ax = agent.getDiscValForAttribute(ATTX);
+			int ay = agent.getDiscValForAttribute(ATTY);
+			ObjectInstance agentRoom = roomContainingPoint(s, ax, ay);
+			if(agentRoom == null){
+				return false;
+			}
+			return wallAt(s, agentRoom, ax+this.dx, ay+this.dy);
+
+		}
+		
+		
+		
+	}
+	
+	
 	
 	
 	public static void main(String [] args){
@@ -670,6 +716,7 @@ public class Sokoban2Domain implements DomainGenerator {
 		Sokoban2Domain dgen = new Sokoban2Domain();
 		dgen.includeDirectionAttribute(true);
 		dgen.includePullAction(true);
+		dgen.includeWallPFs(true);
 		Domain domain = dgen.generateDomain();
 		
 		State s = Sokoban2Domain.getClassicState(domain);
