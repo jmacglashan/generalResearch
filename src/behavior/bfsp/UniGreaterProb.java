@@ -4,7 +4,11 @@ import burlap.debugtools.RandomFactory;
 
 public class UniGreaterProb {
 
-	public static double probXGreaterThanY(double lx, double ux, double ly, double uy){
+	public static double probXGreaterOrEqualThanY(double lx, double ux, double ly, double uy){
+		
+		if(lx == ly && ux == uy){
+			return 1.;
+		}
 		
 		double maxl = Math.max(lx, ly);
 		double minu = Math.min(ux, uy);
@@ -50,12 +54,19 @@ public class UniGreaterProb {
 		if(lr > ux || ur < lx){
 			return 0.;
 		}
+		
+		if(ux == lx){
+			if(lr == lx && ux == ur){
+				return 1.;
+			}
+		}
+		
 		double p = (ur - lr) / (ux - lx);
 		return p;
 	}
 	
 	protected static void compare(double lx, double ux, double ly, double uy, int sims){
-		double anal = probXGreaterThanY(lx, ux, ly, uy);
+		double anal = probXGreaterOrEqualThanY(lx, ux, ly, uy);
 		double sim = simXGY(lx, ux, ly, uy, sims);
 		
 		System.out.println("Comparing (" + lx + ", " + ux + ") (" + ly + ", " + uy + ")");

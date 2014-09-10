@@ -19,6 +19,7 @@ import burlap.behavior.singleagent.vfa.rbf.RBFFeatureDatabase;
 import burlap.behavior.singleagent.vfa.rbf.functions.GaussianRBF;
 import burlap.behavior.singleagent.vfa.rbf.metrics.EuclideanDistance;
 import burlap.debugtools.RandomFactory;
+import burlap.domain.singleagent.mountaincar.MCRandomStateGenerator;
 import burlap.domain.singleagent.mountaincar.MountainCar;
 import burlap.domain.singleagent.mountaincar.MountainCarStateParser;
 import burlap.domain.singleagent.mountaincar.MountainCarVisualizer;
@@ -37,7 +38,8 @@ public class LSPITest {
 
 public static void main(String [] args){
 		
-		forcedSample();
+		//forcedSample();
+		easyMC();
 		//initialStatePlan();
 		//learningRun();
 		
@@ -158,6 +160,50 @@ public static void main(String [] args){
 		System.out.println("Done.");
 	}
 	
+	
+	public static void easyMC(){
+		
+		final MountainCar mcGen = new MountainCar();
+		final Domain domain = mcGen.generateDomain();
+		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
+		final StateParser sp = new MountainCarStateParser(domain);
+		
+		FourierBasis fb = new FourierBasis(new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT), 4);
+		
+		StateGenerator rStateGen = new MCRandomStateGenerator(domain);
+		
+		SARSCollector collector = new SARSCollector.UniformRandomSARSCollector(domain);
+		
+		System.out.println("Beginning data collection");
+		SARSData dataset = collector.collectNInstances(rStateGen, rf, 5000, 20, tf, null);
+		System.out.println("Ending data collection");
+		
+		LSPI lspi = new LSPI(domain, rf, tf, 0.99, fb);
+		lspi.setDataset(dataset);
+		
+		System.out.println("Beginning PI");
+		lspi.runPolicyIteration(30, 1e-6);
+		System.out.println("Finished PI");
+		
+		System.out.println("Will now visualize Mountain Car for using estimated value function from valley 10 times");
+		
+		final GreedyQPolicy p = new GreedyQPolicy(lspi);
+		State s = mcGen.getCleanState(domain);
+		
+		Visualizer v = MountainCarVisualizer.getVisualizer(mcGen);
+		VisualActionObserver vexp = new VisualActionObserver(domain, v);
+		vexp.initGUI();
+		((SADomain)domain).addActionObserverForAllAction(vexp);
+		
+		for(int i = 0; i < 10; i++){
+			p.evaluateBehavior(s, rf, tf);
+		}
+		
+		System.out.println("Finished.");
+		
+		
+	}
 	
 	public static void forcedSample(){
 		

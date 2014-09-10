@@ -92,7 +92,7 @@ public class BasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		example.QLearningExample(outputPath);
+		//example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
 		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
@@ -107,7 +107,7 @@ public class BasicBehavior {
 		//example.visualize(outputPath);
 
 		
-		//example.valueIterationAndVisualizeValueFunction();
+		example.valueIterationAndVisualizeValueFunction();
 		//example.qLearningAndVisualizeValueFunction();
 		
 		//example.experimenterAndPlotter();

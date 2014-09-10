@@ -137,8 +137,8 @@ public class BayesianRTDP extends BoundedRTDP {
 	
 	protected GroundedAction selectAction(State s, List<QValue> lowerQs, List<QValue> upperQs){
 		
-		//return this.selectActionBySampling(s, lowerQs, upperQs);
-		return this.selectActionByMAP(s, lowerQs, upperQs);
+		return this.selectActionBySampling(s, lowerQs, upperQs);
+		//return this.selectActionByMAP(s, lowerQs, upperQs);
 		
 	}
 	
@@ -156,6 +156,22 @@ public class BayesianRTDP extends BoundedRTDP {
 				maxNum = posterior;
 				maxOptions.clear();
 				maxOptions.add(i);
+			}
+		}
+		
+		
+		if(maxOptions.size() == 0){
+			for(int i = 0; i < lowerQs.size(); i++){
+				double prior = this.policyPrior.getProbOfAction(s, (GroundedAction)lowerQs.get(i).a);
+				double posterior = prior * this.probGreater(i, lowerQs, upperQs);
+				if(posterior == maxNum){
+					maxOptions.add(i);
+				}
+				else if(posterior > maxNum){
+					maxNum = posterior;
+					maxOptions.clear();
+					maxOptions.add(i);
+				}
 			}
 		}
 		
@@ -184,6 +200,16 @@ public class BayesianRTDP extends BoundedRTDP {
 			}
 		}
 		
+		
+		//failed, try again
+		numerators = new double[lowerQs.size()];
+		sum = 0.;
+		for(int i = 0; i < lowerQs.size(); i++){
+			double prior = this.policyPrior.getProbOfAction(s, (GroundedAction)lowerQs.get(i).a);
+			numerators[i] = prior * this.probGreater(i, lowerQs, upperQs);
+			sum += numerators[i];
+		}
+		
 		throw new RuntimeException("Error! probablities for actions did not sum to 1.");
 	}
 	
@@ -199,7 +225,7 @@ public class BayesianRTDP extends BoundedRTDP {
 			}
 			QValue qLower = lowerQs.get(i);
 			QValue qUpper = upperQs.get(i);
-			double pGreater = UniGreaterProb.probXGreaterThanY(queryLower.q, queryUpper.q, qLower.q, qUpper.q);
+			double pGreater = UniGreaterProb.probXGreaterOrEqualThanY(queryLower.q, queryUpper.q, qLower.q, qUpper.q);
 			product *= pGreater;
 		}
 		
@@ -280,15 +306,15 @@ public class BayesianRTDP extends BoundedRTDP {
 	}
 	
 	
-	protected static class NEBiasedPolicy extends Policy{
+	protected static class StateFreeBiasedPolicy extends Policy{
 
 		protected Domain domain;
-		protected double pNorth = 0.45;
-		protected double pSouth = 0.45;
-		protected double pEast = 0.05;
-		protected double pWest = 0.05;
+		protected double pNorth = 68./168.;
+		protected double pSouth = 16./168.;
+		protected double pEast = 70./168;
+		protected double pWest = 14./168;
 		
-		public NEBiasedPolicy(Domain domain){
+		public StateFreeBiasedPolicy(Domain domain){
 			this.domain = domain;
 		}
 		
@@ -399,7 +425,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		GridWorldDomain gwd = new GridWorldDomain(11, 11);
 		gwd.setMapToFourRooms();
-		gwd.setProbSucceedTransitionDynamics(0.8);
+		//gwd.setProbSucceedTransitionDynamics(0.8);
 		Domain domain = gwd.generateDomain();
 		State s = GridWorldDomain.getOneAgentNoLocationState(domain);
 		GridWorldDomain.setAgent(s, 0, 0);
@@ -408,18 +434,19 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		
 		//do exact planning for softend policy prior
+		/*
 		ValueIteration vi = new ValueIteration(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 0.01, 100);
 		vi.planFromState(s);
 		Policy viPolicy = new GreedyQPolicy(vi);
 		SoftenedSampledPolicy ssp = new SoftenedSampledPolicy(viPolicy, domain, s, 60, 0.8, new DiscreteStateHashFactory());
-		
+		*/
 		
 		BayesianRTDP bayes = new BayesianRTDP(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(-100), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.), 
 				//new UniformPolicyPrior(domain),
-				//new NEBiasedPolicy(domain),
-				ssp,
+				new StateFreeBiasedPolicy(domain),
+				//ssp,
 				10);
 		
 		
@@ -433,7 +460,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		int maxSteps = 1000;
 		int numTrials = 10;
-		for(int i = 0; i < 30; i++){
+		for(int i = 0; i < 1; i++){
 			bayes.runRollout(s);
 			//rtdp.normalRTDP(s);
 			brtdp.runRollout(s);
