@@ -319,7 +319,7 @@ public class TaskModule extends GMModule {
 	
 	
 	
-	public class RFConVariableValue extends RVariableValue{
+	public static class RFConVariableValue extends RVariableValue{
 
 		public ConjunctiveGroundedPropRF			rf;
 		

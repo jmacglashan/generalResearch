@@ -263,6 +263,11 @@ public class PaintPolish implements DomainGenerator {
 			ObjectInstance o = s.getObject(params[0]);
 			return o.getBooleanValue(ATTPAINTED) && o.getBooleanValue(ATTPOLISHED) && !o.getBooleanValue(ATTSCRATCHED) && !o.getBooleanValue(ATTFINISHED);
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 		

@@ -614,6 +614,11 @@ public class DogTraining implements DomainGenerator {
 			
 			return s;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 	}
 	
@@ -663,6 +668,11 @@ public class DogTraining implements DomainGenerator {
 			
 			return s;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 		
@@ -698,6 +708,11 @@ public class DogTraining implements DomainGenerator {
 			dog.setValue(ATTHOLDING, 0);
 			dog.setValue(ATTWAITING, 0);
 			return s;
+		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 		
 		

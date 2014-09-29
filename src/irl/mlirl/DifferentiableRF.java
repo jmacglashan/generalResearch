@@ -1,8 +1,6 @@
 package irl.mlirl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
@@ -12,7 +10,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 
 public abstract class DifferentiableRF implements RewardFunction {
 	
-protected double []							parameters;
+protected double []								parameters;
 protected int									dim;
 
 public abstract double [] getGradient(State s, GroundedAction ga, State sp);

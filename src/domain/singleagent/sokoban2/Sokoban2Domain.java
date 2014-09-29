@@ -3,12 +3,7 @@ package domain.singleagent.sokoban2;
 import java.util.List;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Attribute;
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
-import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
-import burlap.oomdp.core.State;
+import burlap.oomdp.core.*;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
@@ -510,6 +505,11 @@ public class Sokoban2Domain implements DomainGenerator {
 			
 			return s;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 	}
@@ -566,8 +566,13 @@ public class Sokoban2Domain implements DomainGenerator {
 			
 			return s;
 		}
-		
-		
+
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
+
 		protected ObjectInstance blockToSwap(State s, int ax, int ay){
 			//ObjectInstance roomContaining = roomContainingPoint(s, ax, ay);
 			ObjectInstance roomContaining = regionContainingPoint(s.getObjectsOfTrueClass(CLASSROOM), ax, ay, true);

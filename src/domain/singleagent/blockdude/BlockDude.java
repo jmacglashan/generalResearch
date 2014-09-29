@@ -6,12 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Attribute;
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
-import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
-import burlap.oomdp.core.State;
+import burlap.oomdp.core.*;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.explorer.TerminalExplorer;
@@ -431,6 +426,11 @@ public class BlockDude implements DomainGenerator {
 			moveUp(st);
 			return st;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 	}
@@ -482,6 +482,11 @@ public class BlockDude implements DomainGenerator {
 			moveHorizontally(st, 1);
 			return st;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 	}
@@ -532,6 +537,11 @@ public class BlockDude implements DomainGenerator {
 		protected State performActionHelper(State st, String[] params) {
 			moveHorizontally(st, -1);
 			return st;
+		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 		
 		
@@ -591,6 +601,11 @@ public class BlockDude implements DomainGenerator {
 			pickupBlock(st);
 			return st;
 		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 		
 		
 	}
@@ -643,6 +658,11 @@ public class BlockDude implements DomainGenerator {
 		protected State performActionHelper(State st, String[] params) {
 			putdownBlock(st);
 			return st;
+		}
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 		
 		

@@ -9,8 +9,8 @@ import burlap.oomdp.singleagent.GroundedAction;
 
 public class Trajectory {
 
-	private List <State>				states;
-	private List <GroundedAction>		actions;
+	public List <State>				states;
+	public List <GroundedAction>		actions;
 	
 	public Trajectory(State initialState){
 		states = new ArrayList<State>();

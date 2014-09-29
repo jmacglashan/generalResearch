@@ -90,6 +90,10 @@ public class Model3Controller {
 		this.gm.addGMModule(trajectMod);
 		
 	}
+
+	public TrajectoryModule getTrajectoryModule(){
+		return this.trajectMod;
+	}
 	
 	public GenerativeModel getGM(){
 		return this.gm;
@@ -340,6 +344,46 @@ public class Model3Controller {
 		
 		return distro;
 	}
+
+
+	public List<GMQueryResult> getRFDistributionFromState(State s){
+
+		StateRVValue sval = new StateRVValue(s, this.hashingFactory, this.gm.getRVarWithName(TaskModule.STATENAME));
+
+		HashedAggregator<GMQuery> jointP = new HashedAggregator<GMQuery>();
+		double totalProb = 0.;
+
+		List<RVariableValue> sconds = new ArrayList<RVariableValue>(1);
+		sconds.add(sval);
+		Iterator<GMQueryResult> lrIter = this.gm.getNonZeroIterator(this.gm.getRVarWithName(TaskModule.LIFTEDRFNAME), sconds, true);
+		while(lrIter.hasNext()) {
+			GMQueryResult lrRes = lrIter.next();
+
+			List<RVariableValue> lrConds = new ArrayList<RVariableValue>(2);
+			lrConds.add(sval);
+			lrConds.add(lrRes.getSingleQueryVar());
+			Iterator<GMQueryResult> grIter = this.gm.getNonZeroIterator(this.gm.getRVarWithName(TaskModule.GROUNDEDRFNAME), lrConds, true);
+			while (grIter.hasNext()) {
+				GMQueryResult grRes = grIter.next();
+				double stackLRGR = lrRes.probability * grRes.probability;
+				totalProb += stackLRGR;
+				jointP.add(grRes, stackLRGR);
+
+			}
+
+
+		}
+
+		List<GMQueryResult> distro = new ArrayList<GMQueryResult>(jointP.size());
+		for(Entry<GMQuery, Double> e : jointP.entrySet()){
+			double prob = e.getValue() / totalProb;
+			GMQueryResult qr = new GMQueryResult(e.getKey(), prob);
+			distro.add(qr);
+		}
+
+
+		return distro;
+	}
 	
 	
 	public List<GMQueryResult> getRFDistributionFromTrajectory(Trajectory trajectory){
@@ -363,6 +407,9 @@ public class Model3Controller {
 			while(grIter.hasNext()){
 				GMQueryResult grRes = grIter.next();
 				double stackLRGR = lrRes.probability*grRes.probability;
+
+
+				//System.out.println("Iterating: " + grRes.getSingleQueryVar().toString());
 				
 				List<RVariableValue> grConds = new ArrayList<RVariableValue>(3);
 				grConds.add(sval);
@@ -434,8 +481,10 @@ public class Model3Controller {
 	public List<WeightedMTInstance> getWeightedMTDatasetFromTrajectoryDataset(List<TrainingElement> trajectoryDataset, Tokenizer tokenizer, double threshold){
 		
 		List<WeightedMTInstance> mtDataset = new ArrayList<WeightedMTInstance>(trajectoryDataset.size());
+		int ind = 0;
 		for(TrainingElement te : trajectoryDataset){
-			
+
+			System.out.println("Performing IRL on " + te.identifier + "(" + ind + "/" + trajectoryDataset.size() + "): " + te.command);
 			TrajectoryValue trajectoryVal = new TrajectoryValue(te.trajectory, this.gm.getRVarWithName(TrajectoryModule.TNAME));
 			Map<String, Double> semanticProbs = this.getSemanticSentenceDistribution(trajectoryVal);
 			WeightedMTInstance instance = new WeightedMTInstance(tokenizer.tokenize(te.command));
@@ -448,6 +497,7 @@ public class Model3Controller {
 				}
 			}
 			mtDataset.add(instance);
+			ind++;
 			
 		}
 		
@@ -498,6 +548,7 @@ public class Model3Controller {
 				grConds.add(sval);
 				grConds.add(lrRes.getSingleQueryVar());
 				grConds.add(grRes.getSingleQueryVar());
+				System.out.println("IRL on " + grRes.getSingleQueryVar().toString());
 				
 				//compute probability of trajectory
 				GMQuery trajQuery = new GMQuery();

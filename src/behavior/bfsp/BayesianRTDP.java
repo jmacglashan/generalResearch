@@ -36,6 +36,8 @@ public class BayesianRTDP extends BoundedRTDP {
 
 	
 	protected Policy			policyPrior;
+
+	protected UniformWinner		uw = new UniformWinner();
 	
 	public BayesianRTDP(Domain domain, RewardFunction rf, TerminalFunction tf,
 			double gamma, StateHashFactory hashingFactory,
@@ -137,8 +139,9 @@ public class BayesianRTDP extends BoundedRTDP {
 	
 	protected GroundedAction selectAction(State s, List<QValue> lowerQs, List<QValue> upperQs){
 		
-		return this.selectActionBySampling(s, lowerQs, upperQs);
+		//return this.selectActionBySampling(s, lowerQs, upperQs);
 		//return this.selectActionByMAP(s, lowerQs, upperQs);
+		return this.selectActionByActionPruning(s, lowerQs, upperQs);
 		
 	}
 	
@@ -212,9 +215,115 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		throw new RuntimeException("Error! probablities for actions did not sum to 1.");
 	}
+
+
+	protected GroundedAction selectActionByActionPruning(State s, List<QValue> lowerQs, List<QValue> upperQs){
+
+		double [] probOfActions = this.probOfActions(s, lowerQs, upperQs);
+
+		//find max action
+		double maxProb = 0.;
+		for(int i = 0; i < probOfActions.length; i++){
+			maxProb = Math.max(maxProb, probOfActions[i]);
+		}
+
+		//sample from normalized, and select candidates based on upper Q
+		Random rand = RandomFactory.getMapped(0);
+		List<Integer> actionCandIndices = new ArrayList<Integer>(lowerQs.size());
+		double maxUpper = Double.NEGATIVE_INFINITY;
+		for(int i = 0; i < probOfActions.length; i++){
+			double normVal = probOfActions[i] / maxProb;
+			double r = rand.nextDouble();
+			if(r < normVal){
+
+				//then this action stays in the set and competes by upper confidence value
+				double uq = upperQs.get(i).q;
+				if(uq > maxUpper){
+					maxUpper = uq;
+					actionCandIndices.clear();
+					actionCandIndices.add(i);
+				}
+				else if(uq == maxUpper){
+					actionCandIndices.add(i);
+				}
+
+			}
+		}
+
+		if(actionCandIndices.size() == 1){
+			return (GroundedAction)upperQs.get(actionCandIndices.get(0)).a;
+		}
+
+		//otherwise of the multiple candidates, fine the ones with the highest likelihood
+		List<Integer> candiates2 = new ArrayList<Integer>(actionCandIndices.size());
+		double maxP = 0.;
+		for(int i : actionCandIndices){
+			double p = probOfActions[i];
+			if(p > maxP){
+				maxP = p;
+				candiates2.clear();
+				candiates2.add(i);
+			}
+			else if(p == maxP){
+				candiates2.add(i);
+			}
+		}
+
+
+		if(candiates2.size() == 1){
+			return (GroundedAction)upperQs.get(candiates2.get(0)).a;
+		}
+
+		//otherwise select uniformly randomly among tied actions
+		int rIndex = candiates2.get(rand.nextInt(candiates2.size()));
+
+		return (GroundedAction)upperQs.get(rIndex).a;
+
+
+
+	}
+
+
+
+
+	protected double [] probOfActions(State s, List<QValue> lowerQs, List<QValue> upperQs){
+
+		UniformWinner.LowerUpper [] lus = new UniformWinner.LowerUpper[lowerQs.size()];
+		for(int i = 0; i < lowerQs.size(); i++){
+			lus[i] = new UniformWinner.LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
+		}
+
+		double [] probOptimal = new double[lus.length];
+		double sum = 0.;
+		for(int i = 0; i < probOptimal.length; i++){
+			double prior = this.policyPrior.getProbOfAction(s, (GroundedAction)lowerQs.get(i).a);
+			double pWinner = this.uw.probWinner(i, lus);
+			double num = prior*pWinner;
+			probOptimal[i] = num;
+			sum+=num;
+		}
+		for(int i = 0; i < probOptimal.length; i++){
+			probOptimal[i] /= sum;
+		}
+
+		return probOptimal;
+
+	}
+
+
 	
 	protected double probGreater(int qIndex, List<QValue> lowerQs, List<QValue> upperQs){
-		
+
+
+		UniformWinner.LowerUpper [] lus = new UniformWinner.LowerUpper[lowerQs.size()];
+		for(int i = 0; i < lowerQs.size(); i++){
+			lus[i] = new UniformWinner.LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
+		}
+
+		double p = this.uw.probWinner(qIndex, lus);
+		return p;
+
+		/*
 		QValue queryLower = lowerQs.get(qIndex);
 		QValue queryUpper = upperQs.get(qIndex);
 		
@@ -230,12 +339,12 @@ public class BayesianRTDP extends BoundedRTDP {
 		}
 		
 		return product;
+		*/
 	}
 
 	
 	/**
-	 * Returns the maximum Q-value entry in the given list with ties broken randomly. 
-	 * @param s the query state for the Q-value
+	 * Returns the maximum Q-value entry in the given list with ties broken randomly.
 	 * @return the maximum Q-value entry for the given state with ties broken randomly. 
 	 */
 	protected QValue maxQ(List<QValue> qs){
@@ -425,7 +534,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		GridWorldDomain gwd = new GridWorldDomain(11, 11);
 		gwd.setMapToFourRooms();
-		//gwd.setProbSucceedTransitionDynamics(0.8);
+		gwd.setProbSucceedTransitionDynamics(0.8);
 		Domain domain = gwd.generateDomain();
 		State s = GridWorldDomain.getOneAgentNoLocationState(domain);
 		GridWorldDomain.setAgent(s, 0, 0);
@@ -444,8 +553,8 @@ public class BayesianRTDP extends BoundedRTDP {
 		BayesianRTDP bayes = new BayesianRTDP(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(-100), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.), 
-				//new UniformPolicyPrior(domain),
-				new StateFreeBiasedPolicy(domain),
+				new UniformPolicyPrior(domain),
+				//new StateFreeBiasedPolicy(domain),
 				//ssp,
 				10);
 		
@@ -460,7 +569,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		int maxSteps = 1000;
 		int numTrials = 10;
-		for(int i = 0; i < 1; i++){
+		for(int i = 0; i < 30; i++){
 			bayes.runRollout(s);
 			//rtdp.normalRTDP(s);
 			brtdp.runRollout(s);

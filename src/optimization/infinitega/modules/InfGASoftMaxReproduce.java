@@ -30,20 +30,42 @@ public class InfGASoftMaxReproduce implements RatioReproduce {
 	
 	@Override
 	public RepResult ratioReproduce(List<GenomeRatioFitness> popDist) {
-		
+
+		double m = 0.0;
+
 		double [] fitArray = this.getFitnessArray(popDist);
 		BoltzmannDistribution bd = new BoltzmannDistribution(fitArray, this.temperature);
 		double [] fitProb = bd.getProbabilities();
 		
 		RepResult res = new RepResult(0., new ArrayList<GenomeRatioFitness>(popDist));
 		double sumPopIncrease = 0.;
+
+		double [] gainedFromMutation = new double[fitProb.length];
+		for(int i = 0; i < fitProb.length; i++){
+
+			double chanceReproduce = fitProb[i]*popDist.get(i).gr.ratio;
+			double toOthers = chanceReproduce * m / (double)(fitProb.length - 1);
+
+			for(int j = 0; j < gainedFromMutation.length; j++){
+				if(j == i){
+					continue;
+				}
+				else{
+					gainedFromMutation[i] += toOthers;
+				}
+			}
+
+		}
+
+
+
 		for(int i = 0; i < fitProb.length; i++){
 			//double children = fitProb[i] * popDist.get(i).gr.ratio;
 			double children = fitProb[i];
 			if(this.usePopulationRatio){
-				children *= popDist.get(i).gr.ratio;
+				children *= popDist.get(i).gr.ratio*(1.-m);
 			}
-			sumPopIncrease += children;
+			sumPopIncrease += children + gainedFromMutation[i];
 			GenomeRatio gr = res.nextPop.get(i).gr;
 			gr.ratio += children;
 			

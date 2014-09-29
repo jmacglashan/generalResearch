@@ -95,16 +95,16 @@ public class FSSMatchCaching {
 		
 		this.baseLearningRate = learningRate;
 		
-		//this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
+		this.rfParamSet = (new RFParamVarEnumerator(-1.5, 2.5, 0.5, 2)).allRFs;
 		//this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 5)).allRFs;
-		this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 7)).allRFs;
+		//this.rfParamSet = (new RFParamVarEnumerator(0, 1., 1., 7)).allRFs;
 		
 		
 		
 		//this.objectiveReward = new FSSimpleJR();
 		this.objectiveReward = new FSSimpleJR(1., -0.5, -2.5, 0.);
-		//this.nTries =  25;
-		this.nTries = 1000;
+		this.nTries =  25;
+		//this.nTries = 1000;
 		this.nGames = 1000;
 		//this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(objectiveReward);
 		this.rewardFactory = new FSSubjectiveRF.FSSubjectiveRFFactory(new FSSimplePOJR(1., -0.5, -2.5, 0.));
@@ -259,8 +259,8 @@ public class FSSMatchCaching {
 	
 	protected DoublePair runMatch(OptVariables v1, OptVariables v2){
 		
-		//return this.runMatchLearning(v1, v2);
-		return this.runMatchHardCoded(v1, v2);
+		return this.runMatchLearning(v1, v2);
+		//return this.runMatchHardCoded(v1, v2);
 		
 	}
 	

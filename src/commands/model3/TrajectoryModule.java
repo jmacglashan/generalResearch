@@ -1,31 +1,23 @@
 package commands.model3;
 
-import generativemodel.GMModule;
-import generativemodel.GMQuery;
-import generativemodel.GMQueryResult;
-import generativemodel.ModelTrackedVarIterator;
-import generativemodel.RVariable;
-import generativemodel.RVariableValue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import behavior.irl.TabularIRL;
 import behavior.irl.TabularIRL.TaskCondition;
 import behavior.irl.TabularIRLPlannerFactory;
+import burlap.behavior.statehashing.StateHashFactory;
+import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.GroundedAction;
-
 import commands.data.Trajectory;
+import commands.data.TrajectoryParser;
 import commands.model3.TaskModule.ConjunctiveGroundedPropRF;
 import commands.model3.TaskModule.RFConVariableValue;
+import generativemodel.*;
+
+import java.io.*;
+import java.util.*;
 
 public class TrajectoryModule extends GMModule{
 
@@ -176,7 +168,146 @@ public class TrajectoryModule extends GMModule{
 	
 	
 	
-	
+	public void writeCacheToDisk(String pathToCacheDir, Domain domain, StateParser sp){
+
+		if(!pathToCacheDir.endsWith("/")){
+			pathToCacheDir += "/";
+		}
+
+		TrajectoryParser tp = new TrajectoryParser(domain,sp);
+
+		int queryInd = 0;
+		for(Map.Entry<GMQuery, Double> e : this.cachedResults.entrySet()){
+			GMQuery query = e.getKey();
+			TrajectoryValue bval = (TrajectoryValue)query.getSingleQueryVar();
+			Set <RVariableValue> conditions = query.getConditionValues();
+			RFConVariableValue rval = (RFConVariableValue)this.extractValueForVariableFromConditions(rewardRV, conditions);
+
+			try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(pathToCacheDir+queryInd+".txt"));
+				out.write(e.getValue()+"\n");
+				out.write(rval.toString()+"\n");
+				out.write(tp.getStringRepForTrajectory(bval.t));
+				out.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
+
+
+
+			queryInd++;
+
+
+		}
+
+
+	}
+
+
+	public void readCacheFromDisk(String pathToCacheDir, Domain domain, StateParser sp, StateHashFactory hashingFactory){
+
+		TrajectoryParser tp = new TrajectoryParser(domain,sp);
+
+		//get rid of trailing /
+		if(pathToCacheDir.charAt(pathToCacheDir.length()-1) == '/'){
+			pathToCacheDir = pathToCacheDir.substring(0, pathToCacheDir.length());
+		}
+
+
+		File dir = new File(pathToCacheDir);
+		final String ext = new String("txt");
+
+		FilenameFilter filter = new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				if(name.endsWith(ext)){
+					return true;
+				}
+				return false;
+			}
+		};
+		String[] children = dir.list(filter);
+		for(int i = 0; i < children.length; i++){
+			String path = pathToCacheDir + "/" + children[i];
+
+			String content = "";
+			try {
+				content = new Scanner(new File(path)).useDelimiter("\\Z").next();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+
+			String remainder = content;
+
+			int nlIndex = remainder.indexOf("\n");
+			String pString = remainder.substring(0, nlIndex).trim();
+			remainder = remainder.substring(nlIndex+1);
+
+
+			nlIndex = remainder.indexOf("\n");
+			String rfString = remainder.substring(0, nlIndex).trim();
+			remainder = remainder.substring(nlIndex+1).trim();
+
+			Trajectory t = tp.getTrajectoryFromString(remainder);
+
+			double prob = Double.parseDouble(pString);
+
+			List<GroundedProp> gps = parseGPsFromString(rfString, domain);
+			ConjunctiveGroundedPropRF cgprf = new ConjunctiveGroundedPropRF();
+			for(GroundedProp gp : gps){
+				cgprf.addGP(gp);
+			}
+
+			RFConVariableValue rfVar = new RFConVariableValue(this.owner.getRVarWithName(TaskModule.GROUNDEDRFNAME), cgprf);
+
+			TaskModule.StateRVValue sval = new TaskModule.StateRVValue(t.getState(0), hashingFactory, this.owner.getRVarWithName(TaskModule.STATENAME));
+
+			TrajectoryValue tv = new TrajectoryValue(t, behaviorRV);
+
+			GMQuery query = new GMQuery();
+			query.addQuery(tv);
+			query.addCondition(sval);
+			query.addCondition(rfVar);
+
+			this.cachedResults.put(query, prob);
+
+		}
+
+	}
+
+
+	private static List<GroundedProp> parseGPsFromString(String str, Domain domain){
+
+		String [] gpComps = str.split("\\) ");
+		List<GroundedProp> gps = new ArrayList<GroundedProp>();
+		for(String gp : gpComps){
+			gps.add(parseGPFromString(gp, domain));
+		}
+
+		return gps;
+
+	}
+
+	private static GroundedProp parseGPFromString(String str, Domain domain){
+		if(!str.endsWith(")")){
+			str = str + ")";
+		}
+
+		int lParenInd = str.indexOf("(");
+		String pName = str.substring(0, lParenInd);
+
+		String paramString = str.substring(lParenInd+1, str.length()-1);
+
+		String [] params = paramString.split(", ");
+
+		GroundedProp gp = new GroundedProp(domain.getPropFunction(pName), params);
+
+
+		return gp;
+
+
+	}
 	
 	
 	
@@ -249,6 +380,13 @@ public class TrajectoryModule extends GMModule{
 			
 			
 			return buf.toString();
+		}
+
+
+
+		@Override
+		public String toString(){
+			return this.stringRep();
 		}
 		
 		

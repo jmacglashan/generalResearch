@@ -3,12 +3,8 @@ package domain.singleagent.binarylock;
 import java.util.List;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
-import burlap.oomdp.core.Attribute;
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
-import burlap.oomdp.core.ObjectInstance;
+import burlap.oomdp.core.*;
 import burlap.oomdp.core.Attribute.AttributeType;
-import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 
@@ -164,6 +160,12 @@ public class BinaryLockDomain implements DomainGenerator {
 			head.setValue(ATTCURBIT, hpos+1);
 			
 			return s;
+		}
+
+
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 		
 		

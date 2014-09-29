@@ -14,13 +14,17 @@ public class Model3LOOVerifier {
 	 */
 	public static void main(String[] args) {
 		
-		if(args.length != 1){
-			System.out.println("Format:\n\tpathToPredictedDir");
-			System.exit(0);
-		}
-		
-		Map<String, String> labels = Model3ControllerTest.getOriginalDatasetRFLabels();
-		Map<String, String> predicted = getPredictions(args[0], "txt");
+//		if(args.length != 1){
+//			System.out.println("Format:\n\tpathToPredictedDir");
+//			System.exit(0);
+//		}
+
+		String dataPath = args[0];
+		dataPath = "oomdpResearch/dataFiles/commands/m3MTExpertNoDupsLOO";
+
+		//Map<String, String> labels = Model3ControllerTest.getOriginalDatasetRFLabels();
+		Map<String, String> labels = Model3ControllerExpertData.getJerryNormalRFLabels();
+		Map<String, String> predicted = getPredictions(dataPath, "txt");
 		
 		int c = 0;
 		int i = 0;
@@ -29,14 +33,21 @@ public class Model3LOOVerifier {
 			String ident = e.getKey();
 			String label = labels.get(ident);
 			System.out.print(i + " ");
+			boolean correct = true;
 			if(pred.equals(label)){
 				System.out.print("Correct ");
 				c++;
 			}
 			else{
+				correct = false;
 				System.out.print("Incorrect ");
 			}
-			System.out.println(ident);
+			System.out.print(ident);
+			if(!correct){
+				System.out.print("; Actual: " + label + "; predicted: " + pred);
+			}
+
+			System.out.println("");
 			i++;
 		}
 		

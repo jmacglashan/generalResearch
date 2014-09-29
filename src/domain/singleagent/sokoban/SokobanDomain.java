@@ -15,12 +15,7 @@ import java.util.Set;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.auxiliary.StateParser;
-import burlap.oomdp.core.Attribute;
-import burlap.oomdp.core.Domain;
-import burlap.oomdp.core.ObjectClass;
-import burlap.oomdp.core.ObjectInstance;
-import burlap.oomdp.core.PropositionalFunction;
-import burlap.oomdp.core.State;
+import burlap.oomdp.core.*;
 import burlap.oomdp.core.Attribute.AttributeType;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -1009,6 +1004,10 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			SokobanDomain.move(st, 0, 1);
 			return st;
 		}
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 	}
 
 	class SouthAction extends Action{
@@ -1018,6 +1017,10 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			SokobanDomain.createMap(st);
 			SokobanDomain.move(st, 0, -1);
 			return st;
+		}
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 	}
 
@@ -1029,6 +1032,10 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			SokobanDomain.move(st, 1, 0);
 			return st;
 		}
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
+		}
 	}
 
 	class WestAction extends Action{
@@ -1038,6 +1045,10 @@ public class SokobanDomain implements DomainGenerator, StateParser {
 			SokobanDomain.createMap(st);
 			SokobanDomain.move(st, -1, 0);
 			return st;
+		}
+		@Override
+		public List<TransitionProbability> getTransitions(State s, String [] params){
+			return this.deterministicTransition(s, params);
 		}
 	}
 
