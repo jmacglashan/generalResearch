@@ -15,9 +15,7 @@ import com.joptimizer.functions.LinearMultivariateRealFunction;
 import com.joptimizer.optimizers.JOptimizer;
 import com.joptimizer.optimizers.LPOptimizationRequest;
 import com.joptimizer.optimizers.LPPrimalDualMethod;
-import com.joptimizer.optimizers.NewtonLEConstrainedISP;
 import com.joptimizer.optimizers.OptimizationRequest;
-import com.sun.security.jgss.InquireSecContextPermission;
 
 
 public class LPTest1 {
