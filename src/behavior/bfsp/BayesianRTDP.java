@@ -229,11 +229,12 @@ public class BayesianRTDP extends BoundedRTDP {
 
 		//sample from normalized, and select candidates based on upper Q
 		Random rand = RandomFactory.getMapped(0);
+		double r = rand.nextDouble();
 		List<Integer> actionCandIndices = new ArrayList<Integer>(lowerQs.size());
 		double maxUpper = Double.NEGATIVE_INFINITY;
 		for(int i = 0; i < probOfActions.length; i++){
 			double normVal = probOfActions[i] / maxProb;
-			double r = rand.nextDouble();
+			//double r = rand.nextDouble();
 			if(r < normVal){
 
 				//then this action stays in the set and competes by upper confidence value
@@ -534,7 +535,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		GridWorldDomain gwd = new GridWorldDomain(11, 11);
 		gwd.setMapToFourRooms();
-		gwd.setProbSucceedTransitionDynamics(0.8);
+		//gwd.setProbSucceedTransitionDynamics(0.8);
 		Domain domain = gwd.generateDomain();
 		State s = GridWorldDomain.getOneAgentNoLocationState(domain);
 		GridWorldDomain.setAgent(s, 0, 0);
@@ -543,19 +544,19 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		
 		//do exact planning for softend policy prior
-		/*
+
 		ValueIteration vi = new ValueIteration(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 0.01, 100);
 		vi.planFromState(s);
 		Policy viPolicy = new GreedyQPolicy(vi);
 		SoftenedSampledPolicy ssp = new SoftenedSampledPolicy(viPolicy, domain, s, 60, 0.8, new DiscreteStateHashFactory());
-		*/
+
 		
 		BayesianRTDP bayes = new BayesianRTDP(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(-100), 
 				new ValueFunctionInitialization.ConstantValueFunctionInitialization(0.), 
-				new UniformPolicyPrior(domain),
+				//new UniformPolicyPrior(domain),
 				//new StateFreeBiasedPolicy(domain),
-				//ssp,
+				ssp,
 				10);
 		
 		
@@ -569,7 +570,7 @@ public class BayesianRTDP extends BoundedRTDP {
 		
 		int maxSteps = 1000;
 		int numTrials = 10;
-		for(int i = 0; i < 30; i++){
+		for(int i = 0; i < 5; i++){
 			bayes.runRollout(s);
 			//rtdp.normalRTDP(s);
 			brtdp.runRollout(s);

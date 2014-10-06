@@ -45,7 +45,8 @@ public class UniformWinner {
 				}
 			}
 			if(!greaterExists){
-				return 1. / (double)numTied;
+				//return 1. / (double)numTied; //use this for prob of selection among optimal
+				return 1.; //use this for indicator that it's a winner
 			}
 			else{
 
@@ -59,7 +60,8 @@ public class UniformWinner {
 					}
 				}
 
-				double p = (1. - sumNonPointProb) / numTied;
+				//double p = (1. - sumNonPointProb) / numTied; //use this for prob selection among optimal
+				double p = 1. - sumNonPointProb; //this for indicator that it's a winner
 				return p;
 
 			}
