@@ -3,7 +3,6 @@ package tests.training;
 import java.util.ArrayList;
 import java.util.List;
 
-import sun.org.mozilla.javascript.internal.ast.ArrayLiteral;
 
 import behavior.training.taskinduction.TaskDescription;
 import burlap.oomdp.core.GroundedProp;

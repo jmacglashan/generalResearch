@@ -13,7 +13,6 @@ import javax.management.RuntimeErrorException;
 
 import optimization.OptVariables;
 import optimization.VarEvaluaiton;
-import sun.management.resources.agent;
 import burlap.debugtools.RandomFactory;
 
 public class FullyCachedMatchEvaluation implements VarEvaluaiton {
