@@ -105,7 +105,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 	
 	public SokoCommandTrainGUI(){
 		canvas = new MultiLayerRenderer();
-		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY, "robotImages");
+		sLayer = Sokoban2Visualizer.getStateRenderLayer(maxX, maxY, "oomdpResearch/robotImages");
 		canvas.addRenderLayer(sLayer);
 		
 		cLayer = new CursorHighlightLayer(maxX, maxY);
@@ -116,8 +116,8 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		dgen.includePullAction(true);
 		
 		StateRenderLayer abSL = new StateRenderLayer();
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("robotImages", maxX, maxY));
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "robotImages"));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("oomdpResearch/robotImages", maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "oomdpResearch/robotImages"));
 		hLayer = new HallucinateStateRenderLayer(abSL);
 		hLayer.setOpacity(0.5f);
 		canvas.addRenderLayer(hLayer);

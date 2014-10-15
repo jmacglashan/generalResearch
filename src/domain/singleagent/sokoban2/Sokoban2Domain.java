@@ -579,31 +579,34 @@ public class Sokoban2Domain implements DomainGenerator {
 
 			
 			ObjectInstance blockToSwap = null;
-			//check if there is a block against the wall to the north south east or west
-			if(wallAt(s, roomContaining, ax, ay+2)){
+			//check if there is a block against the wall to the north south east or west or another block
+			if(wallAt(s, roomContaining, ax, ay+2) || blockAtPoint(s, ax, ay+2) != null){
 				blockToSwap = blockAtPoint(s, ax, ay+1);
 				if(blockToSwap != null){
 					return blockToSwap;
 				}
 			}
-			if(wallAt(s, roomContaining, ax, ay-2)){
+			if(wallAt(s, roomContaining, ax, ay-2) || blockAtPoint(s, ax, ay-2) != null){
 				blockToSwap = blockAtPoint(s, ax, ay-1);
 				if(blockToSwap != null){
 					return blockToSwap;
 				}
 			}
-			if(wallAt(s, roomContaining, ax+2, ay)){
+			if(wallAt(s, roomContaining, ax+2, ay) || blockAtPoint(s, ax+2, ay) != null){
 				blockToSwap = blockAtPoint(s, ax+1, ay);
 				if(blockToSwap != null){
 					return blockToSwap;
 				}
 			}
-			if(wallAt(s, roomContaining, ax-2, ay)){
+			if(wallAt(s, roomContaining, ax-2, ay) || blockAtPoint(s, ax-2, ay) != null){
 				blockToSwap = blockAtPoint(s, ax-1, ay);
 				if(blockToSwap != null){
 					return blockToSwap;
 				}
 			}
+
+
+
 			
 			
 			
@@ -730,7 +733,7 @@ public class Sokoban2Domain implements DomainGenerator {
 		s.addObject(b2);
 		setBlock(s, 1, 3, 2, "moon", "red");*/
 		
-		Visualizer v = Sokoban2Visualizer.getVisualizer("robotImages");
+		Visualizer v = Sokoban2Visualizer.getVisualizer("oomdpResearch/robotImages");
 		VisualExplorer exp = new VisualExplorer(domain, v, s);
 		
 		exp.addKeyAction("w", ACTIONNORTH);

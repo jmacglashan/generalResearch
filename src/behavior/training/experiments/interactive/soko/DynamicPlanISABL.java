@@ -5,6 +5,7 @@ import java.util.List;
 
 import behavior.planning.DeterministicGoalDirectedPartialVI;
 import behavior.planning.DynamicDVIPolicy;
+import behavior.training.experiments.interactive.soko.sokoamdp.SokoAMDPPlannerPolicyGen;
 import behavior.training.taskinduction.MixtureModelPolicy;
 import behavior.training.taskinduction.NoopOnTermPolicy;
 import behavior.training.taskinduction.TaskDescription;
@@ -42,7 +43,8 @@ public class DynamicPlanISABL extends TaskInductionWithFeedbackStrategies {
 	
 	protected void initPolicyGenerator(){
 		//this.policyGenerator = new DDVIPG();
-		this.policyGenerator = new SokoAStarPlanner();
+		//this.policyGenerator = new SokoAStarPlanner();
+		this.policyGenerator = new SokoAMDPPlannerPolicyGen();
 	}
 	
 	public void planPossibleTasksFromSeedState(State s){
