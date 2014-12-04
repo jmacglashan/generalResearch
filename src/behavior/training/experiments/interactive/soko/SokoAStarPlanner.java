@@ -2,6 +2,7 @@ package behavior.training.experiments.interactive.soko;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.deterministic.DDPlannerPolicy;
+import burlap.behavior.singleagent.planning.deterministic.SDPlannerPolicy;
 import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
 import burlap.behavior.singleagent.planning.deterministic.informed.Heuristic;
 import burlap.behavior.singleagent.planning.deterministic.informed.NullHeuristic;
@@ -30,10 +31,11 @@ public class SokoAStarPlanner implements PolicyGenerator {
 		Heuristic h = new NullHeuristic();
 		
 		AStar planner = new AStar(domain, new UniformCostRF(), gc, hashingFactory, this.getHeuristic(tf));
-		DPrint.toggleCode(planner.getDebugCode(), false);
+		//DPrint.toggleCode(planner.getDebugCode(), false);
 		planner.planFromState(initialState);
 		
-		Policy p = new DDPlannerPolicy(planner);
+		//Policy p = new DDPlannerPolicy(planner);
+		Policy p = new SDPlannerPolicy(planner);
 		
 		return p;
 	}
@@ -57,6 +59,9 @@ public class SokoAStarPlanner implements PolicyGenerator {
 		}
 		else if(gp.pf.getName().equals(Sokoban2Domain.PFBLOCKINDOOR)){
 			return new BlockToRoomHeuristic(gp.params[0], gp.params[1]);
+		}
+		else if(gp.pf.getName().equals(Sokoban2Domain.PFTOUCHINGBLOCK)){
+			return new ToBlockHeuristic(gp.params[1]);
 		}
 		
 		throw new RuntimeException("No heuristic for task defined with: " + gp.toString());
@@ -186,10 +191,33 @@ public class SokoAStarPlanner implements PolicyGenerator {
 			//make negative because of negative reward
 			return -dist;
 		}
+
 		
-		
-		
-		
+	}
+
+	public class ToBlockHeuristic implements Heuristic{
+
+		protected String blockName;
+
+		public ToBlockHeuristic(String blockName){this.blockName = blockName;}
+
+		@Override
+		public double h(State s) {
+			//get the agent
+			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
+			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+
+			//get the block
+			ObjectInstance block = s.getObject(this.blockName);
+			int bx = block.getDiscValForAttribute(Sokoban2Domain.ATTX);
+			int by = block.getDiscValForAttribute(Sokoban2Domain.ATTY);
+
+			int dist = manDistance(ax, ay, bx, by)-1; //need to be one step away from block to push it
+
+			return -dist;
+
+		}
 	}
 
 }

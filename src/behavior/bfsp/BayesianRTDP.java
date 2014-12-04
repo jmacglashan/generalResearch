@@ -289,9 +289,9 @@ public class BayesianRTDP extends BoundedRTDP {
 
 	protected double [] probOfActions(State s, List<QValue> lowerQs, List<QValue> upperQs){
 
-		UniformWinner.LowerUpper [] lus = new UniformWinner.LowerUpper[lowerQs.size()];
+		LowerUpper[] lus = new LowerUpper[lowerQs.size()];
 		for(int i = 0; i < lowerQs.size(); i++){
-			lus[i] = new UniformWinner.LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
+			lus[i] = new LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
 		}
 
 		double [] probOptimal = new double[lus.length];
@@ -316,9 +316,9 @@ public class BayesianRTDP extends BoundedRTDP {
 	protected double probGreater(int qIndex, List<QValue> lowerQs, List<QValue> upperQs){
 
 
-		UniformWinner.LowerUpper [] lus = new UniformWinner.LowerUpper[lowerQs.size()];
+		LowerUpper[] lus = new LowerUpper[lowerQs.size()];
 		for(int i = 0; i < lowerQs.size(); i++){
-			lus[i] = new UniformWinner.LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
+			lus[i] = new LowerUpper(lowerQs.get(i).q, upperQs.get(i).q);
 		}
 
 		double p = this.uw.probWinner(qIndex, lus);

@@ -136,12 +136,14 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		this.hashingFactory.addAttributeForClass(Sokoban2Domain.CLASSBLOCK, this.domain.getAttribute(Sokoban2Domain.ATTSHAPE));
 		
 		List<FeedbackStrategy> feedbackStrategies = new ArrayList<FeedbackStrategy>();
-		feedbackStrategies.add(new FeedbackStrategy(0.7, 0.7, 0.1));
+		feedbackStrategies.add(new FeedbackStrategy(0.5, 0.5, 0.1));
+		feedbackStrategies.add(new FeedbackStrategy(0.1, 0.6, 0.1));
+		feedbackStrategies.add(new FeedbackStrategy(0.6, 0.1, 0.1));
 		//feedbackStrategies.add(new FeedbackStrategy(0.7, 0.05, 0.1));
 		
 		this.cti.intantiateDefaultAgent(hashingFactory, feedbackStrategies);
 		
-		
+		this.cti.setAlwaysResetPriorsWithCommand(false);
 		
 		List<GPConjunction> liftedTaskDescriptions = new ArrayList<GPConjunction>(2);
 		
@@ -480,6 +482,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		this.cti.giveTerminateAndLearnSignal();
 		
 		this.hLayer.updateState(null);
+		lastMostLikelyTask = null;
 		
 		this.needsRepaint = true;
 		this.updateGUI();
@@ -502,6 +505,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		this.cti.giveTerminateSignal();
 		
 		this.hLayer.updateState(null);
+		lastMostLikelyTask = null;
 		
 		this.needsRepaint = true;
 		this.updateGUI();

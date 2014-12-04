@@ -3,7 +3,6 @@ package behavior.bfsp;
 import burlap.debugtools.RandomFactory;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -296,7 +295,7 @@ public class UniformWinner {
 
 		bounds = bounds.clone();
 
-		Arrays.sort(bounds, new ULComparator());
+		Arrays.sort(bounds, new LowerUpper.ULComparator());
 
 		int firstGreaterUpper = -1;
 		for(int i = 0; i < bounds.length; i++){
@@ -342,36 +341,6 @@ public class UniformWinner {
 	protected static double urand(double l, double u){
 		return RandomFactory.getMapped(0).nextDouble()*(u-l) + l;
 	}
-
-
-
-	public static class LowerUpper {
-
-		public double l;
-		public double u;
-		public double r;
-
-		public LowerUpper(double l, double u){
-			this.l = l;
-			this.u = u;
-			this.r = (u - l);
-		}
-
-
-	}
-
-
-	public static class ULComparator implements Comparator<LowerUpper>{
-
-
-		@Override
-		public int compare(LowerUpper o1, LowerUpper o2) {
-			return Double.compare(o1.u, o2.u);
-		}
-
-	}
-
-
 
 
 	public static void main(String [] args){

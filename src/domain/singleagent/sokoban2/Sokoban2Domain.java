@@ -43,6 +43,8 @@ public class Sokoban2Domain implements DomainGenerator {
 	public static final String					PFWALLSOUTH = "wallSouth";
 	public static final String					PFWALLEAST = "wallEast";
 	public static final String					PFWALLWEST = "wallWest";
+
+	public static final String					PFTOUCHINGBLOCK = "touchingBlock";
 	
 	
 	public static final String[] 				COLORS = new String[]{"blue",
@@ -67,11 +69,14 @@ public class Sokoban2Domain implements DomainGenerator {
 	protected boolean							includeDirectionAttribute = false;
 	protected boolean							includePullAction = false;
 	protected boolean							includeWallPFs = false;
+	protected boolean							includeTouchingBlockPF = false;
 	
 	
 	public void includeWallPFs(boolean includeWallPFs){
 		this.includeWallPFs = includeWallPFs;
 	}
+
+	public void inlcludeTouchingBlockPF(boolean includeTouchingBlockPF){this.includeTouchingBlockPF = includeTouchingBlockPF;}
 	
 	public void setMaxX(int maxX){
 		this.maxX = maxX;
@@ -175,6 +180,10 @@ public class Sokoban2Domain implements DomainGenerator {
 			new PFWallTest(PFWALLSOUTH, domain, 0, -1);
 			new PFWallTest(PFWALLEAST, domain, 1, 0);
 			new PFWallTest(PFWALLWEST, domain, -1, 0);
+		}
+
+		if(this.includeTouchingBlockPF){
+			new PFTouchingBlock(domain);
 		}
 		
 		
@@ -714,6 +723,29 @@ public class Sokoban2Domain implements DomainGenerator {
 		
 		
 		
+	}
+
+	public class PFTouchingBlock extends PropositionalFunction{
+
+		public PFTouchingBlock(Domain domain){
+			super(PFTOUCHINGBLOCK, domain, new String[]{CLASSAGENT, CLASSBLOCK});
+		}
+
+		@Override
+		public boolean isTrue(State s, String[] params) {
+
+			ObjectInstance a = s.getObject(params[0]);
+			ObjectInstance b = s.getObject(params[1]);
+
+			int ax = a.getDiscValForAttribute(ATTX);
+			int ay = a.getDiscValForAttribute(ATTY);
+
+			int bx = b.getDiscValForAttribute(ATTX);
+			int by = b.getDiscValForAttribute(ATTY);
+
+			return Math.abs(ax-bx) + Math.abs(ay-by) == 1;
+
+		}
 	}
 	
 	

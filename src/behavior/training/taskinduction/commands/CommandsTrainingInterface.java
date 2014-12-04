@@ -27,6 +27,10 @@ import burlap.oomdp.singleagent.environment.DomainEnvironmentWrapper;
 import commands.model3.GPConjunction;
 import commands.model3.mt.Tokenizer;
 
+
+/**
+ * This version is being used by the web server
+ */
 public class CommandsTrainingInterface {
 
 	protected Domain								domain;
@@ -48,6 +52,8 @@ public class CommandsTrainingInterface {
 	protected String								lastCommand;
 	
 	protected TaskDescription						lastMostLikelyTask = null;
+
+	protected boolean								alwaysResetPriorsWithCommand = true;
 	
 	
 	protected double								commandProbLearningThreshold = 5e-5;
@@ -106,6 +112,15 @@ public class CommandsTrainingInterface {
 	public void addActionObserverToOperatingDomain(ActionObserver observer){
 		((SADomain)this.domain).addActionObserverForAllAction(observer);
 	}
+
+	/**
+	 * If set to true, then giving a command will always set the task beliefs to those dictated by the command prior.
+	 * If set to false, then if the command and state is the same, then the same task beliefs are retained.
+	 * @param alwaysReset a boolean
+	 */
+	public void setAlwaysResetPriorsWithCommand(boolean alwaysReset){
+		this.alwaysResetPriorsWithCommand = alwaysReset;
+	}
 	
 	public State getEndStateOfMostLikelyTask(){
 		TaskProb tp = this.agent.getPosteriors().getMostLikelyTask();
@@ -119,7 +134,9 @@ public class CommandsTrainingInterface {
 	}
 	
 	public void giveCommandInInitialState(final State s, String command){
-		
+
+		boolean isSameAsLast = s == this.initialState && command.equals(this.lastCommand);
+
 		//remember this state and command for learning completion
 		this.initialState = s;
 		this.lastCommand = command;
@@ -127,9 +144,11 @@ public class CommandsTrainingInterface {
 		//first set our environment to this state
 		this.env.setCurStateTo(s);
 		this.env.receiveIsTerminalSignal(false);
-		
-		//then let agent reason about the command and setup its task distribution
-		this.commandInterface.setRFDistribution(s, command);
+
+		if(this.alwaysResetPriorsWithCommand || !isSameAsLast) {
+			//then let agent reason about the command and setup its task distribution
+			this.commandInterface.setRFDistribution(s, command);
+		}
 		
 		//then let learning start in a separate thread so that the user can interact with it
 		this.agentThread = new Thread(new Runnable() {
@@ -154,16 +173,20 @@ public class CommandsTrainingInterface {
 	}
 	
 	public void giveTerminateSignal(){
-		
-		this.env.receiveIsTerminalSignal(true);
-		
-		
-		try {
-			this.agentThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+
+		if(this.agentIsRunning) {
+
+			this.env.receiveIsTerminalSignal(true);
+
+
+			try {
+				this.agentThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			this.agentIsRunning = false;
+
 		}
-		this.agentIsRunning = false;
 	}
 	
 	public boolean agentIsRunning(){
