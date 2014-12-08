@@ -13,6 +13,7 @@ import behavior.training.taskinduction.strataware.FeedbackStrategy;
 import behavior.training.taskinduction.strataware.TaskInductionWithFeedbackStrategies;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
@@ -39,6 +40,7 @@ public class CommandsTrainingInterface {
 	protected DynamicFeedbackEnvironment			env;
 	protected CommandsToTrainingInterface			commandInterface;
 	protected TaskInductionTraining					agent;
+	protected StateHashFactory						hashingFactory;
 	
 	protected RewardFunction						envRF;
 	protected TerminalFunction						envTF;
@@ -48,7 +50,7 @@ public class CommandsTrainingInterface {
 	protected Thread								agentThread;
 	protected boolean								agentIsRunning = false;
 	
-	protected State									initialState;
+	protected State									initialState = null;
 	protected String								lastCommand;
 	
 	protected TaskDescription						lastMostLikelyTask = null;
@@ -87,6 +89,7 @@ public class CommandsTrainingInterface {
 		for(FeedbackStrategy fs : feedbackStrategies){
 			((TaskInductionWithFeedbackStrategies)this.agent).addFeedbackStrategy(fs);
 		}
+		this.hashingFactory = hashingFactory;
 		
 	}
 	
@@ -135,10 +138,18 @@ public class CommandsTrainingInterface {
 	
 	public void giveCommandInInitialState(final State s, String command){
 
-		boolean isSameAsLast = s == this.initialState && command.equals(this.lastCommand);
+		boolean isSameAsLast = false;
+
+		if(this.initialState != null){
+			//isSameAsLast = s == this.initialState && command.equals(this.lastCommand);
+			StateHashTuple hs = this.hashingFactory.hashState(s);
+			StateHashTuple hi = this.hashingFactory.hashState(this.initialState);
+			isSameAsLast = hs.equals(hi) && command.equals(this.lastCommand);
+		}
+
 
 		//remember this state and command for learning completion
-		this.initialState = s;
+		this.initialState = s.copy();
 		this.lastCommand = command;
 		
 		//first set our environment to this state
