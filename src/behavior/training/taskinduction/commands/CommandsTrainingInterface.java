@@ -147,7 +147,11 @@ public class CommandsTrainingInterface {
 
 		if(this.alwaysResetPriorsWithCommand || !isSameAsLast) {
 			//then let agent reason about the command and setup its task distribution
+			System.out.println("Resetting beliefs!");
 			this.commandInterface.setRFDistribution(s, command);
+		}
+		else{
+			System.out.println("Keeping same beliefs!");
 		}
 		
 		//then let learning start in a separate thread so that the user can interact with it

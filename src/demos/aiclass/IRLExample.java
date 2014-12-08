@@ -1,5 +1,6 @@
 package demos.aiclass;
 
+import behavior.burlapirlext.DifferentiableSparseSampling;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.QValue;
@@ -18,6 +19,7 @@ import burlap.domain.singleagent.gridworld.GridWorldStateParser;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.oomdp.auxiliary.StateGenerator;
 import burlap.oomdp.auxiliary.StateParser;
+import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.*;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -78,8 +80,14 @@ public class IRLExample {
 		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvg, 5);
 
 		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList("oomdpResearch/irlDemo", domain, new GridWorldStateParser(this.domain));
-		MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
-		request.setBoltzmannBeta(20);
+
+		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, 10);
+		dss.toggleDebugPrinting(false);
+		MLIRLRequest request = new MLIRLRequest(domain, dss, episodes, rf);
+		request.setBoltzmannBeta(10);
+		//MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
+		//request.setBoltzmannBeta(20);
+
 		MLIRL irl = new MLIRL(request, 0.1, 0.1, 10);
 		irl.performIRL();
 

@@ -17,10 +17,12 @@ import behavior.training.taskinduction.strataware.FeedbackStrategy;
 import behavior.training.taskinduction.strataware.TaskInductionWithFeedbackStrategies;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteMaskHashingFactory;
+import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.debugtools.RandomFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
@@ -36,6 +38,7 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.NullAction;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
 import burlap.oomdp.visualizer.Visualizer;
+import sun.management.resources.agent;
 
 public class SimulatedHumanGrid {
 
@@ -56,7 +59,8 @@ public class SimulatedHumanGrid {
 		SimulatedHumanGrid shg = new SimulatedHumanGrid();
 		//shg.runVisualExplorer();
 		shg.runInteractiveTraining();
-		
+		//shg.runInteractiveTrainingQLearning();
+
 		//shg.experimentFixedCustomDriver("dataFiles/trainOutput/custom2/actual", 0.3, 0.7, 0.05);
 		
 		/*
@@ -190,6 +194,45 @@ public class SimulatedHumanGrid {
 		
 		System.out.println("finished training");
 		
+	}
+
+	public void runInteractiveTrainingQLearning(){
+
+		Action noop = new NullAction("noop", domain, ""); //add noop, which is not attached to anything.
+
+		DynamicVisualFeedbackEnvironment env = new DynamicVisualFeedbackEnvironment(domain);
+		Domain domainEnvWrapper = (new DomainEnvironmentWrapper(domain, env)).generateDomain();
+
+		RewardFunction trainerRF = env.getEnvRewardFunction();
+		TerminalFunction trainerTF = env.getEnvTerminalFunction();
+
+		DynamicFeedbackGUI gui = new DynamicFeedbackGUI(this.visualizer, env);
+		env.setGUI(gui);
+
+		QLearning qlagent = new QLearning(domainEnvWrapper, trainerRF, trainerTF, 0.99, this.hashingFactory, 1.0, 0.1);
+
+		boolean hasInitedGUI = false;
+		for(int i = 0; i < 20; i++){
+			env.setCurStateTo(this.initialState);
+			if(!hasInitedGUI){
+				hasInitedGUI = true;
+				gui.initGUI();
+				gui.launch();
+			}
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("Starting episode");
+			//now start learning episode
+			qlagent.runLearningEpisodeFrom(this.initialState);
+		}
+
+		System.out.println("finished training");
+
 	}
 	
 	public void experimentDriver(String dir, double muPlus, double muMinus, double epsilon, int stratAssumption, int stratToTrack){
