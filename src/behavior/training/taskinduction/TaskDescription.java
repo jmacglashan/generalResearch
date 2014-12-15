@@ -12,7 +12,7 @@ public class TaskDescription{
 		
 	}
 	
-	public TaskDescription(RewardFunction rf, TerminalFunction tf){
+	public TaskDescription(RewardFunction rf, TerminalFunction tf) {
 		this.rf = rf;
 		this.tf = tf;
 	}

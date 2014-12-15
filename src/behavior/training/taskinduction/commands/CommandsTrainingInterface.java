@@ -1,20 +1,21 @@
 package behavior.training.taskinduction.commands;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import auxiliary.DynamicFeedbackEnvironment;
 import behavior.training.experiments.interactive.soko.DynamicPlanISABL;
-import behavior.training.taskinduction.MAPMixtureModelPolicy;
-import behavior.training.taskinduction.TaskDescription;
-import behavior.training.taskinduction.TaskInductionTraining;
-import behavior.training.taskinduction.TaskProb;
+import behavior.training.taskinduction.*;
 import behavior.training.taskinduction.strataware.FeedbackStrategy;
 import behavior.training.taskinduction.strataware.TaskInductionWithFeedbackStrategies;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.auxiliary.DomainGenerator;
+import burlap.oomdp.auxiliary.StateParser;
+import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -59,6 +60,10 @@ public class CommandsTrainingInterface {
 	
 	
 	protected double								commandProbLearningThreshold = 5e-5;
+
+
+	protected List <String>							commandHistory = new ArrayList<String>();
+
 	
 	public CommandsTrainingInterface(DomainGenerator dgen){
 		
@@ -90,6 +95,7 @@ public class CommandsTrainingInterface {
 			((TaskInductionWithFeedbackStrategies)this.agent).addFeedbackStrategy(fs);
 		}
 		this.hashingFactory = hashingFactory;
+		this.agent.setNumEpisodesToStore(100);
 		
 	}
 	
@@ -164,13 +170,15 @@ public class CommandsTrainingInterface {
 		else{
 			System.out.println("Keeping same beliefs!");
 		}
+
+		this.commandHistory.add(command);
 		
 		//then let learning start in a separate thread so that the user can interact with it
 		this.agentThread = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
-				agent.runLearningEpisodeFrom(s);
+				agent.runLearningEpisodeFrom(CommandsTrainingInterface.this.initialState);
 			}
 		});
 		
@@ -201,6 +209,12 @@ public class CommandsTrainingInterface {
 			}
 			this.agentIsRunning = false;
 
+			/*
+			if(this.agent.getAllStoredLearningEpisodes().size() == 2){
+				this.writeAllEpisodesToFiles("testBeliefDir");
+			}
+			*/
+
 		}
 	}
 	
@@ -214,6 +228,47 @@ public class CommandsTrainingInterface {
 	
 	public void givePunishment(){
 		this.env.receiveHumanFeedback(-1.);
+	}
+
+
+
+	public void writeAllEpisodesToFiles(String directoryName){
+
+		this.writeAllEpisodesToFiles(directoryName, new StateYAMLParser(this.domain));
+
+	}
+
+	public void writeAllEpisodesToFiles(String directoryName, StateParser sp){
+
+		if(!directoryName.endsWith("/")){
+			directoryName = directoryName + "/";
+		}
+
+		List<EpisodeAnalysis> eas = this.agent.getAllStoredLearningEpisodes();
+		for(int i = 0; i < eas.size(); i++){
+			BeliefExtendedEA ea = (BeliefExtendedEA)eas.get(i);
+
+			String epFName = String.format(directoryName+"episode%03d", i);
+			ea.writeToFile(epFName, sp);
+
+			String bFName = String.format(directoryName+"beliefs%03d", i);
+			ea.writeBeliefsToFile(bFName);
+
+			String cFName = String.format(directoryName+"commands%03d.commands", i);
+			try{
+
+				String str = this.commandHistory.get(i);
+				BufferedWriter out = new BufferedWriter(new FileWriter(cFName));
+				out.write(str);
+				out.close();
+
+
+			}catch(Exception e){
+				System.out.println(e);
+			}
+
+		}
+
 	}
 	
 }

@@ -77,6 +77,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	public void setNoopAction(Action noop){
 		this.noopAction = noop;
 	}
+
 	
 	public void setProbFor(int taskId, double p){
 		if(!this.initializedPriors){
@@ -150,7 +151,8 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	@Override
 	public EpisodeAnalysis runLearningEpisodeFrom(State initialState, int maxSteps) {
 		
-		EpisodeAnalysis ea = new EpisodeAnalysis(initialState);
+		//EpisodeAnalysis ea = new EpisodeAnalysis(initialState);
+		BeliefExtendedEA ea = new BeliefExtendedEA(initialState, new TaskBelief(this.getPosteriors()));
 		
 		State curState = initialState;
 		int timeStep = 0;
@@ -160,9 +162,11 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 			GroundedAction ga = this.worldAction(curState, (GroundedAction)this.policy.getAction(curState));
 			State nextState = ga.executeIn(curState);
 			double trainerFeedback = this.rf.reward(curState, ga, nextState);
-			ea.recordTransitionTo(nextState, ga, trainerFeedback);
+			//ea.recordTransitionTo(nextState, ga, trainerFeedback);
 			
 			this.posteriors.updateWithSingleStateFeedback(curState, ga, trainerFeedback);
+			ea.recordTransitionTo(ga, nextState, trainerFeedback, new TaskBelief(this.getPosteriors()));
+
 			
 			this.bookKeeping(curState, ga, trainerFeedback);
 			
