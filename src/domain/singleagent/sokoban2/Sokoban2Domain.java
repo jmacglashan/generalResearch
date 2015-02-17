@@ -302,6 +302,11 @@ public class Sokoban2Domain implements DomainGenerator {
 		ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOOR).get(i);
 		setRegion(o, top, left, bottom, right);
 	}
+
+	public static void setSingleCellDoor(State s, int i, int x, int y){
+		ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOOR).get(i);
+		setRegion(o, y, x, y, x);
+	}
 	
 	public static void setRoom(ObjectInstance o, int top, int left, int bottom, int right, String color){
 		setRegion(o, top, left, bottom, right);

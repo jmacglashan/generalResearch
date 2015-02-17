@@ -34,7 +34,11 @@ public class TrajectoryModule extends GMModule{
 	protected Map<GMQuery, Double>							cachedResults;
 	protected Map<GMQuery, Double>							cachedLogResults;
 	
-	
+
+	public TrajectoryModule(String name){
+		super(name);
+	}
+
 	public TrajectoryModule(String name, RVariable stateRV, RVariable rewardRV, Domain oomdpDomain, TabularIRLPlannerFactory irlPlanFactory, boolean addTerminateAction, boolean useCache){
 		
 		super(name);

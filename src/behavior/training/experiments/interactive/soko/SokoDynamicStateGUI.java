@@ -153,8 +153,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		sLayer.updateState(this.curState);
 		
 		StateRenderLayer abSL = new StateRenderLayer();
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("robotImages", maxX, maxY));
-		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "robotImages"));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSAGENT, new Sokoban2Visualizer.AgentPainterWithImages("oomdpResearch/robotImages", maxX, maxY));
+		abSL.addObjectClassPainter(Sokoban2Domain.CLASSBLOCK, new Sokoban2Visualizer.BlockPainter(maxX, maxY, "oomdpResearch/robotImages"));
 		hLayer = new HallucinateStateRenderLayer(abSL);
 		hLayer.setOpacity(0.5f);
 		canvas.addRenderLayer(hLayer);
@@ -171,9 +171,14 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		this.agent.setNoopAction(noopAction);
 		//this.agent.useSeperatePlanningDomain(domain);
 		this.agent.useSeperatePlanningDomain(this.planningDomain);
+
+
+
 		this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.7, 0.1)); 
-		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.05, 0.7, 0.1));
-		//this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.05, 0.1));
+		this.agent.addFeedbackStrategy(new FeedbackStrategy(0.05, 0.7, 0.1));
+		this.agent.addFeedbackStrategy(new FeedbackStrategy(0.7, 0.05, 0.1));
+
+
 		
 		
 		List<GPConjunction> liftedTaskDescriptions = new ArrayList<GPConjunction>(2);

@@ -32,7 +32,12 @@ public class QTableVisController {
 	int											cellFontPointSize = 16;
 	int											colLabelFontPointSize = 14;
 	
-	
+
+	public QTableVisController(JointReward objectiveRF){
+		this.renderer = new ColoredTableRenderer(3);
+		this.objectiveRF = objectiveRF;
+	}
+
 	public QTableVisController(int rw, int rh, JointReward objectiveRF) {
 		renderer = new ColoredTableRenderer(3);
 		renderer.setPreferredSize(new Dimension(rw, rh));

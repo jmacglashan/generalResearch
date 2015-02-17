@@ -115,7 +115,14 @@ public class TaskInductionWithFeedbackStrategies extends TaskInductionTraining {
 			for(FeedbackStrategy strat : this.strategies){
 				saposteriors.addFeedbackStrateg(strat);
 			}
-			saposteriors.setFeedbackStrategyProbsToUniform();
+
+			double sumPrior = 0.;
+			for(FeedbackStrategy st : this.strategies){
+				sumPrior += st.getProbOfStrategy();
+			}
+			if(Math.abs(1. - sumPrior) > 1e-9) {
+				saposteriors.setFeedbackStrategyProbsToUniform();
+			}
 			
 			posteriors = saposteriors;
 			policy.setPosteriors(posteriors);

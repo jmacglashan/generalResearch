@@ -9,13 +9,18 @@ import burlap.oomdp.singleagent.GroundedAction;
 
 public class Trajectory {
 
-	public List <State>				states;
+	public List <State>					states;
 	public List <GroundedAction>		actions;
 	
 	public Trajectory(State initialState){
 		states = new ArrayList<State>();
 		states.add(initialState);
 		actions = new ArrayList<GroundedAction>();
+	}
+
+	public Trajectory(EpisodeAnalysis ea){
+		this.states = new ArrayList<State>(ea.stateSequence);
+		this.actions = new ArrayList<GroundedAction>(ea.actionSequence);
 	}
 	
 	//assume this is well formed (states has one more element than actions)

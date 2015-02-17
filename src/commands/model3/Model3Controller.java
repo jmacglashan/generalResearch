@@ -1,5 +1,10 @@
 package commands.model3;
 
+import behavior.training.experiments.interactive.soko.PolicyGenerator;
+import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.Policy;
+import burlap.behavior.singleagent.planning.OOMDPPlanner;
+import burlap.oomdp.singleagent.GroundedAction;
 import generativemodel.GMQuery;
 import generativemodel.GMQueryResult;
 import generativemodel.GenerativeModel;
@@ -164,6 +169,7 @@ public class Model3Controller {
 		}
 		
 	}
+
 	
 	
 	public void setToBOWLanugageModel(List<TrainingElement> trainingData, Tokenizer tokenizer, boolean includeInSemanticsParameterObjectClasses){
@@ -345,6 +351,92 @@ public class Model3Controller {
 		return distro;
 	}
 
+	public List<GMQueryResult> getRFDistributionUsingactionGrounding(State initialState, String naturalCommand, PolicyGenerator pgen){
+
+
+		/*if(naturalCommand.equals("go into blue room , pick up star , and take star just through door to tan room .")){
+			System.out.println("Entering.");
+		}*/
+
+		StateRVValue sval = new StateRVValue(initialState, this.hashingFactory, this.gm.getRVarWithName(TaskModule.STATENAME));
+		StringValue ncommandVal = new StringValue(naturalCommand, naturalCommandVariable);
+
+		HashedAggregator<GMQuery> jointP = new HashedAggregator<GMQuery>();
+		double totalProb = 0.;
+
+		List<RVariableValue> sconds = new ArrayList<RVariableValue>(1);
+		sconds.add(sval);
+		Iterator<GMQueryResult> lrIter = this.gm.getNonZeroIterator(this.gm.getRVarWithName(TaskModule.LIFTEDRFNAME), sconds, true);
+		while(lrIter.hasNext()) {
+			GMQueryResult lrRes = lrIter.next();
+
+			List<RVariableValue> lrConds = new ArrayList<RVariableValue>(2);
+			lrConds.add(sval);
+			lrConds.add(lrRes.getSingleQueryVar());
+			Iterator<GMQueryResult> grIter = this.gm.getNonZeroIterator(this.gm.getRVarWithName(TaskModule.GROUNDEDRFNAME), lrConds, true);
+			while (grIter.hasNext()) {
+				GMQueryResult grRes = grIter.next();
+				double stackLRGR = lrRes.probability * grRes.probability;
+
+				TaskModule.RFConVariableValue rfVal = (TaskModule.RFConVariableValue) grRes.getSingleQueryVar();
+
+				//get a trajectory
+				TaskModule.ConjunctiveGroundedPropRF rf = rfVal.rf;
+				TrajectoryModule.ConjunctiveGroundedPropTF tf = new TrajectoryModule.ConjunctiveGroundedPropTF(rf);
+				Policy policy = pgen.getPolicy(this.domain, initialState, rf, tf, this.hashingFactory);
+				Trajectory t = new Trajectory(policy.evaluateBehavior(initialState, rf, tf, 100));
+				TrajectoryValue tv = new TrajectoryValue(t, this.gm.getRVarWithName(TrajectoryModule.TNAME));
+
+
+				//now do command query
+				GMQuery nCommandQuery = new GMQuery();
+				nCommandQuery.addQuery(ncommandVal);
+				nCommandQuery.addCondition(tv);
+
+				GMQueryResult langQR = this.gm.getProb(nCommandQuery, true);
+				double p = langQR.probability * stackLRGR;
+				//System.out.println("p: " + p);
+
+
+				GMQuery distroWrapper = new GMQuery();
+				distroWrapper.addQuery(grRes.getSingleQueryVar());
+				distroWrapper.addCondition(sval);
+				distroWrapper.addCondition(ncommandVal);
+
+				jointP.add(distroWrapper, p);
+				totalProb += p;
+
+			}
+
+
+		}
+
+		if(totalProb == 0){
+			MTModule mtmod = (MTModule)this.gm.getModuleWithName(LANGMODNAME);
+			if(mtmod.isForceUnaligned()) {
+				throw new RuntimeException("Zero probabiltiy event on command " + naturalCommand);
+			}
+			else{
+				this.gm.emptyCache();
+				mtmod.setForceUnaligned(true);
+				List<GMQueryResult> distro = this.getRFDistributionUsingactionGrounding(initialState, naturalCommand, pgen);
+				mtmod.setForceUnaligned(false);
+				return distro;
+			}
+		}
+
+		List<GMQueryResult> distro = new ArrayList<GMQueryResult>(jointP.size());
+		for(Entry<GMQuery, Double> e : jointP.entrySet()){
+			double prob = e.getValue() / totalProb;
+			GMQueryResult qr = new GMQueryResult(e.getKey(), prob);
+			distro.add(qr);
+			//System.out.println("option: " + qr.getSingleQueryVar().toString() + ": " + qr.probability);
+		}
+
+
+		return distro;
+	}
+
 
 	public List<GMQueryResult> getRFDistributionFromState(State s){
 
@@ -484,11 +576,11 @@ public class Model3Controller {
 		int ind = 0;
 		for(TrainingElement te : trajectoryDataset){
 
-			System.out.println("Performing IRL on " + te.identifier + "(" + ind + "/" + trajectoryDataset.size() + "): " + te.command);
+			//System.out.println("Performing IRL on " + te.identifier + "(" + ind + "/" + trajectoryDataset.size() + "): " + te.command);
 			TrajectoryValue trajectoryVal = new TrajectoryValue(te.trajectory, this.gm.getRVarWithName(TrajectoryModule.TNAME));
 			Map<String, Double> semanticProbs = this.getSemanticSentenceDistribution(trajectoryVal);
 			WeightedMTInstance instance = new WeightedMTInstance(tokenizer.tokenize(te.command));
-			System.out.println(te.command);
+			//System.out.println(te.command);
 			for(Map.Entry<String, Double> e : semanticProbs.entrySet()){
 				double p = e.getValue();
 				if(p > threshold){
@@ -506,6 +598,41 @@ public class Model3Controller {
 		return mtDataset;
 		
 	}
+
+
+	public List<WeightedMTInstance> getActionGroundedMTDatasetFromTrajectoryDataset(List<TrainingElement> trajectoryDataset, Tokenizer tokenizer){
+
+		List<WeightedMTInstance> mtDataset = new ArrayList<WeightedMTInstance>(trajectoryDataset.size());
+		for(TrainingElement te : trajectoryDataset){
+
+			TokenedString actionSemantics = this.getTrajectorySemanticString(te.trajectory, tokenizer);
+			WeightedMTInstance instance = new WeightedMTInstance(tokenizer.tokenize(te.command));
+			instance.addWeightedSemanticCommand(actionSemantics, 1.);
+			mtDataset.add(instance);
+
+		}
+
+		return mtDataset;
+
+	}
+
+	public TokenedString getTrajectorySemanticString(Trajectory t, Tokenizer tokenizer){
+
+		StringBuilder buf = new StringBuilder();
+		boolean first = true;
+		for(GroundedAction ga : t.actions){
+			if(!first){
+				buf.append(" ");
+			}
+			buf.append(ga.actionName());
+			first = false;
+		}
+
+		return tokenizer.tokenize(buf.toString());
+
+	}
+
+
 	
 	public Dataset getEMDatasetFromTrajectoriesDataset(List<TrainingElement> trajDataset){
 		
@@ -548,7 +675,7 @@ public class Model3Controller {
 				grConds.add(sval);
 				grConds.add(lrRes.getSingleQueryVar());
 				grConds.add(grRes.getSingleQueryVar());
-				System.out.println("IRL on " + grRes.getSingleQueryVar().toString());
+				//System.out.println("IRL on " + grRes.getSingleQueryVar().toString());
 				
 				//compute probability of trajectory
 				GMQuery trajQuery = new GMQuery();

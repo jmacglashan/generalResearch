@@ -3,12 +3,17 @@ package tests.stochasticgames;
 import java.util.List;
 
 import burlap.behavior.singleagent.Policy.ActionProb;
+import burlap.behavior.singleagent.QValue;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.GameAnalysis;
 import burlap.behavior.stochasticgame.GameSequenceVisualizer;
 import burlap.behavior.stochasticgame.PolicyFromJointPolicy;
 import burlap.behavior.stochasticgame.agents.maql.MultiAgentQLearning;
 import burlap.behavior.stochasticgame.agents.mavf.MultiAgentVFPlanningAgent;
+import burlap.behavior.stochasticgame.mavaluefunction.AgentQSourceMap;
+import burlap.behavior.stochasticgame.mavaluefunction.JAQValue;
+import burlap.behavior.stochasticgame.mavaluefunction.MAQSourcePolicy;
+import burlap.behavior.stochasticgame.mavaluefunction.QSourceForSingleAgent;
 import burlap.behavior.stochasticgame.mavaluefunction.backupOperators.CoCoQ;
 import burlap.behavior.stochasticgame.mavaluefunction.policies.EGreedyMaxWellfare;
 import burlap.behavior.stochasticgame.mavaluefunction.vfplanners.MAValueIteration;
@@ -20,11 +25,7 @@ import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.stochasticgames.AgentType;
-import burlap.oomdp.stochasticgames.JointActionModel;
-import burlap.oomdp.stochasticgames.JointReward;
-import burlap.oomdp.stochasticgames.SGDomain;
-import burlap.oomdp.stochasticgames.World;
+import burlap.oomdp.stochasticgames.*;
 import burlap.oomdp.stochasticgames.common.ConstantSGStateGenerator;
 import burlap.oomdp.stochasticgames.common.VisualWorldObserver;
 import burlap.oomdp.visualizer.Visualizer;
@@ -37,6 +38,7 @@ public class MultiAgentQ {
 	public static void main(String[] args) {
 		
 		VITest();
+		//QLearningTest();
 
 	}
 	
@@ -183,8 +185,8 @@ public class MultiAgentQ {
 		hashingFactory.addAttributeForClass(GridGame.CLASSAGENT, domain.getAttribute(GridGame.ATTY));
 		hashingFactory.addAttributeForClass(GridGame.CLASSAGENT, domain.getAttribute(GridGame.ATTPN));
 		
-		//final State s = GridGame.getTurkeyInitialState(domain);
-		final State s = GridGame.getPrisonersDilemmaInitialState(domain);
+		final State s = GridGame.getTurkeyInitialState(domain);
+		//final State s = GridGame.getPrisonersDilemmaInitialState(domain);
 		
 		JointReward rf = new GridGame.GGJointRewardFunction(domain, -1, 100, false);
 		TerminalFunction tf = new GridGame.GGTerminalFunction(domain);
@@ -202,7 +204,7 @@ public class MultiAgentQ {
 		
 		Visualizer v = GGVisualizer.getVisualizer(9, 9);
 		VisualWorldObserver wob = new VisualWorldObserver(domain, v);
-		wob.setFrameDelay(1000);
+		wob.setFrameDelay(100);
 		wob.initGUI();
 		
 		
@@ -232,30 +234,57 @@ public class MultiAgentQ {
 		jp.setQSourceProvider(vi);
 		jp.setBreakTiesRandomly(false);
 		
-		
-		
+		DPrint.toggleCode(w.getDebugId(), false);
+
+		GameAnalysis ga = null;
 		for(int i = 0; i < 1; i++){
 			v.updateState(s);
 			if(i > 0){
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(0);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			w.runGame();
+			ga = w.runGame();
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(0);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
+		AgentQSourceMap sources = vi.getQSources();
+		QSourceForSingleAgent a0Qs = sources.agentQSource(a0.getAgentName());
+		/*List<ActionProb> aps = jp.getActionDistributionForState(s);
+		for(ActionProb ap : aps){
+			JAQValue q = a0Qs.getQValueFor(s, (JointAction)ap.ga);
+			System.out.println(ap.ga.toString() + "  :  " + q.q);
+		}*/
+
+
+		double maxQ = Double.NEGATIVE_INFINITY;
+		for(int i = 0; i < ga.numTimeSteps(); i++){
+			State ts = ga.getState(i);
+			System.out.println(i + "\n-------------");
+			List<JointAction> jas = JointAction.getAllJointActions(ts, w.getRegisteredAgents());
+			for(JointAction ja : jas){
+				JAQValue q = a0Qs.getQValueFor(s,  ja);
+				System.out.println(ja.toString() + "  :  " + q.q);
+				maxQ = Math.max(maxQ, q.q);
+			}
+			System.out.println();
+		}
+
+		System.out.println("Max Q in all states: " + maxQ);
+
+		/*
 		List<ActionProb> aps = jp.getActionDistributionForState(s);
 		
 		for(ActionProb ap : aps){
 			System.out.println(ap.pSelection + ": " + ap.ga.toString());
 		}
+		*/
 		
 	}
 

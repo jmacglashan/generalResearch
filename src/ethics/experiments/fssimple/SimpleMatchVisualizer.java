@@ -137,6 +137,7 @@ public class SimpleMatchVisualizer extends JFrame {
 		//this.objectiveRF = new FSSimpleJR();
 		//this.objectiveRF = new FSSimpleJR(1., -0.5, -2.5, 0.);
 		this.objectiveRF = new FSSimplePOJR(1., -0.5, -2.5, 0.);
+		//this.objectiveRF = new FSSimplePOJR(1., -0.5, -100, 0.);
 		
 		this.hashingFactory = new DiscreteStateHashFactory();
 		//SGStateGenerator sg = new FSSimpleSG(domain);
@@ -152,7 +153,7 @@ public class SimpleMatchVisualizer extends JFrame {
 	public void initGUI(){
 		
 		qTableController = new QTableVisController(800, 650, objectiveRF);
-		
+
 		Container viewingArea = new Container();
 		viewingArea.setPreferredSize(new Dimension(800, 770));
 		viewingArea.setLayout(new BorderLayout());

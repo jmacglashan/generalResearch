@@ -1,5 +1,7 @@
 package commands.tests;
 
+import behavior.training.experiments.interactive.soko.PolicyGenerator;
+import behavior.training.experiments.interactive.soko.SokoAStarPlanner;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.behavior.statehashing.StateHashFactory;
@@ -50,7 +52,7 @@ import java.util.*;
 public class Model3ControllerExpertData {
 
 
-	public static String 						DATASETTESTPATH = "oomdpResearch/dataFiles/commands/jerryNormalNoNoise";
+	public static String 						DATASETTESTPATH = "oomdpResearch/dataFiles/commands/jerryNormalNoNoiseNoDups";
 	public static String 						CACHEPATH = "oomdpResearch/dataFiles/commands/jerryTrajectoryCache";
 
 
@@ -65,7 +67,7 @@ public class Model3ControllerExpertData {
 
 		//uniformTest();
 		//getUniqueCommands(DATASETTESTPATH);
-		execptedUniformRandom(DATASETTESTPATH);
+		//execptedUniformRandom(DATASETTESTPATH);
 		//trajectoryTrainingTest(DATASETTESTPATH, CACHEPATH);
 		//verifyIRL(DATASETTESTPATH, CACHEPATH);
 		//verifyIRLSpecific(DATASETTESTPATH);
@@ -93,6 +95,10 @@ public class Model3ControllerExpertData {
 
 
 		//checkForIdenticalCommands(DATASETTESTPATH);
+
+
+
+		trajectorySerialLOOActionGrounding(DATASETTESTPATH);
 
 	}
 
@@ -1109,7 +1115,61 @@ public class Model3ControllerExpertData {
 
 
 
+	public static void trajectorySerialLOOActionGrounding(String datasetpath){
 
+		Model3Controller srcController = constructController();
+		Domain domain = srcController.getDomain();
+		StateParser sp = new Sokoban2Parser(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+		Map<String, String> trainingRFLabels = getJerryNormalRFLabels();
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		int c = 0;
+		int n = 0;
+		for(int i = 0; i < trainingDataset.size(); i++){
+
+			n++;
+
+			Model3Controller controller = constructController();
+			GenerativeModel gm = controller.getGM();
+
+			TrainingElement testInstance = trainingDataset.get(i);
+
+			List<TrainingElement> looData = looTrajectoryDataset(trainingDataset, i);
+			List<WeightedMTInstance> mtDataset = controller.getActionGroundedMTDatasetFromTrajectoryDataset(looData, tokenizer);
+
+			controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+
+			//now do learning
+			System.out.println("Starting training for " + i);
+			MTEMModule mtem = new MTEMModule(mtDataset, gm);
+			mtem.runEMManually(10);
+
+			String rfLabel = trainingRFLabels.get(testInstance.identifier);
+			GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistributionUsingactionGrounding(testInstance.trajectory.getState(0), testInstance.command, pg));
+			RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+			String grs = gr.toString().trim();
+
+			if(grs.equals(rfLabel)){
+				c++;
+				System.out.println("Correct: " + testInstance.identifier + " (" + c + "/" + n + ")");
+			}
+			else{
+				System.out.println("Incorrect: " + testInstance.identifier + " (" + c + "/" + n + ")");
+			}
+
+		}
+		System.out.println(c + "/" + trainingDataset.size() + "; " + ((double)c/(double)trainingDataset.size()));
+
+
+
+
+	}
 
 
 

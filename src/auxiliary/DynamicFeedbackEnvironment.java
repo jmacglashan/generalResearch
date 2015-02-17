@@ -5,12 +5,17 @@ import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.environment.Environment;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class DynamicFeedbackEnvironment extends Environment {
 
 	protected Domain					operatingDomain;
 	
 	
 	protected double					lastReward = 0.;
+	protected List<Double> 				lastStepRewardSequence = new LinkedList<Double>();
+	protected List <List<Double>>		lastRecordedRewardSequences = new LinkedList<List<Double>>();
 	protected boolean					isTerminal = false;
 	
 	protected long						actionUpdateDelay = 1200;
@@ -38,6 +43,7 @@ public class DynamicFeedbackEnvironment extends Environment {
 	 * @param feedback the feedback provided by the human
 	 */
 	public void receiveHumanFeedback(double feedback){
+		this.lastStepRewardSequence.add(feedback);
 		this.lastReward = feedback;
 	}
 	
@@ -48,7 +54,8 @@ public class DynamicFeedbackEnvironment extends Environment {
 	public void receiveIsTerminalSignal(boolean isTerminal){
 		this.isTerminal = isTerminal;
 	}
-	
+
+
 	@Override
 	public State executeAction(String aname, String[] params) {
 		
@@ -59,6 +66,8 @@ public class DynamicFeedbackEnvironment extends Environment {
 		this.curState = nextState;
 		
 		this.waitForUpdateDelay();
+		this.lastRecordedRewardSequences.add(this.lastStepRewardSequence);
+		this.lastStepRewardSequence = new LinkedList<Double>();
 		
 		return nextState;
 	}
@@ -72,7 +81,14 @@ public class DynamicFeedbackEnvironment extends Environment {
 	public boolean curStateIsTerminal() {
 		return this.isTerminal;
 	}
-	
+
+
+	public List<List<Double>> getAndResetrewardSequences(){
+		List <List<Double>> sequences = this.lastRecordedRewardSequences;
+		this.lastRecordedRewardSequences = new LinkedList<List<Double>>();
+		return sequences;
+	}
+
 	/**
 	 * Method is called at the start of each {@link #executeAction(String, String[])} method, which is used to decay the last feedback signals
 	 * from the previous actions. The default behavior is to completely decay the feedback signal to 0
@@ -80,7 +96,9 @@ public class DynamicFeedbackEnvironment extends Environment {
 	protected void decayHumanFeedback(){
 		this.lastReward = 0.;
 	}
-	
+
+
+
 	
 	protected void waitForUpdateDelay(){
 		Thread waitThread = new Thread(new Runnable() {

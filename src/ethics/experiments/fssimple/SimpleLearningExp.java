@@ -54,8 +54,8 @@ public class SimpleLearningExp {
 	public static void main(String[] args) {
 		
 		//saTest(false);
-		//saTest2(false);
-		saTest3(true);
+		saTest2(true);
+		//saTest3(true);
 		//maTest();
 		//maPTTest();
 		//testQLPolicyDist(1000);
@@ -299,8 +299,8 @@ public class SimpleLearningExp {
 		
 		double opponentError = 0.1;
 		
-		//Domain domain = getDomainForSAStealerPlayingAgainstPunisher(opponentError);
-		Domain domain = getDomainForSAStealerPlayingAgainstPassive(opponentError);
+		Domain domain = getDomainForSAStealerPlayingAgainstPunisher(opponentError);
+		//Domain domain = getDomainForSAStealerPlayingAgainstPassive(opponentError);
 		
 		RewardFunction rf = new RewardFunction() {
 			

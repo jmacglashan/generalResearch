@@ -30,6 +30,10 @@ public class EMAlgorithm {
 		this.dataset = ds;
 		this.aux = new ArrayList<EMAuxiliaryCode>();
 	}
+
+	public int getDebugCode(){
+		return this.debugCode;
+	}
 	
 	
 	public void setDataset(Dataset ds){

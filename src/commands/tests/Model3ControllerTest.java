@@ -1,5 +1,8 @@
 package commands.tests;
 
+import behavior.training.experiments.interactive.soko.PolicyGenerator;
+import behavior.training.experiments.interactive.soko.SokoAStarPlanner;
+import burlap.debugtools.DPrint;
 import generativemodel.GMQueryResult;
 import generativemodel.GenerativeModel;
 
@@ -45,10 +48,10 @@ import em.EMAlgorithm;
 
 public class Model3ControllerTest {
 
-	public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrain";
-	//public static String 						DATASETTESTPATH = "dataFiles/commands/allTurkTrainLimitedCommand";
-	//public static String 						DATASETTESTPATH = "dataFiles/commands/mySimpleSokoData";
-	public static String						MTDATASETPATH = "dataFiles/commands/allTurkSemanticLabeled";
+	public static String 						DATASETTESTPATH = "oomdpResearch/dataFiles/commands/allTurkTrain";
+	//public static String 						DATASETTESTPATH = "oomdpResearch/dataFiles/commands/allTurkTrainLimitedCommand";
+	//public static String 						DATASETTESTPATH = "oomdpResearch/dataFiles/commands/mySimpleSokoData";
+	public static String						MTDATASETPATH = "oomdpResearch/dataFiles/commands/allTurkSemanticLabeled";
 	
 	
 	/**
@@ -60,7 +63,7 @@ public class Model3ControllerTest {
 		//getLatexDatasetTable();
 		
 		//uniformTest();
-		trajectoryTrainingTest(DATASETTESTPATH);
+		//trajectoryTrainingTest(DATASETTESTPATH);
 		//trajectoryTrainingTest(args[0]);
 		//testMTWords(DATASETTESTPATH);
 		//parallelLOOOutput(args);
@@ -76,6 +79,15 @@ public class Model3ControllerTest {
 		//uniformNORTest();
 		//trajectoryBOWTrainingTest();
 		//trajectoryNORTrainingTest();
+
+
+		//trajectorySerialLOOTransfer(DATASETTESTPATH);
+		//trajectorySerialLOOBoWTransfer(DATASETTESTPATH);
+
+		//action grounding
+		//trajectoryTrainingActionGrounding(DATASETTESTPATH);
+		trajectorySerialLOOActionGrounding(DATASETTESTPATH);
+		//trajectorySerialLOOTransferActionGrounding(DATASETTESTPATH);
 
 	}
 	
@@ -213,13 +225,299 @@ public class Model3ControllerTest {
 		
 		getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
 		//printWordParams((MTModule)controller.getGM().getModuleWithName(Model3Controller.LANGMODNAME));
-		
-		
-		
-		
-		
+
 		
 	}
+
+
+	public static void trajectoryTrainingActionGrounding(String datasetpath){
+
+		Model3Controller controller = constructController();
+		Domain domain = controller.getDomain();
+		GenerativeModel gm = controller.getGM();
+		StateParser sp = new SokobanOldToNewParser(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
+		List<WeightedMTInstance> mtDataset = controller.getActionGroundedMTDatasetFromTrajectoryDataset(trainingDataset, tokenizer);
+
+		controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+
+		//now do learning
+		System.out.println("Starting training.");
+		MTEMModule mtem = new MTEMModule(mtDataset, gm);
+		mtem.runEMManually(10);
+		System.out.println("Finished training; beginning testing.");
+
+		//getAccuracyOnTrajectoryDataset(controller, trainingDataset, trainingRFLabels);
+		getAccuracyOnTrajectoryDatasetUsingActionGrounding(controller, trainingDataset, trainingRFLabels);
+
+	}
+
+
+	public static void trajectorySerialLOOActionGrounding(String datasetpath){
+
+		Model3Controller srcController = constructController();
+		Domain domain = srcController.getDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+		Map<String, String> trainingRFLabels = getOriginalDatasetRFLabels();
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		int c = 0;
+		int n = 0;
+		for(int i = 0; i < trainingDataset.size(); i++){
+
+			n++;
+
+			Model3Controller controller = constructController();
+			GenerativeModel gm = controller.getGM();
+
+			TrainingElement testInstance = trainingDataset.get(i);
+
+			List<TrainingElement> looData = looTrajectoryDataset(trainingDataset, i);
+			List<WeightedMTInstance> mtDataset = controller.getActionGroundedMTDatasetFromTrajectoryDataset(looData, tokenizer);
+
+			controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+
+			//now do learning
+			System.out.println("Starting training for " + i);
+			MTEMModule mtem = new MTEMModule(mtDataset, gm);
+			mtem.runEMManually(10);
+
+			String rfLabel = trainingRFLabels.get(testInstance.identifier);
+			GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistributionUsingactionGrounding(testInstance.trajectory.getState(0), testInstance.command, pg));
+			RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+			String grs = gr.toString().trim();
+
+			if(grs.equals(rfLabel)){
+				c++;
+				System.out.println("Correct: " + testInstance.identifier + " (" + c + "/" + n + ")");
+			}
+			else{
+				System.out.println("Incorrect: " + testInstance.identifier + " (" + c + "/" + n + ")");
+			}
+
+		}
+		System.out.println(c + "/" + trainingDataset.size() + "; " + ((double)c/(double)trainingDataset.size()));
+
+
+
+
+	}
+
+
+
+	public static void trajectorySerialLOOTransferActionGrounding(String datasetpath){
+
+		Model3Controller srcController = constructController();
+		Domain domain = srcController.getDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+
+		AMTTransferTests tests = new AMTTransferTests(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		int c = 0;
+		int n = 0;
+		for(int i = 0; i < trainingDataset.size(); i++){
+
+			Model3Controller controller = constructController();
+			GenerativeModel gm = controller.getGM();
+
+			TrainingElement testInstance = trainingDataset.get(i);
+
+			List<TrainingElement> looData = looTrajectoryDataset(trainingDataset, i);
+			List<WeightedMTInstance> mtDataset = controller.getActionGroundedMTDatasetFromTrajectoryDataset(looData, tokenizer);
+
+			controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+
+			//now do learning
+			System.out.println("Starting training for " + i);
+			MTEMModule mtem = new MTEMModule(mtDataset, gm);
+			mtem.runEMManually(10);
+
+
+			List <StateAndGoal> itests = tests.getTestsFor(testInstance.identifier);
+			int lc = 0;
+			for(StateAndGoal sag : itests){
+
+				String rfLabel = sag.goal;
+				GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistributionUsingactionGrounding(sag.initialState, testInstance.command, pg));
+				RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+				String grs = gr.toString().trim();
+				if(grs.equals(rfLabel)){
+					c++;
+					lc++;
+				}
+
+				n++;
+
+			}
+
+			System.out.println("+ " + lc + ": " + testInstance.identifier + " (" + c + "/" + n + ")");
+
+
+		}
+		System.out.println(c + "/" + n + "; " + ((double)c/(double)n));
+
+
+
+
+	}
+
+
+
+
+	public static void trajectorySerialLOOTransfer(String datasetpath){
+
+		Model3Controller srcController = constructController();
+		Domain domain = srcController.getDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+
+		AMTTransferTests tests = new AMTTransferTests(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		int c = 0;
+		int n = 0;
+		for(int i = 0; i < trainingDataset.size(); i++){
+
+			Model3Controller controller = constructController();
+			GenerativeModel gm = controller.getGM();
+
+			TrainingElement testInstance = trainingDataset.get(i);
+
+			System.out.println("Starting training for " + i);
+
+			List<TrainingElement> looData = looTrajectoryDataset(trainingDataset, i);
+			//List<WeightedMTInstance> mtDataset = controller.getActionGroundedMTDatasetFromTrajectoryDataset(looData, tokenizer);
+			List<WeightedMTInstance> mtDataset = controller.getWeightedMTDatasetFromTrajectoryDataset(looData, tokenizer, 1.e-20);
+
+
+			controller.setToMTLanugageModelUsingMTDataset(mtDataset, tokenizer, false);
+
+			//now do learning
+
+			MTEMModule mtem = new MTEMModule(mtDataset, gm);
+			mtem.runEMManually(10);
+
+
+			List <StateAndGoal> itests = tests.getTestsFor(testInstance.identifier);
+			int lc = 0;
+			for(StateAndGoal sag : itests){
+
+				String rfLabel = sag.goal;
+				GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistribution(sag.initialState, testInstance.command));
+				RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+				String grs = gr.toString().trim();
+				if(grs.equals(rfLabel)){
+					c++;
+					lc++;
+				}
+
+				n++;
+
+			}
+
+			System.out.println("+ " + lc + ": " + testInstance.identifier + " (" + c + "/" + n + ")");
+
+
+		}
+		System.out.println(c + "/" + n + "; " + ((double)c/(double)n));
+
+	}
+
+
+
+	public static void trajectorySerialLOOBoWTransfer(String datasetpath){
+
+		Model3Controller srcController = constructController();
+		Domain domain = srcController.getDomain();
+		StateParser sp = new SokobanOldToNewParser(domain);
+
+		AMTTransferTests tests = new AMTTransferTests(domain);
+
+		Tokenizer tokenizer = new Tokenizer(true, true);
+		tokenizer.addDelimiter("-");
+
+		List<TrainingElement> trainingDataset = Model3Controller.getCommandsDataset(domain, datasetpath, sp);
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		int c = 0;
+		int n = 0;
+		for(int i = 0; i < trainingDataset.size(); i++){
+
+			Model3Controller controller = constructController();
+			GenerativeModel gm = controller.getGM();
+
+			TrainingElement testInstance = trainingDataset.get(i);
+
+			System.out.println("Starting training for " + i);
+
+			List<TrainingElement> looData = looTrajectoryDataset(trainingDataset, i);
+
+
+			controller.setToBOWLanugageModel(looData, tokenizer, true);
+
+			Dataset emDataset = controller.getEMDatasetFromTrajectoriesDataset(looData);
+			EMAlgorithm em = new EMAlgorithm(controller.getGM(), emDataset);
+			BagOfWordsEMModule bowEMMod = new BagOfWordsEMModule(controller.getHashingFactory());
+			em.addEMModule(bowEMMod);
+			DPrint.toggleCode(8446, false);
+
+			em.runEM(10);
+
+
+			List <StateAndGoal> itests = tests.getTestsFor(testInstance.identifier);
+			int lc = 0;
+			for(StateAndGoal sag : itests){
+
+				String rfLabel = sag.goal;
+				GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistribution(sag.initialState, testInstance.command));
+				RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+				String grs = gr.toString().trim();
+				if(grs.equals(rfLabel)){
+					c++;
+					lc++;
+				}
+
+				n++;
+
+			}
+
+			System.out.println("+ " + lc + ": " + testInstance.identifier + " (" + c + "/" + n + ")");
+
+
+		}
+		System.out.println(c + "/" + n + "; " + ((double)c/(double)n));
+
+	}
+
+
+
+
+
+
 	
 	public static void testMTWords(String datasetpath){
 		
@@ -269,6 +567,35 @@ public class Model3ControllerTest {
 		System.out.println(c + "/" + trainingDataset.size() + "; " + ((double)c/(double)trainingDataset.size()));
 		
 		
+	}
+
+	public static void getAccuracyOnTrajectoryDatasetUsingActionGrounding(Model3Controller controller, List<TrainingElement> trainingDataset, Map<String, String> rfLabels){
+
+		PolicyGenerator pg = new SokoAStarPlanner();
+
+		GenerativeModel gm = controller.getGM();
+
+		int c = 0;
+		int n = 0;
+		for(TrainingElement te : trainingDataset){
+
+			String rfLabel = rfLabels.get(te.identifier);
+			GMQueryResult predicted = GMQueryResult.maxProb(controller.getRFDistributionUsingactionGrounding(te.trajectory.getState(0), te.command, pg));
+			RFConVariableValue gr = (RFConVariableValue)predicted.getQueryForVariable(gm.getRVarWithName(TaskModule.GROUNDEDRFNAME));
+			String grs = gr.toString().trim();
+			if(grs.equals(rfLabel)){
+				c++;
+				System.out.println("Correct: " + te.identifier);
+			}
+			else{
+				System.out.println("Incorrect: " + te.identifier);
+			}
+
+			n++;
+		}
+		System.out.println(c + "/" + trainingDataset.size() + "; " + ((double)c/(double)trainingDataset.size()));
+
+
 	}
 	
 	public static void trajectoryBOWTrainingTest(){

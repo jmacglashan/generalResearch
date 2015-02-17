@@ -1,6 +1,5 @@
 package demos.aiclass;
 
-import behavior.burlapirlext.DifferentiableSparseSampling;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.QValue;
@@ -9,6 +8,7 @@ import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisua
 import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateDifferentiableRF;
+import burlap.behavior.singleagent.learnbydemo.mlirl.differentiableplanners.DifferentiableVI;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
@@ -55,6 +55,11 @@ public class IRLExample {
 
 	}
 
+	/**
+	 * Creates a visual explorer that you can use to to record trajectories. Use the "`" key to reset to a random initial state
+	 * Use the wasd keys to move north south, east, and west, respectively. To record the last trajectory since the "`" key was pressed
+	 * (or the program launched) press the "r". To actually save all recorded trajectories to disk, press the "f" key.
+	 */
 	public void launchExplorer(){
 		VisualExplorer exp = new VisualExplorer(this.domain, this.v, this.sg, 800, 800);
 		exp.addKeyAction("w", GridWorldDomain.ACTIONNORTH);
@@ -63,27 +68,38 @@ public class IRLExample {
 		exp.addKeyAction("a", GridWorldDomain.ACTIONWEST);
 
 		StateParser sp = new GridWorldStateParser(this.domain);
-		exp.enableEpisodeRecording("r", "f", new NullRewardFunction(), "oomdpResearch/irlDemo", sp);
+		exp.enableEpisodeRecording("r", "f", new NullRewardFunction(), "irlDemo", sp);
 
 		exp.initGUI();
 	}
 
+
+	/**
+	 * Launch a episode sequence visualizer to display the saved trajectories in the folder "irlDemo"
+	 */
 	public void launchSavedEpisodeSequenceVis(){
 
-		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(this.v, this.domain, new GridWorldStateParser(this.domain), "oomdpResearch/irlDemo");
+		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(this.v, this.domain, new GridWorldStateParser(this.domain), "irlDemo");
 
 	}
 
+	/**
+	 * Runs MLIRL on the trajectories stored in the "irlDemo" directory and then visualizes the learned reward function.
+	 */
 	public void runIRL(){
 
 		LocationFV fvg = new LocationFV(this.domain, 5);
 		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvg, 5);
 
-		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList("oomdpResearch/irlDemo", domain, new GridWorldStateParser(this.domain));
+		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList("irlDemo", domain, new GridWorldStateParser(this.domain));
 
-		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, 10);
-		dss.toggleDebugPrinting(false);
-		MLIRLRequest request = new MLIRLRequest(domain, dss, episodes, rf);
+		//differentiable sparse sampling is not yet in BURLAP proper
+		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, 10);
+		//dss.toggleDebugPrinting(false);
+		DifferentiableVI dvi = new DifferentiableVI(this.domain, rf, new NullTermination(), 0.99, 8, new DiscreteStateHashFactory(), 0.01, 100);
+
+
+		MLIRLRequest request = new MLIRLRequest(domain, dvi, episodes, rf);
 		request.setBoltzmannBeta(10);
 		//MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
 		//request.setBoltzmannBeta(20);
@@ -93,9 +109,6 @@ public class IRLExample {
 
 
 		List<State> allStates = StateReachability.getReachableStates(basicState(), (SADomain)this.domain, new DiscreteStateHashFactory());
-
-		//request.getPlanner().setGamma(0.0);
-		//request.getPlanner().resetPlannerResults();
 
 		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QComputablePlanner)request.getPlanner(), new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
 		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
@@ -109,6 +122,10 @@ public class IRLExample {
 	}
 
 
+	/**
+	 * Creates a grid world state with the agent in (0,0) and various different grid cell types scattered about.
+	 * @return a grid world state with the agent in (0,0) and various different grid cell types scattered about.
+	 */
 	protected State basicState(){
 
 		State s = GridWorldDomain.getOneAgentNLocationState(this.domain, 9);
@@ -131,6 +148,9 @@ public class IRLExample {
 	}
 
 
+	/**
+	 * State generator that produces initial agent states somewhere on the left side of the grid.
+	 */
 	public static class LeftSideGen implements StateGenerator{
 
 
@@ -161,6 +181,11 @@ public class IRLExample {
 	}
 
 
+	/**
+	 * A state feature vector generator that create a binary feature vector where each element
+	 * indicates whether the agent is in a cell of of a different type. All zeros indicates
+	 * that the agent is in an empty cell.
+	 */
 	public static class LocationFV implements StateToFeatureVectorGenerator{
 
 		protected int numLocations;
@@ -203,6 +228,10 @@ public class IRLExample {
 	}
 
 
+	/**
+	 * A "planning" algorithm that sets the value of the state to the reward function value. This is useeful
+	 * for visualizing the learned reward function weights from IRL.
+	 */
 	public static class StateRewardFunctionValue implements QComputablePlanner{
 
 		protected RewardFunction rf;
@@ -244,11 +273,6 @@ public class IRLExample {
 		//ex.launchExplorer();
 		//ex.launchSavedEpisodeSequenceVis();
 		ex.runIRL();
-
-		//System.out.println(String.format("%03d", 50));
-
-
-
 
 	}
 

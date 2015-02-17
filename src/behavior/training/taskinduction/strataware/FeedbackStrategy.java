@@ -14,7 +14,7 @@ public class FeedbackStrategy {
 	
 	public static double OPTIMALDIFFROMMAX = 0.01;
 	
-	protected double probOfStrategy;
+	protected double probOfStrategy = 0.;
 	
 	protected double muCorrect;		//assuming the trainer does not make a feedback error, the probability that they will *not* provide reward for a correct action
 	protected double muIncorrect;	//assuming the trainer does not make a feedback error, the probability that they will *not* provide punishment for an incorrect action

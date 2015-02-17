@@ -2,6 +2,7 @@ package behavior.training.taskinduction.commands;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class CommandsTrainingInterface {
 	protected double								commandProbLearningThreshold = 5e-5;
 
 
+	protected List <List<List<Double>>>				allEpisodeRewardPerStepSequneces = new ArrayList<List<List<Double>>>();
 	protected List <String>							commandHistory = new ArrayList<String>();
 
 	
@@ -83,7 +85,10 @@ public class CommandsTrainingInterface {
 		
 		
 	}
-	
+
+	public void setActionDelay(int delay){
+		this.env.setActionUpdateDelay((long)delay);
+	}
 	
 	public void intantiateDefaultAgent(StateHashFactory hashingFactory, List<FeedbackStrategy> feedbackStrategies){
 		
@@ -96,6 +101,7 @@ public class CommandsTrainingInterface {
 		}
 		this.hashingFactory = hashingFactory;
 		this.agent.setNumEpisodesToStore(100);
+
 		
 	}
 	
@@ -209,6 +215,8 @@ public class CommandsTrainingInterface {
 			}
 			this.agentIsRunning = false;
 
+			this.allEpisodeRewardPerStepSequneces.add(this.env.getAndResetrewardSequences());
+
 			/*
 			if(this.agent.getAllStoredLearningEpisodes().size() == 2){
 				this.writeAllEpisodesToFiles("testBeliefDir");
@@ -265,6 +273,30 @@ public class CommandsTrainingInterface {
 
 			}catch(Exception e){
 				System.out.println(e);
+			}
+
+			String rfSeqName = String.format(directoryName+"allFeedback%03d.feedback", i);
+			try {
+				BufferedWriter out = new BufferedWriter(new FileWriter(rfSeqName));
+				List<List<Double>> perStepFeedbacks = this.allEpisodeRewardPerStepSequneces.get(i);
+
+				for(List<Double> stepFeedback : perStepFeedbacks){
+					boolean first = true;
+					for(Double d : stepFeedback){
+						if(!first){
+							out.write(" ");
+						}
+						out.write(""+d);
+						first = false;
+					}
+					out.write("\n");
+
+				}
+
+				out.close();
+
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 
 		}

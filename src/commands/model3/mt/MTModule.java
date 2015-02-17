@@ -1,5 +1,7 @@
 package commands.model3.mt;
 
+import burlap.oomdp.singleagent.GroundedAction;
+import commands.model3.TrajectoryModule;
 import generativemodel.GMModule;
 import generativemodel.GMQuery;
 import generativemodel.GMQueryResult;
@@ -48,7 +50,10 @@ public class MTModule extends GMModule {
 	protected Tokenizer								semanticTokenizer;
 	
 	protected Random								rand;
-	
+
+
+	protected boolean 								forceUnaligned = false;
+
 	public MTModule(String name, RVariable liftedRFVariable, RVariable bindingConstraintVariable, Set<String> semanticWords, Set<String> naturalWords, 
 			int maxSemanticCommandLength, int maxNaturalCommandLenth, Tokenizer tokenizer) {
 		super(name);
@@ -101,8 +106,16 @@ public class MTModule extends GMModule {
 		this.rand = new Random(1);
 		
 	}
-	
-	
+
+
+	public boolean isForceUnaligned() {
+		return forceUnaligned;
+	}
+
+	public void setForceUnaligned(boolean forceUnaligned) {
+		this.forceUnaligned = forceUnaligned;
+	}
+
 	public void resetParametersToUniforForNewDictionary(Set<String> naturalWords, int maxNaturalCommandLenth){
 		
 		this.naturalWords = naturalWords;
@@ -256,6 +269,21 @@ public class MTModule extends GMModule {
 		return this.semanticTokenizer.tokenize(buf.toString());
 	}
 
+	public TokenedString getTokenedSemanticString(TrajectoryModule.TrajectoryValue trajectory){
+
+		StringBuilder buf = new StringBuilder();
+		boolean first = true;
+		for(GroundedAction ga : trajectory.t.actions){
+			if(!first){
+				buf.append(" ");
+			}
+			buf.append(ga.actionName());
+			first = false;
+		}
+
+		return this.semanticTokenizer.tokenize(buf.toString());
+	}
+
 	@Override
 	public GMQueryResult computeProb(GMQuery query) {
 		
@@ -274,9 +302,18 @@ public class MTModule extends GMModule {
 				LiftedVarValue liftedRF = (LiftedVarValue)query.getConditionForVariable(this.liftedRFVariable);
 				LiftedVarValue bindingConstraints = (LiftedVarValue)query.getConditionForVariable(this.bindingConstraintVariable);
 				if(liftedRF == null || bindingConstraints == null){
-					throw new RuntimeException("Not proper conditional variable values to compute the probabiltiy for a natural language command. Need either a semantic command or a lifted RF and binding constraint");
+
+					TrajectoryModule.TrajectoryValue trajValue = (TrajectoryModule.TrajectoryValue)query.getConditionForVariable(this.owner.getRVarWithName(TrajectoryModule.TNAME));
+					if(trajValue != null) {
+						semTokened = this.getTokenedSemanticString(trajValue);
+					}
+					else{
+						throw new RuntimeException("Not proper conditional variable values to compute the probabiltiy for a natural language command. Need either a semantic command, a lifted RF and binding constraint, or a trajectory (for action grounding)");
+					}
 				}
-				semTokened = this.getTokenedSemanticString(liftedRF, bindingConstraints);
+				else {
+					semTokened = this.getTokenedSemanticString(liftedRF, bindingConstraints);
+				}
 			}
 			
 			
@@ -291,7 +328,12 @@ public class MTModule extends GMModule {
 	
 	public double computeNaturalCommandProb(TokenedString semanticCommand, TokenedString naturalCommand){
 		
-		
+
+		if(this.forceUnaligned){
+			return this.m1MaximumAlignment(semanticCommand, naturalCommand);
+		}
+
+
 		int l = semanticCommand.size();
 		int m = naturalCommand.size();
 		

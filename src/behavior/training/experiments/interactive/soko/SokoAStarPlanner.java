@@ -28,10 +28,9 @@ public class SokoAStarPlanner implements PolicyGenerator {
 			RewardFunction rf, TerminalFunction tf,
 			StateHashFactory hashingFactory) {
 		TFGoalCondition gc = new TFGoalCondition(tf);
-		Heuristic h = new NullHeuristic();
 		
 		AStar planner = new AStar(domain, new UniformCostRF(), gc, hashingFactory, this.getHeuristic(tf));
-		//DPrint.toggleCode(planner.getDebugCode(), false);
+		DPrint.toggleCode(planner.getDebugCode(), false);
 		planner.planFromState(initialState);
 		
 		//Policy p = new DDPlannerPolicy(planner);

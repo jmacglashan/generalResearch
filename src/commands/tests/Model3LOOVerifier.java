@@ -19,11 +19,15 @@ public class Model3LOOVerifier {
 //			System.exit(0);
 //		}
 
-		String dataPath = args[0];
-		dataPath = "oomdpResearch/dataFiles/commands/m3MTExpertNoDupsLOO";
+		String dataPath;
+		if(args.length > 0) {
+			dataPath = args[0];
+		}
+		//dataPath = "oomdpResearch/dataFiles/commands/m3MTExpertNoDupsLOO";
+		dataPath = "oomdpResearch/dataFiles/commands/m3BOWLOO";
 
-		//Map<String, String> labels = Model3ControllerTest.getOriginalDatasetRFLabels();
-		Map<String, String> labels = Model3ControllerExpertData.getJerryNormalRFLabels();
+		Map<String, String> labels = Model3ControllerTest.getOriginalDatasetRFLabels();
+		//Map<String, String> labels = Model3ControllerExpertData.getJerryNormalRFLabels();
 		Map<String, String> predicted = getPredictions(dataPath, "txt");
 		
 		int c = 0;

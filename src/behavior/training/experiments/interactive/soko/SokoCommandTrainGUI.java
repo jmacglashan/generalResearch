@@ -136,12 +136,30 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		this.hashingFactory.addAttributeForClass(Sokoban2Domain.CLASSBLOCK, this.domain.getAttribute(Sokoban2Domain.ATTSHAPE));
 		
 		List<FeedbackStrategy> feedbackStrategies = new ArrayList<FeedbackStrategy>();
-		feedbackStrategies.add(new FeedbackStrategy(0.5, 0.5, 0.1));
-		feedbackStrategies.add(new FeedbackStrategy(0.1, 0.6, 0.1));
-		feedbackStrategies.add(new FeedbackStrategy(0.6, 0.1, 0.1));
+		FeedbackStrategy balanced = new FeedbackStrategy(0.5, 0.5, 0.1);
+		FeedbackStrategy RPlusPMinus = new FeedbackStrategy(0.1, 0.6, 0.1);
+		FeedbackStrategy RMinusPPlus = new FeedbackStrategy(0.6, 0.1, 0.1);
+
+
+		balanced.setProbOfStrategy(0.32);
+		RPlusPMinus.setProbOfStrategy(0.36);
+		RMinusPPlus.setProbOfStrategy(0.32);
+
+
+		feedbackStrategies.add(balanced);
+		feedbackStrategies.add(RPlusPMinus);
+		feedbackStrategies.add(RMinusPPlus);
+
+		//feedbackStrategies.add(new FeedbackStrategy(0.5, 0.5, 0.1));
+		//feedbackStrategies.add(new FeedbackStrategy(0.1, 0.6, 0.1)); //R+/P-
+		//feedbackStrategies.add(new FeedbackStrategy(0.6, 0.1, 0.1));
+
 		//feedbackStrategies.add(new FeedbackStrategy(0.7, 0.05, 0.1));
+
 		
 		this.cti.intantiateDefaultAgent(hashingFactory, feedbackStrategies);
+
+
 		
 		this.cti.setAlwaysResetPriorsWithCommand(false);
 		
