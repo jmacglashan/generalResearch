@@ -352,7 +352,22 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 		c.gridx = 1;
 		controlContainer.add(punishButton,c);
 		
-		
+
+
+		JButton recordDataButton = new JButton("Record Data");
+		recordDataButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SokoCommandTrainGUI.this.cti.writeAllEpisodesToFiles("oomdpResearch/sokoTrainData");
+			}
+		});
+
+		c.gridx = 0;
+		c.gridy = 9;
+		c.insets = new Insets(20, 0, 0, 0);
+		controlContainer.add(recordDataButton, c);
+
+
 		this.hallucinateButton = new JCheckBox("Hallucinate");
 		this.hallucinateButton.setSelected(true);
 		this.hallucinateButton.addActionListener(new ActionListener() {
@@ -368,7 +383,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 			}
 		});
 		c.gridx = 0;
-		c.gridy = 9;
+		c.gridy = 10;
 		c.insets = new Insets(50, 0, 0, 0);
 		controlContainer.add(this.hallucinateButton, c);
 		
@@ -384,7 +399,7 @@ public class SokoCommandTrainGUI extends JFrame implements StateVisualizingGUI,M
 									   "x: delete" +
 									   "</html>");
 		c.gridx = 0;
-		c.gridy = 10;
+		c.gridy = 11;
 		c.gridwidth = 2;
 		c.insets = new Insets(100, 0, 0, 0);
 		controlContainer.add(cheatSheet, c);
