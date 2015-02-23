@@ -1,16 +1,17 @@
 package behavior.training.experiments.simulated.grid;
 
-import irl.mlirl.CSABL;
-import irl.mlirl.DifferentiableRF;
-import irl.mlirl.DifferentiableSparseSampling;
-import irl.mlirl.FeedbackTuple;
+
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import auxiliary.DynamicVisualFeedbackEnvironment;
+import behavior.burlapirlext.*;
 import behavior.learning.DomainEnvironmentWrapper;
 import behavior.training.DynamicFeedbackGUI;
+import behavior.training.taskinduction.CSABL;
+import behavior.training.taskinduction.FeedbackTuple;
 import behavior.training.taskinduction.MAPMixtureModelPolicy;
 import behavior.training.taskinduction.TaskDescription;
 import behavior.training.taskinduction.strataware.CSABLAgent;
@@ -21,16 +22,23 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.auxiliary.StateEnumerator;
 import burlap.behavior.singleagent.auxiliary.StateReachability;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
+import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateActionDifferentiableRF;
+import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateDifferentiableRF;
+import burlap.behavior.singleagent.learnbydemo.mlirl.support.DifferentiableRF;
 import burlap.behavior.singleagent.learning.GoalBasedRF;
 import burlap.behavior.singleagent.planning.StateConditionTest;
+import burlap.behavior.singleagent.planning.commonpolicies.EpsilonGreedy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.GoalConditionTF;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.singleagent.vfa.common.ConcatenatedObjectFeatureVectorGenerator;
 import burlap.behavior.singleagent.vfa.rbf.metrics.EuclideanDistance;
 import burlap.behavior.statehashing.DiscreteMaskHashingFactory;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
+import burlap.domain.singleagent.gridworld.GridWorldRewardFunction;
 import burlap.domain.singleagent.gridworld.GridWorldTerminalFunction;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.oomdp.auxiliary.common.NullTermination;
@@ -38,13 +46,13 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
-import burlap.oomdp.singleagent.Action;
-import burlap.oomdp.singleagent.GroundedAction;
-import burlap.oomdp.singleagent.RewardFunction;
-import burlap.oomdp.singleagent.SADomain;
+import burlap.oomdp.singleagent.*;
 import burlap.oomdp.singleagent.common.NullAction;
+import burlap.oomdp.singleagent.common.UniformCostRF;
 import burlap.oomdp.visualizer.Visualizer;
 import cern.colt.Arrays;
+import sun.management.resources.agent;
+import tests.irltests.StateRewardFunctionValue;
 
 public class InteractiveTamerGridWorld {
 
@@ -95,7 +103,7 @@ public class InteractiveTamerGridWorld {
 	public void testCSABLPlanner(){
 		
 		StateToFeatureVectorGenerator rfFV = this.getRBFsForEachState(this.initialState, this.domain, 0.1);
-		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF learningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] rfParams = learningRF.getParameters();
 		for(int i = 0; i < rfParams.length; i++){
 			rfParams[i] = 1.;
@@ -118,7 +126,7 @@ public class InteractiveTamerGridWorld {
 		
 		//first get plan:
 		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
-		DifferentiableRF planningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF planningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] rfParams = planningRF.getParameters();
 		rfParams[25] = 1.;
 		DifferentiableSparseSampling planner = new DifferentiableSparseSampling(this.domain, planningRF, new NullTermination(), 1, hashingFactory, 19, 1, boltzBeta);
@@ -126,7 +134,7 @@ public class InteractiveTamerGridWorld {
 		Policy p = new GreedyQPolicy(planner);
 		
 		//DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length, true);
-		DifferentiableRF learningRF = new DifferentiableRF.LinearStateActionDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length, 
+		DifferentiableRF learningRF = new LinearStateActionDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length,
 				new GroundedAction(domain.getAction(GridWorldDomain.ACTIONNORTH), ""),
 				new GroundedAction(domain.getAction(GridWorldDomain.ACTIONSOUTH), ""),
 				new GroundedAction(domain.getAction(GridWorldDomain.ACTIONEAST), ""),
@@ -201,14 +209,14 @@ public class InteractiveTamerGridWorld {
 		
 		//first get plan:
 		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
-		DifferentiableRF planningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF planningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] rfParams = planningRF.getParameters();
 		rfParams[25] = 1.;
 		DifferentiableSparseSampling planner = new DifferentiableSparseSampling(this.domain, planningRF, new NullTermination(), 1, hashingFactory, 19, 1, boltzBeta);
 		planner.toggleDebugPrinting(false);
 		Policy p = new GreedyQPolicy(planner);
 		
-		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF learningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] lparams = learningRF.getParameters();
 		DifferentiableSparseSampling learningPlanner = new DifferentiableSparseSampling(this.domain, learningRF, new NullTermination(), 1, hashingFactory, 22, 1, boltzBeta);
 		Policy lp = new GreedyQPolicy(learningPlanner);
@@ -282,14 +290,14 @@ public class InteractiveTamerGridWorld {
 		
 		//first get plan:
 		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
-		DifferentiableRF planningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF planningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] rfParams = planningRF.getParameters();
 		rfParams[25] = 1.;
 		DifferentiableSparseSampling planner = new DifferentiableSparseSampling(this.domain, planningRF, new NullTermination(), 1, hashingFactory, 19, 1, boltzBeta);
 		planner.toggleDebugPrinting(false);
 		Policy p = new GreedyQPolicy(planner);
 		
-		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		DifferentiableRF learningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
 		double [] lparams = learningRF.getParameters();
 		DifferentiableSparseSampling learningPlanner = new DifferentiableSparseSampling(this.domain, learningRF, new NullTermination(), 1, hashingFactory, 22, 1, boltzBeta);
 		Policy lp = new GreedyQPolicy(learningPlanner);
@@ -334,7 +342,15 @@ public class InteractiveTamerGridWorld {
 	
 	
 	public void interactiveCSABL(){
-		
+
+		//get true policy
+		TerminalFunction otf = new GridWorldTerminalFunction(5, 5);
+		RewardFunction orf = new UniformCostRF();
+		ValueIteration vi = new ValueIteration(this.domain, orf, otf, 0.99, new DiscreteStateHashFactory(), 0.01, 100);
+		vi.planFromState(this.initialState);
+		Policy noisyObjectivePolicy = new EpsilonGreedy(vi, 0.25);
+
+
 		DynamicVisualFeedbackEnvironment env = new DynamicVisualFeedbackEnvironment(domain);
 		Domain domainEnvWrapper = (new DomainEnvironmentWrapper(domain, env)).generateDomain();
 		
@@ -344,18 +360,40 @@ public class InteractiveTamerGridWorld {
 		DynamicFeedbackGUI gui = new DynamicFeedbackGUI(this.visualizer, env);
 		env.setGUI(gui);
 		
-		StateToFeatureVectorGenerator rfFV = this.getRBFsForEachState(this.initialState, this.domain, 0.1);
-		//StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
+		//StateToFeatureVectorGenerator rfFV = this.getRBFsForEachState(this.initialState, this.domain, 0.1);
+		StateToFeatureVectorGenerator rfFV = new StateIndicatorFV(initialState, domain);
 		//StateToFeatureVectorGenerator rfFV = new InitialAndGoalFV();
-		DifferentiableRF learningRF = new DifferentiableRF.LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
-		double [] rfParams = learningRF.getParameters();
-		for(int i = 0; i < rfParams.length; i++){
-			rfParams[i] = 0.;
-		}
+		DifferentiableRF learningRF = new LinearStateDifferentiableRF(rfFV, rfFV.generateFeatureVectorFrom(this.initialState).length);
+		//learningRF.randomizeParameters(-1., 1., new Random(7372));
+
+		ExplorationShapedRF expRF = new ExplorationShapedRF(learningRF, new VisitationCount.TabularVisitationCount(new DiscreteStateHashFactory()), new VisitationRewardBonus.InverseRatioThresholdBondus(1.0, 1));
+
 		
-		double lr = 0.1;
-		CSABLAgent agent = new CSABLAgent(domainEnvWrapper, this.domain, 1., 0.1, learningRF, trainerRF, trainerTF, new DiscreteStateHashFactory(), 0.1, 0.1, lr, 22, 1);
-		
+		double lr = 0.001;
+		double beta = 1.;
+		double gamma = 1.;
+		CSABLAgent agent = new CSABLAgent(domainEnvWrapper, this.domain, gamma, beta, learningRF, trainerRF, trainerTF, new DiscreteStateHashFactory(), 0.0, 0.0, lr, 22, -1);
+		//agent.setSourceDomainControlPolicy(noisyObjectivePolicy);
+		agent.getCSABL().setPlanner(new DiffExpSS(this.domain, learningRF, expRF, new NullTermination(), gamma, new DiscreteStateHashFactory(),22, -1, beta));
+		agent.setSourceDomainControlPolicy(new ExplorationPolicy(new GreedyQPolicy(agent.getCSABL().getPlanner()), (DiffExpSS)agent.getCSABL().getPlanner()));
+		agent.setExpRF(expRF);
+
+		StateRewardFunctionValue rfplan = new StateRewardFunctionValue(this.domain, learningRF);
+		//StateRewardFunctionValue rfplan = new StateRewardFunctionValue(this.domain, expRF);
+		List<State> allStates = StateReachability.getReachableStates(this.initialState, (SADomain)this.domain, new DiscreteStateHashFactory());
+		final ValueFunctionVisualizerGUI rfgui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, rfplan, new GreedyQPolicy(agent.getCSABL().getPlanner()));
+		rfgui.initGUI();
+
+		ActionObserver rfUpdater = new ActionObserver() {
+			@Override
+			public void actionEvent(State s, GroundedAction ga, State sp) {
+				rfgui.getMultiLayerRenderer().repaint();
+			}
+		};
+		((SADomain)domainEnvWrapper).addActionObserverForAllAction(rfUpdater);
+
+
+
 		boolean hasInitedGUI = false;
 		for(int i = 0; i < 20; i++){
 			env.setCurStateTo(this.initialState);
@@ -378,6 +416,12 @@ public class InteractiveTamerGridWorld {
 		
 		System.out.println("finished training");
 		
+	}
+
+	public void projectRF(){
+
+
+
 	}
 	
 	public void runInteractiveTraining(){
