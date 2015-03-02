@@ -19,7 +19,15 @@ public class FeedbackStrategy {
 	protected double muCorrect;		//assuming the trainer does not make a feedback error, the probability that they will *not* provide reward for a correct action
 	protected double muIncorrect;	//assuming the trainer does not make a feedback error, the probability that they will *not* provide punishment for an incorrect action
 	protected double epsilon;		//probability that trainer makes a feedback mistake
-	
+
+
+	protected String name = null;
+
+	protected State cachedS = null;
+	protected GroundedAction cachedGA = null;
+	protected Policy cachedPolicy = null;
+	protected double cachedLikelihood;
+
 	public FeedbackStrategy(double muCorrect, double muIncorrect, double epsilon){
 		this.muCorrect = muCorrect;
 		this.muIncorrect = muIncorrect;
@@ -33,37 +41,80 @@ public class FeedbackStrategy {
 	public double getProbOfStrategy(){
 		return this.probOfStrategy;
 	}
-	
-	
-	
+
+	public double getMuCorrect() {
+		return muCorrect;
+	}
+
+	public void setMuCorrect(double muCorrect) {
+		this.muCorrect = muCorrect;
+	}
+
+	public double getMuIncorrect() {
+		return muIncorrect;
+	}
+
+	public void setMuIncorrect(double muIncorrect) {
+		this.muIncorrect = muIncorrect;
+	}
+
+	public double getEpsilon() {
+		return epsilon;
+	}
+
+	public void setEpsilon(double epsilon) {
+		this.epsilon = epsilon;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public double liklihood(State s, GroundedAction ga, double feedback, Policy p){
-		
+
+
+		if(s == cachedS && ga == cachedGA && p == cachedPolicy){
+			return this.cachedLikelihood;
+		}
+
+		this.cachedS = s;
+		this.cachedGA = ga;
+		this.cachedPolicy = p;
+
 		boolean isOptimal = this.isOptimal(s, ga, p);
+
 		
 		if(isOptimal){
 			if(feedback > 0.){
-				return (1.-this.epsilon) * (1. - this.muCorrect);
+
+				this.cachedLikelihood = (1.-this.epsilon) * (1. - this.muCorrect);
 			}
 			else if(feedback < 0.){
-				return this.epsilon * (1. - this.muIncorrect);
+				this.cachedLikelihood =  this.epsilon * (1. - this.muIncorrect);
 			}
 			else{
-				return ((1. - this.epsilon) * this.muCorrect) + (this.epsilon * this.muIncorrect);
+				this.cachedLikelihood =  ((1. - this.epsilon) * this.muCorrect) + (this.epsilon * this.muIncorrect);
 			}
 		}
 		else{
 			
 			if(feedback > 0.){
-				return this.epsilon * (1. - this.muCorrect);
+				this.cachedLikelihood =  this.epsilon * (1. - this.muCorrect);
 			}
 			else if(feedback < 0.){
-				return (1. - this.epsilon) * (1. - this.muIncorrect);
+				this.cachedLikelihood =  (1. - this.epsilon) * (1. - this.muIncorrect);
 			}
 			else{
-				return (this.epsilon * this.muCorrect) + ((1. - this.epsilon) * this.muIncorrect);
+				this.cachedLikelihood =  (this.epsilon * this.muCorrect) + ((1. - this.epsilon) * this.muIncorrect);
 			}
 			
 		}
+
+		return this.cachedLikelihood;
 		
 
 	}
@@ -104,6 +155,22 @@ public class FeedbackStrategy {
 			
 		}
 		
+	}
+
+
+
+	@Override
+	public String toString(){
+		String sName;
+		if(this.name != null){
+			sName = this.name;
+		}
+		else{
+			sName = "(" + this.muCorrect + ", " + this.muIncorrect + ", " + this.epsilon + ")";
+		}
+
+
+		return this.probOfStrategy + " " + sName;
 	}
 	
 	

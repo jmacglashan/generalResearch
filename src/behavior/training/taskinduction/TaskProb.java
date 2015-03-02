@@ -88,6 +88,10 @@ public class TaskProb {
 	}
 
 
+	@Override
+	public String toString(){
+		return this.prob + " " + this.task.toString();
+	}
 
 	
 }

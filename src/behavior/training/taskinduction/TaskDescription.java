@@ -16,5 +16,10 @@ public class TaskDescription{
 		this.rf = rf;
 		this.tf = tf;
 	}
+
+	@Override
+	public String toString(){
+		return this.tf.toString();
+	}
 	
 }
