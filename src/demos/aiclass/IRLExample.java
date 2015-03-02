@@ -228,6 +228,43 @@ public class IRLExample {
 	}
 
 
+	public static class MacroCellFV implements StateToFeatureVectorGenerator{
+
+		int gridWidth;
+		int gridHeight;
+		int macroCellWidth;
+		int macroCellHeight;
+
+		public MacroCellFV(int gridWidth, int gridHeight, int macroCellWidth, int macroCellHeight) {
+			this.gridWidth = gridWidth;
+			this.gridHeight = gridHeight;
+			this.macroCellWidth = macroCellWidth;
+			this.macroCellHeight = macroCellHeight;
+		}
+
+		@Override
+		public double[] generateFeatureVectorFrom(State s) {
+
+			double [] fv = new double[this.gridWidth*this.gridHeight];
+
+			//agents position in the world
+			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
+			int x = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
+			int y = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+
+			//figure out in which macro cell that x-y and is in
+			int macroX = x / this.macroCellWidth;
+			int macroY = y / this.macroCellHeight;
+
+			//what index in our feature vector array is this macro cell?
+			int index = macroX + (macroY * this.gridWidth);
+			fv[index] = 1.;
+
+			return fv;
+		}
+	}
+
+
 	/**
 	 * A "planning" algorithm that sets the value of the state to the reward function value. This is useeful
 	 * for visualizing the learned reward function weights from IRL.
@@ -270,9 +307,9 @@ public class IRLExample {
 
 		IRLExample ex = new IRLExample();
 
-		//ex.launchExplorer();
+		ex.launchExplorer();
 		//ex.launchSavedEpisodeSequenceVis();
-		ex.runIRL();
+		//ex.runIRL();
 
 	}
 

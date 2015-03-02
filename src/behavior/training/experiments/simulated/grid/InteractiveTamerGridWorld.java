@@ -51,7 +51,6 @@ import burlap.oomdp.singleagent.common.NullAction;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 import burlap.oomdp.visualizer.Visualizer;
 import cern.colt.Arrays;
-import sun.management.resources.agent;
 import tests.irltests.StateRewardFunctionValue;
 
 public class InteractiveTamerGridWorld {
