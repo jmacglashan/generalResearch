@@ -37,6 +37,7 @@ public class GradientDescentTDLambdaLookahead extends OOMDPPlanner implements QC
 	protected int numRollouts;
 	protected int maxRolloutSize;
 	protected Policy learningPolicy;
+	protected int numPlanningSteps = 0;
 
 	public GradientDescentTDLambdaLookahead(Domain domain, RewardFunction rf, TerminalFunction tf, double gamma, ValueFunctionApproximation vfa,
 											double learningRate, double lambda, int numRollouts, int maxRolloutSize){
@@ -115,7 +116,8 @@ public class GradientDescentTDLambdaLookahead extends OOMDPPlanner implements QC
 
 		}
 
-
+		this.numPlanningSteps += totalSteps;
+		DPrint.cl(76437, "total steps: " + this.numPlanningSteps);
 
 
 	}

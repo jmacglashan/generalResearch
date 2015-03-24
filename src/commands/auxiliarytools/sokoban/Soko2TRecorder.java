@@ -32,8 +32,8 @@ public class Soko2TRecorder {
 		
 		StateGenerator sg = new Soko2Turk1(domain);
 		Visualizer v = Sokoban2Visualizer.getVisualizer(pathToRobotImagesDirectory);
-		//StateParser sp = new Sokoban2Parser(domain);
-		StateParser sp = new SokobanOldToNewParser(domain);
+		StateParser sp = new Sokoban2Parser(domain);
+		//StateParser sp = new SokobanOldToNewParser(domain);
 		
 		String datapath = args[0];
 		

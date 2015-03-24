@@ -1,5 +1,7 @@
 package behavior.burlapirlext;
 
+import behavior.burlapirlext.diffvinit.DifferentiableVInit;
+import behavior.burlapirlext.diffvinit.ZeroGradientVinit;
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.learnbydemo.mlirl.support.BoltzmannPolicyGradient;
@@ -49,7 +51,7 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements QGradi
 	/**
 	 * The state value used for leaf nodes; default is zero.
 	 */
-	protected ValueFunctionInitialization vinit = new ValueFunctionInitialization.ConstantValueFunctionInitialization();
+	protected DifferentiableVInit vinit;
 
 
 	/**
@@ -91,6 +93,8 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements QGradi
 		this.nodesByHeight = new HashMap<SparseSampling.HashedHeightState, DiffStateNode>();
 		this.rootLevelQValues = new HashMap<StateHashTuple, DifferentiableSparseSampling.QAndQGradient>();
 		this.rfDim = rf.getParameterDimension();
+
+		this.vinit = new ZeroGradientVinit(new ValueFunctionInitialization.ConstantValueFunctionInitialization(), rf);
 
 		this.debugCode = 6368290;
 	}
@@ -158,7 +162,12 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements QGradi
 	 * @param vinit the {@link ValueFunctionInitialization} object to use for settting the value of leaf nodes.
 	 */
 	public void setValueForLeafNodes(ValueFunctionInitialization vinit){
-		this.vinit = vinit;
+		if(vinit instanceof DifferentiableVInit) {
+			this.vinit = (DifferentiableVInit)vinit;
+		}
+		else{
+			this.vinit = new ZeroGradientVinit(vinit, (DifferentiableRF)this.rf);
+		}
 	}
 
 	/**
@@ -389,7 +398,11 @@ public class DifferentiableSparseSampling extends OOMDPPlanner implements QGradi
 			int c = DifferentiableSparseSampling.this.getCAtHeight(this.height);
 			for(GroundedAction ga : gas){
 				if(this.height == 0 || c == 0){
-					qs.add(new QValue(this.sh.s, ga, DifferentiableSparseSampling.this.vinit.value(this.sh.s)), new QGradientTuple(this.sh.s, ga, new double[dim]));
+					qs.add(new QValue(this.sh.s, ga, DifferentiableSparseSampling.this.vinit.value(this.sh.s)),
+							new QGradientTuple(
+									this.sh.s,
+									ga,
+									DifferentiableSparseSampling.this.vinit.getQGradient(this.sh.s, ga)));
 				}
 				else{
 

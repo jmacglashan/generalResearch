@@ -20,6 +20,7 @@ import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
+import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteMaskHashingFactory;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -55,11 +56,17 @@ public class SimulatedHumanGrid {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
+		//z punishes, / rewards
+
 		SimulatedHumanGrid shg = new SimulatedHumanGrid();
 		//shg.runVisualExplorer();
-		shg.runInteractiveTraining();
+		//shg.runInteractiveTraining();
 		//shg.runInteractiveTrainingQLearning();
+
+		//shg.runSimulatedQLearning();
+		shg.runSimulatedQLearningPolicy();
+
 
 		//shg.experimentFixedCustomDriver("dataFiles/trainOutput/custom2/actual", 0.3, 0.7, 0.05);
 		
@@ -234,6 +241,9 @@ public class SimulatedHumanGrid {
 		System.out.println("finished training");
 
 	}
+
+
+
 	
 	public void experimentDriver(String dir, double muPlus, double muMinus, double epsilon, int stratAssumption, int stratToTrack){
 		
@@ -277,7 +287,7 @@ public class SimulatedHumanGrid {
 			dir = dir + "/";
 		}
 		
-		TaskInductionWithFeedbackStrategies agent = getSimulatedTraining(trainerStrategy, 0, trainerStrategy);;
+		TaskInductionWithFeedbackStrategies agent = getSimulatedTraining(trainerStrategy, 0, trainerStrategy);
 		
 		for(int i = 0; i < 50; i++){
 			String path = dir + i + ".txt";
@@ -287,7 +297,9 @@ public class SimulatedHumanGrid {
 	}
 	
 	
-	
+
+
+
 	public TaskInductionWithFeedbackStrategies getSimulatedTraining(FeedbackStrategy trainerStrat, int stratToTrack, FeedbackStrategy...strategiesAware){
 	
 		Action noop = new NullAction("noop", domain, ""); //add noop, which is not attached to anything.
@@ -308,6 +320,66 @@ public class SimulatedHumanGrid {
 		
 		return agent;
 		
+	}
+
+	public void runSimulatedQLearning(){
+
+		List <TaskDescription> tasks = this.getTaskDescriptions();
+		Random rand = RandomFactory.getMapped(20);
+		int sel = rand.nextInt(tasks.size());
+		TaskDescription selectedTask = tasks.get(sel);
+
+		ValueIteration vi = new ValueIteration(domain, selectedTask.rf, selectedTask.tf, 0.99, new DiscreteStateHashFactory(), 0.01, 500);
+		Policy opt = new GreedyQPolicy(vi);
+
+		QLearning ql = new QLearning(domain, selectedTask.rf, selectedTask.tf, 0.99, new DiscreteStateHashFactory(), 1., 1.);
+		ql.setLearningPolicy(new GreedyQPolicy(ql));
+
+		StateGenerator sg = new RandomStateGenerator();
+
+
+		for(int i = 0; i < 1000; i++){
+			State s = sg.generateState();
+			if(i == 0){
+				vi.planFromState(s);
+			}
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s);
+			EpisodeAnalysis ope = opt.evaluateBehavior(s, selectedTask.rf, selectedTask.tf);
+			System.out.println(i + ": " + ea.maxTimeStep() + " (" + ope.maxTimeStep() + ")");
+		}
+
+
+	}
+
+	public void runSimulatedQLearningPolicy(){
+
+		List <TaskDescription> tasks = this.getTaskDescriptions();
+		Random rand = RandomFactory.getMapped(20);
+		int sel = rand.nextInt(tasks.size());
+		TaskDescription selectedTask = tasks.get(sel);
+
+		ValueIteration vi = new ValueIteration(domain, selectedTask.rf, selectedTask.tf, 0.99, new DiscreteStateHashFactory(), 0.01, 500);
+		Policy opt = new GreedyQPolicy(vi);
+
+		RewardFunction trainerRF = new FeedbackStrategyRF(new FeedbackStrategy(0., 0., 0.), selectedTask, this.domain.getAction("noop"));
+
+		QLearning ql = new QLearning(domain, trainerRF, selectedTask.tf, 0., new DiscreteStateHashFactory(), 1., 1.);
+		ql.setLearningPolicy(new GreedyQPolicy(ql));
+
+		StateGenerator sg = new RandomStateGenerator();
+
+
+		for(int i = 0; i < 1000; i++){
+			State s = sg.generateState();
+			if(i == 0){
+				vi.planFromState(s);
+			}
+			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s);
+			EpisodeAnalysis ope = opt.evaluateBehavior(s, selectedTask.rf, selectedTask.tf);
+			System.out.println(i + ": " + ea.maxTimeStep() + " (" + ope.maxTimeStep() + ")");
+		}
+
+
 	}
 	
 	public void runSimulatedTrainingUsingAgent(String outputPath, FeedbackStrategy trainerStrat, TaskInductionWithFeedbackStrategies agent){

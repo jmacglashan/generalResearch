@@ -18,6 +18,7 @@ import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.Domain;
+import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
@@ -33,7 +34,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author James MacGlashan.
@@ -71,6 +74,12 @@ public class CommandsTrainingInterface2 {
 	protected List <String>							commandHistory = new ArrayList<String>();
 
 
+	protected boolean								removeRPPMWhenTrueSatisfied = false;
+	protected Map<String, String>					trueGoals = new HashMap<String, String>();
+	protected List<FeedbackStrategy>				lastFullStrategyDistribution;
+	protected boolean 								agentUsingRPPP = true;
+
+
 	public CommandsTrainingInterface2(DomainGenerator dgen){
 
 		this.domain = dgen.generateDomain();
@@ -92,6 +101,14 @@ public class CommandsTrainingInterface2 {
 
 	public void setActionDelay(int delay){
 		this.env.setActionUpdateDelay((long)delay);
+	}
+
+	public void setRemoveRPPMWhenTrueSatisfied(boolean removeRPPMWhenTrueSatisfied){
+		this.removeRPPMWhenTrueSatisfied = removeRPPMWhenTrueSatisfied;
+	}
+
+	public void addTrueGoal(String command, String goalRep){
+		this.trueGoals.put(command, goalRep);
 	}
 
 	public void intantiateDefaultAgent(StateHashFactory hashingFactory, List<FeedbackStrategy> feedbackStrategies){
@@ -154,6 +171,9 @@ public class CommandsTrainingInterface2 {
 
 	public void giveCommandInInitialState(final State s, String command){
 
+		System.out.println("Received command: " + command);
+
+
 		boolean isSameAsLast = false;
 
 		if(this.initialState != null){
@@ -163,6 +183,40 @@ public class CommandsTrainingInterface2 {
 			isSameAsLast = hs.equals(hi) && command.equals(this.lastCommand);
 		}
 
+		if(isSameAsLast && this.removeRPPMWhenTrueSatisfied && this.agentUsingRPPP){
+
+			String trueGoal = this.trueGoals.get(this.lastCommand);
+			if(trueGoal != null){
+				//check last goal
+				GroundedProp trueGoalGP = this.parseStringIntoGP(trueGoal);
+				TaskDescription td = this.agent.getMostLikelyTask().getTask();
+				EpisodeAnalysis lastEpisode = this.agent.getLastLearningEpisode();
+				State lastEpisodeLastState = lastEpisode.getState(lastEpisode.maxTimeStep());
+				if(trueGoalGP.isTrue(lastEpisodeLastState) && td.toString().equals(trueGoalGP.toString())){
+					System.out.println("Should Remove R+/P-");
+					this.lastFullStrategyDistribution = this.agent.getStrategyProbabiltyDistribution();
+					List <FeedbackStrategy> removedRPPM = new ArrayList<FeedbackStrategy>(this.lastFullStrategyDistribution);
+					FeedbackStrategy rppm = this.findRPPM(removedRPPM);
+					if(rppm != null){
+						System.out.println("Removing: " + rppm.toString());
+						removedRPPM.remove(rppm);
+						List <FeedbackStrategy> normed = this.renormalized(removedRPPM);
+						this.agent.setFeedbackStrategies(normed);
+						this.agent.initializeJointProbabilities();
+						this.agentUsingRPPP = false;
+					}
+
+				}
+				//make sure last state is goal satisfying state and that most likely task is true task.
+			}
+
+		}
+		else if(!isSameAsLast && !this.agentUsingRPPP){
+			System.out.println("Should add back R+/P-");
+			this.agent.setFeedbackStrategies(this.lastFullStrategyDistribution);
+			this.agent.initializeJointProbabilities();
+			this.agentUsingRPPP = true;
+		}
 
 		//remember this state and command for learning completion
 		this.initialState = s.copy();
@@ -305,6 +359,46 @@ public class CommandsTrainingInterface2 {
 
 		}
 
+	}
+
+
+	protected GroundedProp parseStringIntoGP(String s){
+		String [] comps = s.split(" ");
+		String [] args = new String[comps.length-1];
+		for(int i = 1; i < comps.length; i++){
+			args[i-1] = comps[i];
+		}
+		GroundedProp gp = new GroundedProp(this.domain.getPropFunction(comps[0]), args);
+		return gp;
+	}
+
+	protected FeedbackStrategy findRPPM(List<FeedbackStrategy> strategies){
+		double maxGap = 0.;
+		FeedbackStrategy rppm = null;
+		for(FeedbackStrategy fs : strategies){
+			double gap = fs.getMuIncorrect() - fs.getMuCorrect();
+			if(gap > maxGap){
+				maxGap = gap;
+				rppm = fs;
+			}
+		}
+		return rppm;
+	}
+
+	protected List <FeedbackStrategy> renormalized(List <FeedbackStrategy> strats){
+		double sum = 0.;
+		for(FeedbackStrategy fs : strats){
+			sum += fs.getProbOfStrategy();
+		}
+		List<FeedbackStrategy> normed = new ArrayList<FeedbackStrategy>(strats.size());
+		for(FeedbackStrategy fs : strats){
+			FeedbackStrategy nfs = new FeedbackStrategy(fs.getMuCorrect(), fs.getMuIncorrect(), fs.getEpsilon());
+			nfs.setProbOfStrategy(fs.getProbOfStrategy() / sum);
+			nfs.setName(fs.getName());
+			normed.add(nfs);
+		}
+
+		return normed;
 	}
 
 

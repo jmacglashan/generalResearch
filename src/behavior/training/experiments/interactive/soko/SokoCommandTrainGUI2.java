@@ -165,6 +165,9 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 
 
 		this.cti.setAlwaysResetPriorsWithCommand(false);
+		this.cti.setRemoveRPPMWhenTrueSatisfied(true);
+		this.cti.addTrueGoal("go to the green room", "agentInRoom agent0 room1");
+		this.cti.addTrueGoal("go to the blue room", "agentInRoom agent0 room2");
 
 		java.util.List<GPConjunction> liftedTaskDescriptions = new ArrayList<GPConjunction>(2);
 

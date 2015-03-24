@@ -84,6 +84,7 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 		//reset our joints
 		this.jointProbabilities = null;
 
+		this.strategies.clear();
 		for(FeedbackStrategy fs : strategies){
 			this.strategies.add(new FeedbackStrategyProbPair(fs, fs.getProbOfStrategy()));
 		}

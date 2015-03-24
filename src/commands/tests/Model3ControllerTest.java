@@ -63,7 +63,7 @@ public class Model3ControllerTest {
 		//getLatexDatasetTable();
 		
 		//uniformTest();
-		//trajectoryTrainingTest(DATASETTESTPATH);
+		trajectoryTrainingTest(DATASETTESTPATH);
 		//trajectoryTrainingTest(args[0]);
 		//testMTWords(DATASETTESTPATH);
 		//parallelLOOOutput(args);
@@ -86,7 +86,7 @@ public class Model3ControllerTest {
 
 		//action grounding
 		//trajectoryTrainingActionGrounding(DATASETTESTPATH);
-		trajectorySerialLOOActionGrounding(DATASETTESTPATH);
+		//trajectorySerialLOOActionGrounding(DATASETTESTPATH);
 		//trajectorySerialLOOTransferActionGrounding(DATASETTESTPATH);
 
 	}

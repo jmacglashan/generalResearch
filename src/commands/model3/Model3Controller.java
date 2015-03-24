@@ -155,6 +155,7 @@ public class Model3Controller {
 		Set<String> naturalWords = new HashSet<String>();
 		
 		int maxSemanticCommandLength = getSemanticWordsFromMTDataset(dataset, semanticWords);
+		System.out.println("max semantic command length: " + maxSemanticCommandLength);
 		int maxNaturalCommandLength = getNaturalWordsFromMTDataset(dataset, naturalWords);
 		
 		MTModule langMod = new MTModule(LANGMODNAME, this.gm.getRVarWithName(TaskModule.LIFTEDRFNAME), this.gm.getRVarWithName(TaskModule.BINDINGNAME), 
