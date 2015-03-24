@@ -45,7 +45,6 @@ import burlap.oomdp.visualizer.StateRenderLayer;
 import burlap.oomdp.visualizer.StaticPainter;
 import burlap.oomdp.visualizer.Visualizer;
 import demos.aiclass.IRLExample;
-import sun.jvm.hotspot.tools.PMap;
 import weka.classifiers.functions.Logistic;
 import weka.classifiers.trees.J48;
 

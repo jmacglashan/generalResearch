@@ -17,7 +17,7 @@ import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
 import burlap.oomdp.visualizer.Visualizer;
-import sun.management.resources.agent;
+
 
 /**
  * @author James MacGlashan.
