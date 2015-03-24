@@ -201,6 +201,7 @@ public class CommandsTrainingInterface2 {
 						System.out.println("Removing: " + rppm.toString());
 						removedRPPM.remove(rppm);
 						List <FeedbackStrategy> normed = this.renormalized(removedRPPM);
+						this.agent.updateTaskPriorsToPosteriors();
 						this.agent.setFeedbackStrategies(normed);
 						this.agent.initializeJointProbabilities();
 						this.agentUsingRPPP = false;

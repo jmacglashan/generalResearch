@@ -65,6 +65,19 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 		}
 	}
 
+	public void updateTaskPriorsToPosteriors(){
+
+		if(this.jointProbabilities == null){
+			return;
+		}
+
+		List <TaskProb> posteriors = this.getTaskProbabilityDistribution();
+		for(int i = 0; i < posteriors.size(); i++){
+			this.tasks.get(i).setProb(posteriors.get(i).getProb());
+		}
+
+	}
+
 	public void updateStrategyPriorsToPosteriors(){
 
 		if(this.jointProbabilities == null){
