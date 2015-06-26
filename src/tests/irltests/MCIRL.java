@@ -67,7 +67,8 @@ public class MCIRL {
 	StateParser sp;
 
 	protected String expertDir = "oomdpResearch/irlMC";
-	protected String trainedDir = "oomdpResearch/irlMCTrained";
+	//protected String trainedDir = "oomdpResearch/irlMCTrained";
+	protected String trainedDir = "oomdpResearch/irlMCTrained_test";
 
 
 	public MCIRL(){
@@ -147,7 +148,7 @@ public class MCIRL {
 		System.out.println("Trainign time: " + timer.getTime());
 
 
-		/* //uncomment to run tests
+		//uncomment to run tests
 		Policy p = new GreedyQPolicy(dss);
 		//Policy p = new GreedyQPolicy(zsp);
 
@@ -155,7 +156,7 @@ public class MCIRL {
 		//MountainCar.setAgent(ns, ns.getFirstObjectOfClass(MountainCar.CLASSAGENT).getRealValForAttribute(MountainCar.ATTX)+0.2, 0.);
 
 		System.out.println("starting episode...");
-		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(ns, new NullRewardFunction(), this.mcg.new ClassicMCTF(), 500);
+		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(ns, new NullRewardFunction(), new MountainCar.ClassicMCTF(), 500);
 
 		System.out.println("num steps in trained policy: " + trainedEpisode.numTimeSteps());
 
@@ -163,7 +164,7 @@ public class MCIRL {
 
 
 		new EpisodeSequenceVisualizer(v, domain, sp, trainedDir);
-		*/
+
 
 	}
 
@@ -459,7 +460,7 @@ public class MCIRL {
 		//mcirl.runVFIRL();
 
 		//mcirl.launchTrainedViewer();
-		mcirl.visLearnedRF();
+		//mcirl.visLearnedRF();
 		//mcirl.runSupervisedRHC();
 	}
 

@@ -69,7 +69,8 @@ public class GeneralPuddlesIRL {
 	protected int [][] puddleMap;
 
 	protected String expertDir = "oomdpResearch/irlGP";
-	protected String trainedDir = "oomdpResearch/irlGPTrained";
+	//protected String trainedDir = "oomdpResearch/irlGPTrained";
+	protected String trainedDir = "oomdpResearch/irlGPTrained_test";
 
 
 	public GeneralPuddlesIRL(){
@@ -171,15 +172,15 @@ public class GeneralPuddlesIRL {
 		PuddleMapFV ofvgen = new PuddleMapFV(this.puddleMap, 5, 20, 20);
 
 		//PuddleMapFV fvgen = new PuddleMapFV(this.puddleMap, 5, 20, 20);
-		PuddleMapFVComponent fvgen = new PuddleMapFVComponent(this.puddleMap, 5, 20, 20);
+		//PuddleMapFVComponent fvgen = new PuddleMapFVComponent(this.puddleMap, 5, 20, 20);
 		//StateToFeatureVectorGenerator fvgen = new ConcatenatedObjectFeatureVectorGenerator(false, GridWorldDomain.CLASSAGENT);
-		//PuddleMapExactFV fvgen = new PuddleMapExactFV(this.puddleMap, 5);
-		//LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
-		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
-				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONNORTH), ""),
-				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONSOUTH), ""),
-				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONEAST), ""),
-				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONWEST), ""));
+		PuddleMapExactFV fvgen = new PuddleMapExactFV(this.puddleMap, 5);
+		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
+//		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
+//				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONNORTH), ""),
+//				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONSOUTH), ""),
+//				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONEAST), ""),
+//				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONWEST), ""));
 
 		LinearStateDifferentiableRF objectiveRF = new LinearStateDifferentiableRF(ofvgen, ofvgen.getDim());
 		objectiveRF.setParameters(new double[]{1., -10, -10, 0, -10, 0, 0, 0, 0, 0});
@@ -190,16 +191,16 @@ public class GeneralPuddlesIRL {
 
 		int depth = 6;
 		double beta = 10;
-		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new NameDependentStateHashFactory(), depth, -1, beta);
-		DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
+		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new NameDependentStateHashFactory(), depth, -1, beta);
+		//DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
 		dss.toggleDebugPrinting(false);
 
 		MLIRLRequest request = new MLIRLRequest(domain, dss, eas, rf);
 		request.setBoltzmannBeta(beta);
 
 		//MLIRL irl = new MLIRL(request, 0.001, 0.01, 10); //use this for only the given features
-		//MLIRL irl = new MLIRL(request, 0.00001, 0.01, 10);
-		MLIRL irl = new MLIRL(request, 0.0001, 0.01, 10);
+		MLIRL irl = new MLIRL(request, 0.00001, 0.01, 10);
+		//MLIRL irl = new MLIRL(request, 0.0001, 0.01, 10);
 
 		irl.performIRL();
 
@@ -208,9 +209,9 @@ public class GeneralPuddlesIRL {
 		timer.stop();
 		System.out.println("Training time: " + timer.getTime());
 
-		/*//uncomment to run test examples
+		//uncomment to run test examples
 
-		String baseName = "RH45";
+		String baseName = "test";
 
 		Policy p = new GreedyQPolicy(dss);
 		GridWorldTerminalFunction tf = new GridWorldTerminalFunction(20, 20);
@@ -249,7 +250,7 @@ public class GeneralPuddlesIRL {
 
 
 		new EpisodeSequenceVisualizer(this.v, this.domain, this.sp, this.trainedDir);
-		*/
+
 
 	}
 
@@ -1206,7 +1207,7 @@ public class GeneralPuddlesIRL {
 		//exp.launchExplorer();
 		//exp.generateExpertTrajectories();
 		//exp.launchSavedEpisodeViewer();
-		//exp.runIRL();
+		exp.runIRL();
 		//exp.runSupervised();
 		//exp.runVFIRL();
 		//exp.runVFRFIRL();
@@ -1214,7 +1215,7 @@ public class GeneralPuddlesIRL {
 		//exp.launchTrajectoryRenderer();
 
 		//exp.launchTrainedViewer();
-		exp.visualizeFunctions();
+		//exp.visualizeFunctions();
 	}
 
 }

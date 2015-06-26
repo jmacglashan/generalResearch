@@ -31,6 +31,57 @@ public class OptionsExample {
 
 	public static void main(String[] args) {
 
+		//testOptions();
+		qLearning();
+
+	}
+
+
+	public static void testOptions(){
+
+		GridWorldDomain gwd = new GridWorldDomain(11, 11);
+		gwd.setMapToFourRooms();
+		Domain domain = gwd.generateDomain();
+
+		Option swToNorth = createRoomOption("swToNorth", domain, 1, 5, 0, 0, 4, 4);
+		Option swToEast = createRoomOption("swToEast", domain, 5, 1, 0, 0, 4, 4);
+
+		Option seToWest = createRoomOption("seToWest", domain, 5, 1, 6, 0, 10, 3);
+		Option seToNorth = createRoomOption("seToNorth", domain, 8, 4, 6, 0, 10, 3);
+
+		Option neToSouth = createRoomOption("neToSouth", domain, 8, 4, 6, 5, 10, 10);
+		Option neToWest = createRoomOption("neToWest", domain, 5, 8, 6, 5, 10, 10);
+
+		Option nwToEast = createRoomOption("nwToEast", domain, 5, 8, 0, 6, 4, 10);
+		Option nwToSouth = createRoomOption("nwToSouth", domain, 1, 5, 0, 6, 4, 10);
+
+		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
+
+		episodes.add(optionExecuteResult(swToNorth, GridWorldDomain.getOneAgentNoLocationState(domain, 0, 0)));
+		episodes.add(optionExecuteResult(swToEast, GridWorldDomain.getOneAgentNoLocationState(domain, 0, 0)));
+
+		episodes.add(optionExecuteResult(seToWest, GridWorldDomain.getOneAgentNoLocationState(domain, 10, 0)));
+		episodes.add(optionExecuteResult(seToNorth, GridWorldDomain.getOneAgentNoLocationState(domain, 10, 0)));
+
+		episodes.add(optionExecuteResult(neToSouth, GridWorldDomain.getOneAgentNoLocationState(domain, 10, 10)));
+		episodes.add(optionExecuteResult(neToWest, GridWorldDomain.getOneAgentNoLocationState(domain, 10, 10)));
+
+		episodes.add(optionExecuteResult(nwToEast, GridWorldDomain.getOneAgentNoLocationState(domain, 0, 10)));
+		episodes.add(optionExecuteResult(nwToSouth, GridWorldDomain.getOneAgentNoLocationState(domain, 0, 10)));
+
+		Visualizer v = GridWorldVisualizer.getVisualizer(gwd.getMap());
+		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v, domain, episodes);
+
+
+	}
+
+	public static EpisodeAnalysis optionExecuteResult(Option o, State s){
+		o.performAction(s, "");
+		return o.getLastExecutionResults();
+	}
+
+	public static void qLearning(){
+
 		//set up four rooms learning problem with the goal in the most north-east cell (10,10) and initial
 		//state in the most south-west cell (0,0).
 		GridWorldDomain gwd = new GridWorldDomain(11, 11);
@@ -41,9 +92,8 @@ public class OptionsExample {
 		RewardFunction rf = new UniformCostRF();
 		TerminalFunction tf = new GridWorldTerminalFunction(10, 10);
 
-
 		//pessimistic Q-learning with 0.1 learning rate and implicit default 0.1 epsilon greedy policy.
-		QLearning ql = new QLearning(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), -99, 0.1);
+		QLearning ql = new QLearning(domain, rf, tf, 0.99, new DiscreteStateHashFactory(), -99, 1.0);
 
 
 		//create and add options to Q-learning's set of abilities; change the below boolean values to
@@ -54,12 +104,12 @@ public class OptionsExample {
 			ql.addNonDomainReferencedAction(createRoomOption("swToNorth", domain, 1, 5, 0, 0, 4, 4));
 			ql.addNonDomainReferencedAction(createRoomOption("swToEast", domain, 5, 1, 0, 0, 4, 4));
 
-			ql.addNonDomainReferencedAction(createRoomOption("seToWest", domain, 5, 1, 6, 0, 10, 4));
-			ql.addNonDomainReferencedAction(createRoomOption("seToNorth", domain, 8, 4, 6, 0, 10, 4));
+			ql.addNonDomainReferencedAction(createRoomOption("seToWest", domain, 5, 1, 6, 0, 10, 3));
+			ql.addNonDomainReferencedAction(createRoomOption("seToNorth", domain, 8, 4, 6, 0, 10, 3));
 
 			if(addNorthEasyOptions) {
 				ql.addNonDomainReferencedAction(createRoomOption("neToSouth", domain, 8, 4, 6, 5, 10, 10));
-				ql.addNonDomainReferencedAction(createRoomOption("neToSouth", domain, 5, 8, 6, 5, 10, 10));
+				ql.addNonDomainReferencedAction(createRoomOption("neToWest", domain, 5, 8, 6, 5, 10, 10));
 			}
 
 			ql.addNonDomainReferencedAction(createRoomOption("nwToEast", domain, 5, 8, 0, 6, 4, 10));
@@ -69,16 +119,18 @@ public class OptionsExample {
 
 		//run 100 learning episodes, report the number of steps taken, and save them
 		List<EpisodeAnalysis> episodes = new ArrayList<EpisodeAnalysis>();
+		int totalSteps = 0;
 		for(int i = 0; i < 100; i++){
 			EpisodeAnalysis ea = ql.runLearningEpisodeFrom(s);
 			episodes.add(ea);
 			System.out.println(i + ": " + ea.maxTimeStep());
+			totalSteps += ea.maxTimeStep();
 		}
+		System.out.println("Total steps: " + totalSteps);
 
 		//visualize the learning episodes
 		Visualizer v = GridWorldVisualizer.getVisualizer(gwd.getMap());
 		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v, domain, episodes);
-
 	}
 
 	/**
@@ -132,7 +184,7 @@ public class OptionsExample {
 		//if you're trying to solve an RL problem, in practice you wouldn't be able to do this since
 		//you assume that the transition dynamics are unknown to the agent.
 		//BFS is sufficient for generating the policy to navigate to a hallway when grid world is deterministic
-		BFS bfs = new BFS(domain, terminationConditions, new DiscreteStateHashFactory());
+		BFS bfs = new BFS(domain, goalCondition, new DiscreteStateHashFactory());
 		bfs.toggleDebugPrinting(false);
 
 		//using a dynamic deterministic planner policy allows BFS to be lazily called to compute the policy of each state in the room

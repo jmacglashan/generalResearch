@@ -154,6 +154,7 @@ public class ContinuousDomainTutorial {
 		SparseSampling ss = new SparseSampling(domain, rf, tf, 1,
 				new NameDependentStateHashFactory(), 10, 1);
 		ss.setForgetPreviousPlanResults(true);
+		ss.toggleDebugPrinting(false);
 		Policy p = new GreedyQPolicy(ss);
 
 		EpisodeAnalysis ea = p.evaluateBehavior(initialState, rf, tf, 500);
