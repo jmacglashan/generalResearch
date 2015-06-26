@@ -5,6 +5,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.stochasticgames.SGDomain;
 import burlap.oomdp.stochasticgames.SingleAction;
 import burlap.oomdp.stochasticgames.common.UniversalSingleAction;
@@ -66,9 +68,9 @@ public class ForageSteal {
 		
 		generateDomain();
 		
-		State s = new State();
-		ObjectInstance a1 = new ObjectInstance(DOMAIN.getObjectClass(CLASSAGENT), "player0");
-		ObjectInstance a2 = new ObjectInstance(DOMAIN.getObjectClass(CLASSAGENT), "player1");
+		State s = new MutableState();
+		ObjectInstance a1 = new MutableObjectInstance(DOMAIN.getObjectClass(CLASSAGENT), "player0");
+		ObjectInstance a2 = new MutableObjectInstance(DOMAIN.getObjectClass(CLASSAGENT), "player1");
 		
 		a1.setValue(ATTPN, 0);
 		a2.setValue(ATTPN, 1);
@@ -77,7 +79,7 @@ public class ForageSteal {
 		s.addObject(a2);
 		
 		for(int i = 0; i < nf; i++){
-			ObjectInstance fa = new ObjectInstance(DOMAIN.getObjectClass(CLASSFALT), "FA"+i);
+			ObjectInstance fa = new MutableObjectInstance(DOMAIN.getObjectClass(CLASSFALT), "FA"+i);
 			s.addObject(fa);
 		}
 		
@@ -87,7 +89,7 @@ public class ForageSteal {
 	
 	
 	public static void setForageAlternaive(State s, int fa, int t){
-		ObjectInstance fao = s.getObjectsOfTrueClass(CLASSFALT).get(fa);
+		ObjectInstance fao = s.getObjectsOfClass(CLASSFALT).get(fa);
 		setForageAlternative(fao, t);
 	}
 	

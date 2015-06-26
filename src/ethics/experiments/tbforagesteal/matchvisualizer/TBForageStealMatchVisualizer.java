@@ -1008,7 +1008,7 @@ private static final long serialVersionUID = 1L;
 		}
 		
 		State s0 = TBForageSteal.getGameStartState(domain, arrayFA, forAgent);
-		List <ObjectInstance> agentObs = s0.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+		List <ObjectInstance> agentObs = s0.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 		s0.renameObject(agentObs.get(0), anames[0]);
 		s0.renameObject(agentObs.get(1), anames[1]);
 		

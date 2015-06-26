@@ -94,7 +94,7 @@ public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
 			
 			//otherwise we need to expand
 			for(Action a : actions){
-				List <GroundedAction> gas = sn.sh.s.getAllGroundedActionsFor(a);
+				List <GroundedAction> gas = a.getAllApplicableGroundedActions(sn.sh.s);
 				for(GroundedAction ga : gas){
 					StateHashTuple shp = this.stateHash(ga.executeIn(sn.sh.s));
 					if(closedSet.contains(shp)){
@@ -199,7 +199,7 @@ public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
 		List <QValue> res = new ArrayList<QValue>();
 		
 		for(Action a : actions){
-			List <GroundedAction> gas = s.getAllGroundedActionsFor(a);
+			List <GroundedAction> gas = a.getAllApplicableGroundedActions(s);
 			for(GroundedAction ga : gas){
 				res.add(this.getQ(s, ga));
 			}

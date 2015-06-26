@@ -17,6 +17,8 @@ import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -89,12 +91,12 @@ public class ExampleGridWorld implements DomainGenerator {
 	}
 	
 	public static State getExampleState(Domain domain){
-		State s = new State();
-		ObjectInstance agent = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "agent0");
+		State s = new MutableState();
+		ObjectInstance agent = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), "agent0");
 		agent.setValue(ATTX, 0);
 		agent.setValue(ATTY, 0);
 		
-		ObjectInstance location = new ObjectInstance(domain.getObjectClass(CLASSLOCATION), "location0");
+		ObjectInstance location = new MutableObjectInstance(domain.getObjectClass(CLASSLOCATION), "location0");
 		location.setValue(ATTX, 10);
 		location.setValue(ATTY, 10);
 		
@@ -142,8 +144,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			
 			//get agent and current position
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			int curX = agent.getDiscValForAttribute(ATTX);
-			int curY = agent.getDiscValForAttribute(ATTY);
+			int curX = agent.getIntValForAttribute(ATTX);
+			int curY = agent.getIntValForAttribute(ATTY);
 			
 			//sample directon with random roll
 			double r = Math.random();
@@ -174,8 +176,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			
 			//get agent and current position
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			int curX = agent.getDiscValForAttribute(ATTX);
-			int curY = agent.getDiscValForAttribute(ATTY);
+			int curX = agent.getIntValForAttribute(ATTX);
+			int curY = agent.getIntValForAttribute(ATTY);
 			
 			List<TransitionProbability> tps = new ArrayList<TransitionProbability>(4);
 			TransitionProbability noChangeTransition = null;
@@ -260,11 +262,11 @@ public class ExampleGridWorld implements DomainGenerator {
 			ObjectInstance agent = s.getObject(params[0]);
 			ObjectInstance location = s.getObject(params[1]);
 			
-			int ax = agent.getDiscValForAttribute(ATTX);
-			int ay = agent.getDiscValForAttribute(ATTY);
+			int ax = agent.getIntValForAttribute(ATTX);
+			int ay = agent.getIntValForAttribute(ATTY);
 			
-			int lx = location.getDiscValForAttribute(ATTX);
-			int ly = location.getDiscValForAttribute(ATTY);
+			int lx = location.getIntValForAttribute(ATTX);
+			int ly = location.getIntValForAttribute(ATTY);
 			
 			return ax == lx && ay == ly;
 		}
@@ -338,8 +340,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			float width = cWidth / fWidth;
 			float height = cHeight / fHeight;
 			
-			int ax = ob.getDiscValForAttribute(ATTX);
-			int ay = ob.getDiscValForAttribute(ATTY);
+			int ax = ob.getIntValForAttribute(ATTX);
+			int ay = ob.getIntValForAttribute(ATTY);
 			
 			//left corrdinate of cell on our canvas
 			float rx = ax*width;
@@ -377,8 +379,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			float width = cWidth / fWidth;
 			float height = cHeight / fHeight;
 			
-			int ax = ob.getDiscValForAttribute(ATTX);
-			int ay = ob.getDiscValForAttribute(ATTY);
+			int ax = ob.getIntValForAttribute(ATTX);
+			int ay = ob.getIntValForAttribute(ATTY);
 			
 			//left corrdinate of cell on our canvas
 			float rx = ax*width;
@@ -414,8 +416,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			
 			//get location of agent in next state
 			ObjectInstance agent = sprime.getFirstObjectOfClass(CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(ATTX);
-			int ay = agent.getDiscValForAttribute(ATTY);
+			int ax = agent.getIntValForAttribute(ATTX);
+			int ay = agent.getIntValForAttribute(ATTY);
 			
 			//are they at goal location?
 			if(ax == this.goalX && ay == this.goalY){
@@ -443,8 +445,8 @@ public class ExampleGridWorld implements DomainGenerator {
 			
 			//get location of agent in next state
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(ATTX);
-			int ay = agent.getDiscValForAttribute(ATTY);
+			int ax = agent.getIntValForAttribute(ATTX);
+			int ay = agent.getIntValForAttribute(ATTY);
 			
 			//are they at goal location?
 			if(ax == this.goalX && ay == this.goalY){

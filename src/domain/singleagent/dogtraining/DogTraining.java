@@ -17,6 +17,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
@@ -312,16 +314,16 @@ public class DogTraining implements DomainGenerator {
 	 */
 	public static State getOneDogNLocationNToyState(Domain d, int n, int m){
 		
-		State s = new State();
+		State s = new MutableState();
 		
 		for(int i = 0; i < n; i++){
-			s.addObject(new ObjectInstance(d.getObjectClass(CLASSLOCATION), CLASSLOCATION+i));
+			s.addObject(new MutableObjectInstance(d.getObjectClass(CLASSLOCATION), CLASSLOCATION+i));
 		}
 		
-		s.addObject(new ObjectInstance(d.getObjectClass(CLASSDOG), CLASSDOG+0));
+		s.addObject(new MutableObjectInstance(d.getObjectClass(CLASSDOG), CLASSDOG+0));
 		
 		for(int i = 0; i < m; i++){
-			s.addObject(new ObjectInstance(d.getObjectClass(CLASSTOY), CLASSTOY+i));
+			s.addObject(new MutableObjectInstance(d.getObjectClass(CLASSTOY), CLASSTOY+i));
 		}
 		
 		return s;
@@ -337,7 +339,7 @@ public class DogTraining implements DomainGenerator {
 	 * @param waiting whether the dog is currently waiting (not doing anything)
 	 */
 	public static void setDog(State s, int x, int y, int lookDirection, int waiting){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOG).get(0);
+		ObjectInstance o = s.getObjectsOfClass(CLASSDOG).get(0);
 		
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
@@ -356,7 +358,7 @@ public class DogTraining implements DomainGenerator {
 	 * @param holding which ball the dog is holding (index is 1-based, 0 means no ball being held)
 	 */
 	public static void setDog(State s, int x, int y, int lookDirection, int waiting, int holding){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOG).get(0);
+		ObjectInstance o = s.getObjectsOfClass(CLASSDOG).get(0);
 		
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
@@ -369,10 +371,10 @@ public class DogTraining implements DomainGenerator {
 	/**
 	 * Sets whether the dog is waiting or not
 	 * @param s the state in which to set the dog
-	 * @param t which status to set the dog's waiting
+	 * @param waiting which status to set the dog's waiting
 	 */
 	public static void setDogWaiting(State s, int waiting){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOG).get(0);
+		ObjectInstance o = s.getObjectsOfClass(CLASSDOG).get(0);
 		o.setValue(ATTWAITING, waiting);
 	}
 	
@@ -385,7 +387,7 @@ public class DogTraining implements DomainGenerator {
 	 * @param locid the location id ("red", "green", "blue", or "home")
 	 */
 	public static void setLocation(State s, int i, int x, int y, String locid){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSLOCATION).get(i);
+		ObjectInstance o = s.getObjectsOfClass(CLASSLOCATION).get(i);
 		
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
@@ -403,7 +405,7 @@ public class DogTraining implements DomainGenerator {
 	 */
 	public static void setToy(State s, int i, int x , int y){
 		
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSTOY).get(i);
+		ObjectInstance o = s.getObjectsOfClass(CLASSTOY).get(i);
 		
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
@@ -413,15 +415,15 @@ public class DogTraining implements DomainGenerator {
 	
 	/**
 	 * Attempts to move the dog into the given position, taking into account walls and blocks
-	 * @param the current state
-	 * @param the attempted new X position of the dog
-	 * @param the attempted new Y position of the dog
+	 * @param s the current state
+	 * @param xd the attempted new X position of the dog
+	 * @param yd the attempted new Y position of the dog
 	 */
 	protected void move(State s, int xd, int yd){
 		
-		ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-		int dx = dog.getDiscValForAttribute(ATTX);
-		int dy = dog.getDiscValForAttribute(ATTY);
+		ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+		int dx = dog.getIntValForAttribute(ATTX);
+		int dy = dog.getIntValForAttribute(ATTY);
 		
 		if(xd == 1){
 			dog.setValue(ATTLOOKING, 2);
@@ -450,9 +452,9 @@ public class DogTraining implements DomainGenerator {
 		dog.setValue(ATTY, ny);
 		
 		
-		int heldToy = dog.getDiscValForAttribute(ATTHOLDING);
+		int heldToy = dog.getIntValForAttribute(ATTHOLDING);
 		if(heldToy > 0){
-			ObjectInstance toy = s.getObjectsOfTrueClass(CLASSTOY).get(heldToy-1);
+			ObjectInstance toy = s.getObjectsOfClass(CLASSTOY).get(heldToy-1);
 			toy.setValue(ATTX, nx);
 			toy.setValue(ATTY, ny);
 		}
@@ -491,18 +493,18 @@ public class DogTraining implements DomainGenerator {
 	
 	
 	protected int firstToyAtDogLocation(State s){
-		ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-		int x = dog.getDiscValForAttribute(ATTX);
-		int y = dog.getDiscValForAttribute(ATTY);
+		ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+		int x = dog.getIntValForAttribute(ATTX);
+		int y = dog.getIntValForAttribute(ATTY);
 		
-		List <ObjectInstance> toys = s.getObjectsOfTrueClass(CLASSTOY);
+		List <ObjectInstance> toys = s.getObjectsOfClass(CLASSTOY);
 		if(toys.size() == 0){
 			return -1;
 		}
 		for(int i = 0; i < toys.size(); i++){
 			ObjectInstance toy = toys.get(i);
-			int tx = toy.getDiscValForAttribute(ATTX);
-			int ty = toy.getDiscValForAttribute(ATTY);
+			int tx = toy.getIntValForAttribute(ATTX);
+			int ty = toy.getIntValForAttribute(ATTY);
 			if(tx == x && ty == y){
 				return i;
 			}
@@ -514,8 +516,8 @@ public class DogTraining implements DomainGenerator {
 	
 	
 	protected boolean dogIsWaiting(State s){
-		ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-		int w = dog.getDiscValForAttribute(ATTWAITING);
+		ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+		int w = dog.getIntValForAttribute(ATTWAITING);
 		return w == 1;
 	}
 	
@@ -608,7 +610,7 @@ public class DogTraining implements DomainGenerator {
 		@Override
 		protected State performActionHelper(State s, String[] params) {
 			
-			ObjectInstance o = s.getObjectsOfTrueClass(CLASSDOG).get(0);
+			ObjectInstance o = s.getObjectsOfClass(CLASSDOG).get(0);
 			o.setValue(ATTWAITING, 1);
 			o.setValue(ATTLOOKING, 4);
 			
@@ -638,8 +640,8 @@ public class DogTraining implements DomainGenerator {
 				}
 			}
 			
-			ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-			if(dog.getDiscValForAttribute(ATTHOLDING) > 0){
+			ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+			if(dog.getIntValForAttribute(ATTHOLDING) > 0){
 				return false; //already holding something
 			}
 			int toyIndex = DogTraining.this.firstToyAtDogLocation(s);
@@ -653,8 +655,8 @@ public class DogTraining implements DomainGenerator {
 		@Override
 		protected State performActionHelper(State s, String[] params) {
 			
-			ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-			if(dog.getDiscValForAttribute(ATTHOLDING) > 0){
+			ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+			if(dog.getIntValForAttribute(ATTHOLDING) > 0){
 				return s; //already holding something
 			}
 			
@@ -694,8 +696,8 @@ public class DogTraining implements DomainGenerator {
 				}
 			}
 			
-			ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
-			if(dog.getDiscValForAttribute(ATTHOLDING) > 0){
+			ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
+			if(dog.getIntValForAttribute(ATTHOLDING) > 0){
 				return true; //is holding something to put down
 			}
 			return false;
@@ -704,7 +706,7 @@ public class DogTraining implements DomainGenerator {
 		
 		@Override
 		protected State performActionHelper(State s, String[] params) {
-			ObjectInstance dog = s.getObjectsOfTrueClass(CLASSDOG).get(0);
+			ObjectInstance dog = s.getObjectsOfClass(CLASSDOG).get(0);
 			dog.setValue(ATTHOLDING, 0);
 			dog.setValue(ATTWAITING, 0);
 			return s;
@@ -733,11 +735,11 @@ public class DogTraining implements DomainGenerator {
 			ObjectInstance ob = st.getObject(params[0]);
 			ObjectInstance location = st.getObject(params[1]);
 			
-			int ax = ob.getDiscValForAttribute(ATTX);
-			int ay = ob.getDiscValForAttribute(ATTY);
+			int ax = ob.getIntValForAttribute(ATTX);
+			int ay = ob.getIntValForAttribute(ATTY);
 			
-			int lx = location.getDiscValForAttribute(ATTX);
-			int ly = location.getDiscValForAttribute(ATTY);
+			int lx = location.getIntValForAttribute(ATTX);
+			int ly = location.getIntValForAttribute(ATTY);
 			
 			if(ax == lx && ay == ly){
 				return true;
@@ -770,8 +772,8 @@ public class DogTraining implements DomainGenerator {
 			
 			ObjectInstance dog = st.getObject(params[0]);
 			
-			int cx = dog.getDiscValForAttribute(ATTX) + xdelta;
-			int cy = dog.getDiscValForAttribute(ATTY) + ydelta;
+			int cx = dog.getIntValForAttribute(ATTX) + xdelta;
+			int cy = dog.getIntValForAttribute(ATTY) + ydelta;
 			
 			if(cx < 0 || cx >= DogTraining.this.width || cy < 0 || cy >= DogTraining.this.height || DogTraining.this.map[cx][cy] == 1){
 				return true;
@@ -824,12 +826,12 @@ public class DogTraining implements DomainGenerator {
 			ObjectInstance dog = st.getObject(params[0]);
 			ObjectInstance toy = st.getObject(params[1]);
 			
-			int heldToy = dog.getDiscValForAttribute(ATTHOLDING);
+			int heldToy = dog.getIntValForAttribute(ATTHOLDING);
 			if(heldToy == 0){
 				return false;
 			}
 			
-			if(st.getObjectsOfTrueClass(CLASSTOY).get(heldToy-1) == toy){
+			if(st.getObjectsOfClass(CLASSTOY).get(heldToy-1) == toy){
 				return true;
 			}
 			
@@ -853,7 +855,7 @@ public class DogTraining implements DomainGenerator {
 		public boolean isTrue(State st, String[] params) {
 			ObjectInstance dog = st.getObject(params[0]);
 			
-			int heldToy = dog.getDiscValForAttribute(ATTHOLDING);
+			int heldToy = dog.getIntValForAttribute(ATTHOLDING);
 			boolean hasToy = false;
 			if(heldToy > 0){
 				hasToy = true;
@@ -882,7 +884,7 @@ public class DogTraining implements DomainGenerator {
 		@Override
 		public boolean isTrue(State st, String[] params) {
 			ObjectInstance dog = st.getObject(params[0]);
-			int waiting = dog.getDiscValForAttribute(ATTWAITING);
+			int waiting = dog.getIntValForAttribute(ATTWAITING);
 			return waiting==1;
 		}
 		

@@ -5,6 +5,8 @@ import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.SADomain;
@@ -49,22 +51,22 @@ public class SokoAMDP2 implements DomainGenerator{
 
 	public static State projectFromA0(State s, Domain a2Domain){
 
-		State as = new State();
+		State as = new MutableState();
 
-		ObjectInstance aagent = new ObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT);
+		ObjectInstance aagent = new MutableObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT);
 		as.addObject(aagent);
 
-		List<ObjectInstance> rooms = s.getObjectsOfTrueClass(Sokoban2Domain.CLASSROOM);
+		List<ObjectInstance> rooms = s.getObjectsOfClass(Sokoban2Domain.CLASSROOM);
 		for(ObjectInstance r : rooms){
-			ObjectInstance ar = new ObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSROOM), r.getName());
+			ObjectInstance ar = new MutableObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSROOM), r.getName());
 			as.addObject(ar);
 		}
 
 		//set agent position
 		//first try room
 		ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-		int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-		int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+		int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+		int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 		ObjectInstance inRoom = Sokoban2Domain.roomContainingPoint(s, ax, ay);
 
 		if(inRoom != null){
@@ -74,11 +76,11 @@ public class SokoAMDP2 implements DomainGenerator{
 		//if agent isn't in a room, then leave it unset
 
 		//now do blocks
-		List<ObjectInstance> blocks = s.getObjectsOfTrueClass(Sokoban2Domain.CLASSBLOCK);
+		List<ObjectInstance> blocks = s.getObjectsOfClass(Sokoban2Domain.CLASSBLOCK);
 		for(ObjectInstance b : blocks){
-			ObjectInstance ab = new ObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), b.getName());
-			int bx = b.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int by = b.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			ObjectInstance ab = new MutableObjectInstance(a2Domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), b.getName());
+			int bx = b.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int by = b.getIntValForAttribute(Sokoban2Domain.ATTY);
 
 
 			ObjectInstance binRoom = Sokoban2Domain.roomContainingPoint(s, bx, by);

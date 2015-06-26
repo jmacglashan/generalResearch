@@ -38,14 +38,14 @@ public class GGJointRewardFunction implements JointReward {
 		Map <String, Double> rewards = new HashMap<String, Double>();
 		
 		//get all agents and initialize reward to default
-		List <ObjectInstance> obs = sp.getObjectsOfTrueClass(GridGame.CLASSAGENT);
+		List <ObjectInstance> obs = sp.getObjectsOfClass(GridGame.CLASSAGENT);
 		for(ObjectInstance o : obs){
 			rewards.put(o.getName(), defaultReward);
 		}
 		
 		
 		//check for any agents that reached a personal goal location and give them a goal reward if they did
-		List<GroundedProp> ipgps = sp.getAllGroundedPropsFor(agentInPersonalGoal);
+		List<GroundedProp> ipgps = agentInPersonalGoal.getAllGroundedPropsForState(sp);
 		for(GroundedProp gp : ipgps){
 			String agentName = gp.params[0];
 			if(gp.isTrue(sp)){
@@ -55,7 +55,7 @@ public class GGJointRewardFunction implements JointReward {
 		
 		
 		//check for any agents that reached a universal goal location and give them a goal reward if they did
-		List<GroundedProp> upgps = sp.getAllGroundedPropsFor(agentInUniversalGoal);
+		List<GroundedProp> upgps =agentInUniversalGoal.getAllGroundedPropsForState(sp);
 		for(GroundedProp gp : upgps){
 			String agentName = gp.params[0];
 			if(gp.isTrue(sp)){

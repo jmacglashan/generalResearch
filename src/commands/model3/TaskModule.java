@@ -427,7 +427,7 @@ public class TaskModule extends GMModule {
 				}
 				boolean possibleInState = true;
 				for(Entry<String, Integer> e : numOfEachObject.entrySet()){
-					if(e.getValue() > stateVal.s.getObjectsOfTrueClass(e.getKey()).size()){
+					if(e.getValue() > stateVal.s.getObjectsOfClass(e.getKey()).size()){
 						possibleInState = false;
 						break;
 					}
@@ -594,7 +594,7 @@ public class TaskModule extends GMModule {
 			List<GroundedProp> allTruePFs = new ArrayList<GroundedProp>();
 			List<PropositionalFunction> pfs = domain.getPropFunctions();
 			for(PropositionalFunction pf : pfs){
-				List <GroundedProp> gps = stateVal.s.getAllGroundedPropsFor(pf);
+				List <GroundedProp> gps = pf.getAllGroundedPropsForState(stateVal.s);
 				for(GroundedProp gp : gps){
 					if(gp.isTrue(stateVal.s)){
 						allTruePFs.add(gp);

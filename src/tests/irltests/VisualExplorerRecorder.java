@@ -358,7 +358,7 @@ public class VisualExplorerRecorder extends JFrame{
 
 		List <PropositionalFunction> props = domain.getPropFunctions();
 		for(PropositionalFunction pf : props){
-			List<GroundedProp> gps = s.getAllGroundedPropsFor(pf);
+			List<GroundedProp> gps = pf.getAllGroundedPropsForState(s);
 			for(GroundedProp gp : gps){
 				if(gp.isTrue(s)){
 					buf.append(gp.toString()).append("\n");

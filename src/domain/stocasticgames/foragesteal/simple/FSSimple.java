@@ -9,6 +9,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.stochasticgames.JointActionModel;
 import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
@@ -96,10 +98,10 @@ public class FSSimple implements DomainGenerator {
 	
 	public static State getInitialState(Domain domain, String player0Name, String player1Name, int backTurned, int...forageValues){
 		
-		State s = new State();
+		State s = new MutableState();
 		
-		ObjectInstance player0 = new ObjectInstance(domain.getObjectClass(CLASSPLAYER), player0Name);
-		ObjectInstance player1 = new ObjectInstance(domain.getObjectClass(CLASSPLAYER), player1Name);
+		ObjectInstance player0 = new MutableObjectInstance(domain.getObjectClass(CLASSPLAYER), player0Name);
+		ObjectInstance player1 = new MutableObjectInstance(domain.getObjectClass(CLASSPLAYER), player1Name);
 		
 		player0.setValue(ATTPN, 0);
 		player0.setValue(ATTBACKTURNED, 0);
@@ -110,12 +112,12 @@ public class FSSimple implements DomainGenerator {
 		s.addObject(player1);
 		
 		for(int i = 0; i < forageValues.length; i++){
-			ObjectInstance f = new ObjectInstance(domain.getObjectClass(CLASSFALT), CLASSFALT+i);
+			ObjectInstance f = new MutableObjectInstance(domain.getObjectClass(CLASSFALT), CLASSFALT+i);
 			f.setValue(ATTFA, forageValues[i]);
 			s.addObject(f);
 		}
 		
-		ObjectInstance snode = new ObjectInstance(domain.getObjectClass(CLASSSTATENODE), CLASSSTATENODE);
+		ObjectInstance snode = new MutableObjectInstance(domain.getObjectClass(CLASSSTATENODE), CLASSSTATENODE);
 		snode.setValue(ATTSTATENODE, 0);
 		
 		s.addObject(snode);
@@ -140,7 +142,7 @@ public class FSSimple implements DomainGenerator {
 	
 	public static int stateNode(State s){
 		ObjectInstance sn = s.getFirstObjectOfClass(CLASSSTATENODE);
-		int n = sn.getDiscValForAttribute(CLASSSTATENODE);
+		int n = sn.getIntValForAttribute(CLASSSTATENODE);
 		return n;
 	}
 	
@@ -161,13 +163,13 @@ public class FSSimple implements DomainGenerator {
 			}
 			
 			ObjectInstance p = s.getObject(actingAgent);
-			if(p.getDiscValForAttribute(ATTPN) != 0){
+			if(p.getIntValForAttribute(ATTPN) != 0){
 				return false;
 			}
 			
-			List<ObjectInstance> forageAlts = s.getObjectsOfTrueClass(CLASSFALT);
+			List<ObjectInstance> forageAlts = s.getObjectsOfClass(CLASSFALT);
 			for(ObjectInstance f : forageAlts){
-				if(f.getDiscValForAttribute(ATTFA) == this.falt){
+				if(f.getIntValForAttribute(ATTFA) == this.falt){
 					return true;
 				}
 			}
@@ -193,7 +195,7 @@ public class FSSimple implements DomainGenerator {
 			}
 			
 			ObjectInstance p = s.getObject(actingAgent);
-			if(p.getDiscValForAttribute(ATTPN) != 0){
+			if(p.getIntValForAttribute(ATTPN) != 0){
 				return false;
 			}
 			
@@ -219,7 +221,7 @@ public class FSSimple implements DomainGenerator {
 			}
 			
 			ObjectInstance p = s.getObject(actingAgent);
-			if(p.getDiscValForAttribute(ATTPN) != 1){
+			if(p.getIntValForAttribute(ATTPN) != 1){
 				return false;
 			}
 			
@@ -242,7 +244,7 @@ public class FSSimple implements DomainGenerator {
 				String[] params) {
 			
 			ObjectInstance p = s.getObject(actingAgent);
-			if(p.getDiscValForAttribute(ATTPN) == 1){
+			if(p.getIntValForAttribute(ATTPN) == 1){
 				return true;
 			}
 			

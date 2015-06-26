@@ -10,6 +10,8 @@ import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.auxiliary.common.StateYAMLParser;
 import burlap.oomdp.core.*;
 import burlap.oomdp.core.Attribute.AttributeType;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
@@ -165,9 +167,9 @@ public class TaxiDomain implements DomainGenerator {
 	
 	
 	public static State getClassicState(Domain domain){
-		State s = new State();
+		State s = new MutableState();
 		
-		ObjectInstance taxi = new ObjectInstance(domain.getObjectClass(TAXICLASS), "taxi");
+		ObjectInstance taxi = new MutableObjectInstance(domain.getObjectClass(TAXICLASS), "taxi");
 		s.addObject(taxi);
 		
 		boolean usesFuel = domain.getAttribute(FUELATT) != null; 
@@ -217,7 +219,7 @@ public class TaxiDomain implements DomainGenerator {
 	protected static void addNInstances(Domain domain, State s, String className, int n){
 		ObjectClass oc = domain.getObjectClass(className);
 		for(int i = 0; i < n; i++){
-			ObjectInstance o = new ObjectInstance(oc, className+i);
+			ObjectInstance o = new MutableObjectInstance(oc, className+i);
 			s.addObject(o);
 		}
 	}
@@ -237,14 +239,14 @@ public class TaxiDomain implements DomainGenerator {
 	}
 	
 	public static void setLocation(State s, int i, int x, int y, int lt){
-		ObjectInstance l = s.getObjectsOfTrueClass(LOCATIONCLASS).get(i);
+		ObjectInstance l = s.getObjectsOfClass(LOCATIONCLASS).get(i);
 		l.setValue(XATT, x);
 		l.setValue(YATT, y);
 		l.setValue(LOCATIONATT, lt);
 	}
 	
 	public static void setPassenger(State s, int i, int x, int y, int lt){
-		ObjectInstance p = s.getObjectsOfTrueClass(PASSENGERCLASS).get(i);
+		ObjectInstance p = s.getObjectsOfClass(PASSENGERCLASS).get(i);
 		p.setValue(XATT, x);
 		p.setValue(YATT, y);
 		p.setValue(LOCATIONATT, lt);
@@ -256,14 +258,14 @@ public class TaxiDomain implements DomainGenerator {
 	}
 	
 	public static void setHWall(State s, int i, int wallMin, int wallMax, int wallOffset){
-		ObjectInstance w = s.getObjectsOfTrueClass(HWALLCLASS).get(i);
+		ObjectInstance w = s.getObjectsOfClass(HWALLCLASS).get(i);
 		w.setValue(WALLMINATT, wallMin);
 		w.setValue(WALLMAXATT, wallMax);
 		w.setValue(WALLOFFSETATT, wallOffset);
 	}
 	
 	public static void setVWall(State s, int i, int wallMin, int wallMax, int wallOffset){
-		ObjectInstance w = s.getObjectsOfTrueClass(VWALLCLASS).get(i);
+		ObjectInstance w = s.getObjectsOfClass(VWALLCLASS).get(i);
 		w.setValue(WALLMINATT, wallMin);
 		w.setValue(WALLMAXATT, wallMax);
 		w.setValue(WALLOFFSETATT, wallOffset);
@@ -272,15 +274,15 @@ public class TaxiDomain implements DomainGenerator {
 	protected State move(State s, int dx, int dy){
 		
 		ObjectInstance taxi = s.getFirstObjectOfClass(TAXICLASS);
-		int tx = taxi.getDiscValForAttribute(XATT);
-		int ty = taxi.getDiscValForAttribute(YATT);
+		int tx = taxi.getIntValForAttribute(XATT);
+		int ty = taxi.getIntValForAttribute(YATT);
 		
 		int nx = tx+dx;
 		int ny = ty+dy;
 		
 		//using fuel?
 		if(this.includeFuel){
-			int fuel = taxi.getDiscValForAttribute(FUELATT);
+			int fuel = taxi.getIntValForAttribute(FUELATT);
 			if(fuel == 0){
 				//no movement possible
 				return s;
@@ -293,7 +295,7 @@ public class TaxiDomain implements DomainGenerator {
 		//check for wall bounding
 		
 		if(dx > 0){
-			List<ObjectInstance> vwalls = s.getObjectsOfTrueClass(VWALLCLASS);
+			List<ObjectInstance> vwalls = s.getObjectsOfClass(VWALLCLASS);
 			for(ObjectInstance wall : vwalls){
 				if(wallEast(tx, ty, wall)){
 					nx = tx;
@@ -302,7 +304,7 @@ public class TaxiDomain implements DomainGenerator {
 			}
 		}
 		else if(dx < 0){
-			List<ObjectInstance> vwalls = s.getObjectsOfTrueClass(VWALLCLASS);
+			List<ObjectInstance> vwalls = s.getObjectsOfClass(VWALLCLASS);
 			for(ObjectInstance wall : vwalls){
 				if(wallWest(tx, ty, wall)){
 					nx = tx;
@@ -311,7 +313,7 @@ public class TaxiDomain implements DomainGenerator {
 			}
 		}
 		else if(dy > 0){
-			List<ObjectInstance> hwalls = s.getObjectsOfTrueClass(HWALLCLASS);
+			List<ObjectInstance> hwalls = s.getObjectsOfClass(HWALLCLASS);
 			for(ObjectInstance wall : hwalls){
 				if(wallNorth(tx, ty, wall)){
 					ny = ty;
@@ -320,7 +322,7 @@ public class TaxiDomain implements DomainGenerator {
 			}
 		}
 		else if(dy < 0){
-			List<ObjectInstance> hwalls = s.getObjectsOfTrueClass(HWALLCLASS);
+			List<ObjectInstance> hwalls = s.getObjectsOfClass(HWALLCLASS);
 			for(ObjectInstance wall : hwalls){
 				if(wallSouth(tx, ty, wall)){
 					ny = ty;
@@ -335,9 +337,9 @@ public class TaxiDomain implements DomainGenerator {
 		
 		
 		//do we need to move a passenger as well?
-		List<ObjectInstance> passengers = s.getObjectsOfTrueClass(PASSENGERCLASS);
+		List<ObjectInstance> passengers = s.getObjectsOfClass(PASSENGERCLASS);
 		for(ObjectInstance p : passengers){
-			int inTaxi = p.getDiscValForAttribute(INTAXIATT);
+			int inTaxi = p.getIntValForAttribute(INTAXIATT);
 			if(inTaxi == 1){
 				p.setValue(XATT, nx);
 				p.setValue(YATT, ny);
@@ -383,13 +385,13 @@ public class TaxiDomain implements DomainGenerator {
 		protected State performActionHelper(State s, String[] params) {
 			
 			ObjectInstance taxi = s.getFirstObjectOfClass(TAXICLASS);
-			int tx = taxi.getDiscValForAttribute(XATT);
-			int ty = taxi.getDiscValForAttribute(YATT);
+			int tx = taxi.getIntValForAttribute(XATT);
+			int ty = taxi.getIntValForAttribute(YATT);
 			
-			List<ObjectInstance> passengers = s.getObjectsOfTrueClass(PASSENGERCLASS);
+			List<ObjectInstance> passengers = s.getObjectsOfClass(PASSENGERCLASS);
 			for(ObjectInstance p : passengers){
-				int px = p.getDiscValForAttribute(XATT);
-				int py = p.getDiscValForAttribute(YATT);
+				int px = p.getIntValForAttribute(XATT);
+				int py = p.getIntValForAttribute(YATT);
 				
 				if(tx == px && ty == py){
 					p.setValue(INTAXIATT, 1);
@@ -417,9 +419,9 @@ public class TaxiDomain implements DomainGenerator {
 		@Override
 		protected State performActionHelper(State s, String[] params) {
 			
-			List<ObjectInstance> passengers = s.getObjectsOfTrueClass(PASSENGERCLASS);
+			List<ObjectInstance> passengers = s.getObjectsOfClass(PASSENGERCLASS);
 			for(ObjectInstance p : passengers){
-				int in = p.getDiscValForAttribute(INTAXIATT);
+				int in = p.getIntValForAttribute(INTAXIATT);
 				if(in == 1){
 					p.setValue(INTAXIATT, 0);
 					break;
@@ -452,15 +454,15 @@ public class TaxiDomain implements DomainGenerator {
 			}
 			
 			ObjectInstance taxi = s.getFirstObjectOfClass(TAXICLASS);
-			int tx = taxi.getDiscValForAttribute(XATT);
-			int ty = taxi.getDiscValForAttribute(YATT);
+			int tx = taxi.getIntValForAttribute(XATT);
+			int ty = taxi.getIntValForAttribute(YATT);
 			
-			List<ObjectInstance> locations = s.getObjectsOfTrueClass(LOCATIONCLASS);
+			List<ObjectInstance> locations = s.getObjectsOfClass(LOCATIONCLASS);
 			for(ObjectInstance l : locations){
-				int lt = l.getDiscValForAttribute(LOCATIONATT);
+				int lt = l.getIntValForAttribute(LOCATIONATT);
 				if(lt == 0){
-					int lx = l.getDiscValForAttribute(XATT);
-					int ly = l.getDiscValForAttribute(YATT);
+					int lx = l.getIntValForAttribute(XATT);
+					int ly = l.getIntValForAttribute(YATT);
 					if(tx == lx && ty == ly){
 						taxi.setValue(FUELATT, maxFuel);
 					}
@@ -481,20 +483,20 @@ public class TaxiDomain implements DomainGenerator {
 	
 	
 	protected static boolean wallEast(int tx, int ty, ObjectInstance wall){
-		int wallo = wall.getDiscValForAttribute(WALLOFFSETATT);
+		int wallo = wall.getIntValForAttribute(WALLOFFSETATT);
 		if(wallo == tx+1){
-			int wallmin = wall.getDiscValForAttribute(WALLMINATT);
-			int wallmax = wall.getDiscValForAttribute(WALLMAXATT);
+			int wallmin = wall.getIntValForAttribute(WALLMINATT);
+			int wallmax = wall.getIntValForAttribute(WALLMAXATT);
 			return ty >= wallmin && ty < wallmax;
 		}
 		return false;
 	}
 	
 	protected static boolean wallWest(int tx, int ty, ObjectInstance wall){
-		int wallo = wall.getDiscValForAttribute(WALLOFFSETATT);
+		int wallo = wall.getIntValForAttribute(WALLOFFSETATT);
 		if(wallo == tx){
-			int wallmin = wall.getDiscValForAttribute(WALLMINATT);
-			int wallmax = wall.getDiscValForAttribute(WALLMAXATT);
+			int wallmin = wall.getIntValForAttribute(WALLMINATT);
+			int wallmax = wall.getIntValForAttribute(WALLMAXATT);
 			return ty >= wallmin && ty < wallmax;
 		}
 		return false;
@@ -502,20 +504,20 @@ public class TaxiDomain implements DomainGenerator {
 	
 	
 	protected static boolean wallNorth(int tx, int ty, ObjectInstance wall){
-		int wallo = wall.getDiscValForAttribute(WALLOFFSETATT);
+		int wallo = wall.getIntValForAttribute(WALLOFFSETATT);
 		if(wallo == ty+1){
-			int wallmin = wall.getDiscValForAttribute(WALLMINATT);
-			int wallmax = wall.getDiscValForAttribute(WALLMAXATT);
+			int wallmin = wall.getIntValForAttribute(WALLMINATT);
+			int wallmax = wall.getIntValForAttribute(WALLMAXATT);
 			return tx >= wallmin && tx < wallmax;
 		}
 		return false;
 	}
 	
 	protected static boolean wallSouth(int tx, int ty, ObjectInstance wall){
-		int wallo = wall.getDiscValForAttribute(WALLOFFSETATT);
+		int wallo = wall.getIntValForAttribute(WALLOFFSETATT);
 		if(wallo == ty){
-			int wallmin = wall.getDiscValForAttribute(WALLMINATT);
-			int wallmax = wall.getDiscValForAttribute(WALLMAXATT);
+			int wallmin = wall.getIntValForAttribute(WALLMINATT);
+			int wallmax = wall.getIntValForAttribute(WALLMAXATT);
 			return tx >= wallmin && tx < wallmax;
 		}
 		return false;
@@ -578,9 +580,9 @@ public class TaxiDomain implements DomainGenerator {
 		public void paint(Graphics2D g2, State s, float cWidth, float cHeight) {
 			
 			ObjectInstance p = s.getFirstObjectOfClass(PASSENGERCLASS);
-			int px = p.getDiscValForAttribute(XATT);
-			int py = p.getDiscValForAttribute(YATT);
-			int intaxi = p.getDiscValForAttribute(INTAXIATT);
+			int px = p.getIntValForAttribute(XATT);
+			int py = p.getIntValForAttribute(YATT);
+			int intaxi = p.getIntValForAttribute(INTAXIATT);
 			
 			if(intaxi == 0 && px == 0 && py == 4){
 				

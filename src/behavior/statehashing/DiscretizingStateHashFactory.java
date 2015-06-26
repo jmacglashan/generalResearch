@@ -16,7 +16,7 @@ import burlap.oomdp.core.Attribute.AttributeType;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
-import burlap.oomdp.core.Value;
+import burlap.oomdp.core.values.Value;
 
 
 /**
@@ -132,7 +132,7 @@ public class DiscretizingStateHashFactory implements StateHashFactory {
 			int totalVol = 1;
 			hashCode = 0;
 			for(String oclass : objectClasses){
-				List <ObjectInstance> obs = s.getObjectsOfTrueClass(oclass);
+				List <ObjectInstance> obs = s.getObjectsOfClass(oclass);
 				ObjectClass oc = obs.get(0).getObjectClass();
 				int vol = this.computeVolumeForClass(oc);
 				
@@ -165,11 +165,11 @@ public class DiscretizingStateHashFactory implements StateHashFactory {
 			for(Attribute att : attributes){
 				
 				if(att.type==AttributeType.DISC || att.type == AttributeType.BOOLEAN){
-					index += o.getDiscValForAttribute(att.name)*vol;
+					index += o.getIntValForAttribute(att.name)*vol;
 					vol *= att.discValues.size();
 				}
 				else if(att.type==AttributeType.INT){
-					index += o.getDiscValForAttribute(att.name)*vol;
+					index += o.getIntValForAttribute(att.name)*vol;
 					vol *= 31;
 				}
 				else if(att.type==AttributeType.REAL || att.type == AttributeType.REALUNBOUND){
@@ -256,8 +256,8 @@ public class DiscretizingStateHashFactory implements StateHashFactory {
 			for(String cname : classesToCheck){
 				
 				
-				List <ObjectInstance> theseObjects = this.s.getObjectsOfTrueClass(cname);
-				List <ObjectInstance> thoseObjects = that.s.getObjectsOfTrueClass(cname);
+				List <ObjectInstance> theseObjects = this.s.getObjectsOfClass(cname);
+				List <ObjectInstance> thoseObjects = that.s.getObjectsOfClass(cname);
 				
 				if(theseObjects.size() != thoseObjects.size()){
 					return false;

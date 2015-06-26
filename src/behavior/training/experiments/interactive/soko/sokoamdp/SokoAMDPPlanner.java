@@ -72,8 +72,8 @@ public class SokoAMDPPlanner extends DeterministicPlanner{
 			//first determine the room in which the block resides
 			this.blockName = gp.params[0];
 			ObjectInstance block = initialState.getObject(this.blockName);
-			int bx = block.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int by = block.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int bx = block.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int by = block.getIntValForAttribute(Sokoban2Domain.ATTY);
 			ObjectInstance containingRegion = Sokoban2Domain.roomContainingPoint(initialState, bx, by);
 			if(containingRegion == null){
 				containingRegion = Sokoban2Domain.doorContainingPoint(initialState, bx, by);

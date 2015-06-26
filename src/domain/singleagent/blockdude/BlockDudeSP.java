@@ -20,10 +20,10 @@ public class BlockDudeSP implements StateParser {
 	public String stateToString(State s) {
 		StringBuffer sbuf = new StringBuffer(256);
 		
-		ObjectInstance a = s.getObjectsOfTrueClass(BlockDude.CLASSAGENT).get(0);
-		ObjectInstance e = s.getObjectsOfTrueClass(BlockDude.CLASSEXIT).get(0);
-		List<ObjectInstance> blocks = s.getObjectsOfTrueClass(BlockDude.CLASSBLOCK);
-		List<ObjectInstance> platforms = s.getObjectsOfTrueClass(BlockDude.CLASSPLATFORM);
+		ObjectInstance a = s.getObjectsOfClass(BlockDude.CLASSAGENT).get(0);
+		ObjectInstance e = s.getObjectsOfClass(BlockDude.CLASSEXIT).get(0);
+		List<ObjectInstance> blocks = s.getObjectsOfClass(BlockDude.CLASSBLOCK);
+		List<ObjectInstance> platforms = s.getObjectsOfClass(BlockDude.CLASSPLATFORM);
 		
 		String xa = BlockDude.ATTX;
 		String ya = BlockDude.ATTY;
@@ -35,19 +35,19 @@ public class BlockDudeSP implements StateParser {
 		sbuf.append(blocks.size() + ", " + platforms.size() + ", ");
 		
 		//write the agent
-		sbuf.append(a.getDiscValForAttribute(xa) + " ").append(a.getDiscValForAttribute(ya) + " ").append(a.getDiscValForAttribute(da) + " ").append(a.getDiscValForAttribute(hda) + ", ");
+		sbuf.append(a.getIntValForAttribute(xa) + " ").append(a.getIntValForAttribute(ya) + " ").append(a.getIntValForAttribute(da) + " ").append(a.getIntValForAttribute(hda) + ", ");
 		
 		//write exit
-		sbuf.append(e.getDiscValForAttribute(xa) + " ").append(e.getDiscValForAttribute(ya));
+		sbuf.append(e.getIntValForAttribute(xa) + " ").append(e.getIntValForAttribute(ya));
 		
 		//write blocks
 		for(ObjectInstance b : blocks){
-			sbuf.append(", ").append(b.getDiscValForAttribute(xa) + " ").append(b.getDiscValForAttribute(ya));
+			sbuf.append(", ").append(b.getIntValForAttribute(xa) + " ").append(b.getIntValForAttribute(ya));
 		}
 		
 		//write platforms
 		for(ObjectInstance p : platforms){
-			sbuf.append(", ").append(p.getDiscValForAttribute(xa) + " ").append(p.getDiscValForAttribute(hea));
+			sbuf.append(", ").append(p.getIntValForAttribute(xa) + " ").append(p.getIntValForAttribute(hea));
 		}
 		
 		

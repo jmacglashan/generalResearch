@@ -29,7 +29,7 @@ public class GGTerminalFunction implements TerminalFunction {
 	public boolean isTerminal(State s) {
 		
 		//check personal goals; if anyone reached their personal goal, it's game over
-		List<GroundedProp> ipgps = s.getAllGroundedPropsFor(agentInPersonalGoal);
+		List<GroundedProp> ipgps = agentInPersonalGoal.getAllGroundedPropsForState(s);
 		for(GroundedProp gp : ipgps){
 			if(gp.isTrue(s)){
 				return true;
@@ -38,7 +38,7 @@ public class GGTerminalFunction implements TerminalFunction {
 		
 		
 		//check universal goals; if anyone reached a universal goal, it's game over
-		List<GroundedProp> upgps = s.getAllGroundedPropsFor(agentInUniversalGoal);
+		List<GroundedProp> upgps = agentInUniversalGoal.getAllGroundedPropsForState(s);
 		for(GroundedProp gp : upgps){
 			if(gp.isTrue(s)){
 				return true;

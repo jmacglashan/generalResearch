@@ -42,7 +42,7 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 		}
 		else{
 		
-			List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+			List <ObjectInstance> agentObs = s.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 			for(ObjectInstance aob : agentObs){
 				if(!aob.getName().equals(a1name)){
 					a2name = aob.getName();
@@ -137,7 +137,7 @@ public class TBFSSubjectiveRF implements ParameterizedRF {
 	protected int getPreviousTurnAction(String aname, State s){
 		
 		ObjectInstance o = s.getObject(aname);
-		int pa = o.getDiscValForAttribute(TBForageSteal.ATTPTA);
+		int pa = o.getIntValForAttribute(TBForageSteal.ATTPTA);
 		
 		return pa;
 	}

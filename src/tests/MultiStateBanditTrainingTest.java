@@ -258,7 +258,7 @@ public class MultiStateBanditTrainingTest {
 		@Override
 		public GroundedAction getAction(State s) {
 			
-			int gNode = s.getObjectsOfTrueClass(GraphDefinedDomain.CLASSAGENT).get(0).getDiscValForAttribute(GraphDefinedDomain.ATTNODE);
+			int gNode = s.getObjectsOfClass(GraphDefinedDomain.CLASSAGENT).get(0).getIntValForAttribute(GraphDefinedDomain.ATTNODE);
 			
 			int aId = (gNode - 1) % nActions;
 			
@@ -301,7 +301,7 @@ public class MultiStateBanditTrainingTest {
 		
 		@Override
 		public boolean isTerminal(State s) {
-			int gNode = s.getObjectsOfTrueClass(GraphDefinedDomain.CLASSAGENT).get(0).getDiscValForAttribute(GraphDefinedDomain.ATTNODE);
+			int gNode = s.getObjectsOfClass(GraphDefinedDomain.CLASSAGENT).get(0).getIntValForAttribute(GraphDefinedDomain.ATTNODE);
 			return gNode == termNode;
 		}
 		

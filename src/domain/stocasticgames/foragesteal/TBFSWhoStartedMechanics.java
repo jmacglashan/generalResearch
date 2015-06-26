@@ -40,7 +40,7 @@ public class TBFSWhoStartedMechanics extends JointActionModel {
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance ao = s.getObject(gsa.actingAgent);
 			
-			int turn = ao.getDiscValForAttribute(TBForageSteal.ATTISTURN);
+			int turn = ao.getIntValForAttribute(TBForageSteal.ATTISTURN);
 			if(turn == 1){
 				agentForTurnAction = gsa;
 				agentForTurnObject = ao;
@@ -98,8 +98,8 @@ public class TBFSWhoStartedMechanics extends JointActionModel {
 		
 		int punchState = 3;
 		
-		int aftPN = agentForTurn.getDiscValForAttribute(TBForageSteal.ATTPN);
-		int naaPA = nonActingAgent.getDiscValForAttribute(TBForageSteal.ATTPTA);
+		int aftPN = agentForTurn.getIntValForAttribute(TBForageSteal.ATTPN);
+		int naaPA = nonActingAgent.getIntValForAttribute(TBForageSteal.ATTPTA);
 		
 		if((aftPN == 0 && naaPA == 2) || naaPA == 4){
 			punchState = 4;

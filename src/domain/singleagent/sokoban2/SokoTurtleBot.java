@@ -120,7 +120,7 @@ public class SokoTurtleBot extends Sokoban2Domain{
 		protected State performActionHelper(State s, String[] params) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int dir = agent.getDiscValForAttribute(Sokoban2Domain.ATTDIR);
+			int dir = agent.getIntValForAttribute(Sokoban2Domain.ATTDIR);
 
 			/*
 			0: north
@@ -166,9 +166,9 @@ public class SokoTurtleBot extends Sokoban2Domain{
 		protected State performActionHelper(State s, String[] params) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
-			int dir = agent.getDiscValForAttribute(Sokoban2Domain.ATTDIR);
+			int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
+			int dir = agent.getIntValForAttribute(Sokoban2Domain.ATTDIR);
 
 			int xdelta = 0;
 			int ydelta = 0;
@@ -192,14 +192,14 @@ public class SokoTurtleBot extends Sokoban2Domain{
 			int nx = ax+xdelta;
 			int ny = ay+ydelta;
 
-			ObjectInstance roomContaining = regionContainingPoint(s.getObjectsOfTrueClass(CLASSROOM), ax, ay, true);
+			ObjectInstance roomContaining = regionContainingPoint(s.getObjectsOfClass(CLASSROOM), ax, ay, true);
 
 
 			boolean permissibleMove = false;
 			ObjectInstance pushedBlock = blockAtPoint(s, nx, ny);
 			if(pushedBlock != null){
-				int bx = pushedBlock.getDiscValForAttribute(ATTX);
-				int by = pushedBlock.getDiscValForAttribute(ATTY);
+				int bx = pushedBlock.getIntValForAttribute(ATTX);
+				int by = pushedBlock.getIntValForAttribute(ATTY);
 
 				int nbx = bx + xdelta;
 				int nby = by + ydelta;

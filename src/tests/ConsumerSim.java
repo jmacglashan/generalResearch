@@ -2,6 +2,8 @@ package tests;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -62,8 +64,8 @@ public class ConsumerSim implements DomainGenerator{
 	}
 
 	public static State getExampleState(Domain domain){
-		State s = new State();
-		ObjectInstance seller = new ObjectInstance(domain.getObjectClass(CLASSSELLER), "seller0");
+		State s = new MutableState();
+		ObjectInstance seller = new MutableObjectInstance(domain.getObjectClass(CLASSSELLER), "seller0");
 		int[] decisionHistoryInit = new int[1];
 		decisionHistoryInit[0] = 1;
 		int[] priceHistoryInit = new int[1];
@@ -71,7 +73,7 @@ public class ConsumerSim implements DomainGenerator{
 		seller.setValue(ATTDECISIONHISTORY, decisionHistoryInit);
 		seller.setValue(ATTPRICEHISTORY, priceHistoryInit);
 
-		ObjectInstance consumer = new ObjectInstance(domain.getObjectClass(CLASSCONSUMER), "consumer0");
+		ObjectInstance consumer = new MutableObjectInstance(domain.getObjectClass(CLASSCONSUMER), "consumer0");
 		consumer.setValue(ATTWTP, ConsumerSim.getSampleWTP());
 
 		s.addObject(seller);
@@ -114,9 +116,9 @@ public class ConsumerSim implements DomainGenerator{
 			ObjectInstance consumer = s.getFirstObjectOfClass(CLASSCONSUMER);
 			ObjectInstance seller = s.getFirstObjectOfClass(CLASSSELLER);
 
-			int curWTP = consumer.getDiscValForAttribute(ATTWTP);
-			int[] curDecisionHistory = seller.getIntArrayValue(ATTDECISIONHISTORY);
-			int[] curPriceHistory = seller.getIntArrayValue(ATTPRICEHISTORY);
+			int curWTP = consumer.getIntValForAttribute(ATTWTP);
+			int[] curDecisionHistory = seller.getIntArrayValForAttribute(ATTDECISIONHISTORY);
+			int[] curPriceHistory = seller.getIntArrayValForAttribute(ATTPRICEHISTORY);
 
 			int decision = this.getDecision(price, curWTP);
 
@@ -151,13 +153,13 @@ public class ConsumerSim implements DomainGenerator{
 
 			ObjectInstance consumer = s.getFirstObjectOfClass(CLASSCONSUMER);
 			ObjectInstance seller = s.getFirstObjectOfClass(CLASSSELLER);
-			int curWTP = consumer.getDiscValForAttribute(ATTWTP);
+			int curWTP = consumer.getIntValForAttribute(ATTWTP);
 			int d = getDecision(this.price, curWTP);
 
 			for(int i = 0; i < 3; i++){
 				State ns = s.copy();
-				int[] curDecisionHistory = seller.getIntArrayValue(ATTDECISIONHISTORY);
-				int[] curPriceHistory = seller.getIntArrayValue(ATTPRICEHISTORY);
+				int[] curDecisionHistory = seller.getIntArrayValForAttribute(ATTDECISIONHISTORY);
+				int[] curPriceHistory = seller.getIntArrayValForAttribute(ATTPRICEHISTORY);
 
 				int[] newDecisionHistory;
 				int[] newPriceHistory;
@@ -215,8 +217,8 @@ public class ConsumerSim implements DomainGenerator{
 		public double reward(State s, GroundedAction a, State sprime) {
 
 			ObjectInstance seller = sprime.getFirstObjectOfClass(CLASSSELLER);
-			int[] curDecisionHistory = seller.getIntArrayValue(ATTDECISIONHISTORY);
-			int[] curPriceHistory = seller.getIntArrayValue(ATTPRICEHISTORY);
+			int[] curDecisionHistory = seller.getIntArrayValForAttribute(ATTDECISIONHISTORY);
+			int[] curPriceHistory = seller.getIntArrayValForAttribute(ATTPRICEHISTORY);
 
 			//Did the player buy it?
 			switch (curDecisionHistory[curDecisionHistory.length-1]){
@@ -245,7 +247,7 @@ public class ConsumerSim implements DomainGenerator{
 
 			//get location of agent in next state
 			ObjectInstance seller = s.getFirstObjectOfClass(CLASSSELLER);
-			int[] curDecisionHistory = seller.getIntArrayValue(ATTDECISIONHISTORY);
+			int[] curDecisionHistory = seller.getIntArrayValForAttribute(ATTDECISIONHISTORY);
 
 			if(curDecisionHistory[curDecisionHistory.length-1] == 1 ){
 				return false;

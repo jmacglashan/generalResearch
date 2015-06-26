@@ -748,8 +748,8 @@ public class SimulatedHumanGrid {
 		public boolean satisfies(State s) {
 			
 			ObjectInstance a = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = a.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = a.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = a.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = a.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			if(this.types.contains(this.map[ax][ay])){
 				return true;
@@ -827,10 +827,10 @@ public class SimulatedHumanGrid {
 		@Override
 		public boolean satisfies(State s) {
 			
-			List<ObjectInstance> locations = s.getObjectsOfTrueClass(GridWorldDomain.CLASSLOCATION);
+			List<ObjectInstance> locations = s.getObjectsOfClass(GridWorldDomain.CLASSLOCATION);
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
 			for(ObjectInstance loc : locations){
-				if(loc.getDiscValForAttribute(GridWorldDomain.ATTLOCTYPE) == this.locationType){
+				if(loc.getIntValForAttribute(GridWorldDomain.ATTLOCTYPE) == this.locationType){
 					if(this.atLocationPF.isTrue(s, new String[]{agent.getName(), loc.getName()})){
 						return true;
 					}
@@ -863,10 +863,10 @@ public class SimulatedHumanGrid {
 				return false;
 			}
 			
-			List<ObjectInstance> locations = s.getObjectsOfTrueClass(GridWorldDomain.CLASSLOCATION);
+			List<ObjectInstance> locations = s.getObjectsOfClass(GridWorldDomain.CLASSLOCATION);
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
 			for(ObjectInstance loc : locations){
-				if(this.types.contains(loc.getDiscValForAttribute(GridWorldDomain.ATTLOCTYPE))){
+				if(this.types.contains(loc.getIntValForAttribute(GridWorldDomain.ATTLOCTYPE))){
 					if(this.atLocationPF.isTrue(s, new String[]{agent.getName(), loc.getName()})){
 						return true;
 					}

@@ -42,6 +42,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.NullAction;
@@ -423,7 +425,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		
 		List <PropositionalFunction> props = domain.getPropFunctions();
 		for(PropositionalFunction pf : props){
-			List<GroundedProp> gps = s.getAllGroundedPropsFor(pf);
+			List<GroundedProp> gps = pf.getAllGroundedPropsForState(s);
 			for(GroundedProp gp : gps){
 				if(gp.isTrue(s)){
 					buf.append(gp.toString()).append("\n");
@@ -471,7 +473,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	protected void resetState(boolean emptyState){
 		if(emptyState){
-			this.curState = new State();
+			this.curState = new MutableState();
 		}
 		else{
 			this.curState = Sokoban2Domain.getClassicState(this.domain);
@@ -628,7 +630,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			
 			if(this.currentlyCreatedRoom == null){
 				int nroomNum = this.nextRoomObNameNumber(curState);
-				this.currentlyCreatedRoom = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSROOM), Sokoban2Domain.CLASSROOM+nroomNum);
+				this.currentlyCreatedRoom = new MutableObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSROOM), Sokoban2Domain.CLASSROOM+nroomNum);
 				this.curState.addObject(currentlyCreatedRoom);
 				this.freezeSelection = true;
 			}
@@ -674,8 +676,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	
 	protected void addBlock(){
-		int nBlock = this.nextObNameNumber(this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSBLOCK));
-		ObjectInstance b = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), Sokoban2Domain.CLASSBLOCK+nBlock);
+		int nBlock = this.nextObNameNumber(this.curState.getObjectsOfClass(Sokoban2Domain.CLASSBLOCK));
+		ObjectInstance b = new MutableObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSBLOCK), Sokoban2Domain.CLASSBLOCK+nBlock);
 		Sokoban2Domain.setBlock(b, this.lastCellX, this.lastCellY, Sokoban2Domain.SHAPES[0], Sokoban2Domain.COLORS[0]);
 		this.curState.addObject(b);
 		this.selectedObject = b;
@@ -684,10 +686,10 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	protected void addOrSetAgent(){
 		
-		List<ObjectInstance> agents = this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSAGENT);
+		List<ObjectInstance> agents = this.curState.getObjectsOfClass(Sokoban2Domain.CLASSAGENT);
 		ObjectInstance a = null;
 		if(agents.size() == 0){
-			a = new ObjectInstance(domain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT + 0);
+			a = new MutableObjectInstance(domain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT + 0);
 			this.curState.addObject(a);
 			Sokoban2Domain.setAgent(this.curState, this.lastCellX, this.lastCellY, 1);
 		}
@@ -711,10 +713,10 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		}
 		
 		//make sure we're on the wall of a room
-		int top = this.selectedObject.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-		int left = this.selectedObject.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-		int bottom = this.selectedObject.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-		int right = this.selectedObject.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+		int top = this.selectedObject.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+		int left = this.selectedObject.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+		int bottom = this.selectedObject.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+		int right = this.selectedObject.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 		
 		if(this.lastCellX == left || this.lastCellX == right || this.lastCellY == top || this.lastCellY == bottom){
 			
@@ -728,10 +730,10 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 				int maxY = minY;
 				
 				for(ObjectInstance d : adjacentDoors){
-					int dtop = d.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-					int dleft = d.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-					int dbottom = d.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-					int dright = d.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+					int dtop = d.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+					int dleft = d.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+					int dbottom = d.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+					int dright = d.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 					
 					minX = Math.min(minX, dleft);
 					maxX = Math.max(maxX, dright);
@@ -751,8 +753,8 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			else{
 				
 				//otherwise make a new door object
-				int ndoor = this.nextObNameNumber(this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSDOOR));
-				ObjectInstance d = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSDOOR), Sokoban2Domain.CLASSDOOR+ndoor);
+				int ndoor = this.nextObNameNumber(this.curState.getObjectsOfClass(Sokoban2Domain.CLASSDOOR));
+				ObjectInstance d = new MutableObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSDOOR), Sokoban2Domain.CLASSDOOR+ndoor);
 				Sokoban2Domain.setRegion(d, this.lastCellY, this.lastCellX, this.lastCellY, this.lastCellX);
 				this.curState.addObject(d);
 				
@@ -831,7 +833,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	}
 	
 	protected List<ObjectInstance> getAdjacentDoorsToCell(int x, int y){
-		List <ObjectInstance> doors = this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSDOOR);
+		List <ObjectInstance> doors = this.curState.getObjectsOfClass(Sokoban2Domain.CLASSDOOR);
 		List <ObjectInstance> res = new ArrayList<ObjectInstance>(doors.size());
 		
 		for(ObjectInstance d : doors){
@@ -854,18 +856,18 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		}
 		
 		//first check agent
-		List<ObjectInstance> agents = this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSAGENT);
+		List<ObjectInstance> agents = this.curState.getObjectsOfClass(Sokoban2Domain.CLASSAGENT);
 		for(ObjectInstance o : agents){
-			if(o.getDiscValForAttribute(Sokoban2Domain.ATTX) == cellX && o.getDiscValForAttribute(Sokoban2Domain.ATTY) == cellY){
+			if(o.getIntValForAttribute(Sokoban2Domain.ATTX) == cellX && o.getIntValForAttribute(Sokoban2Domain.ATTY) == cellY){
 				this.selectedObject = o;
 				return;
 			}
 		}
 		
 		//then check blocks
-		List <ObjectInstance> blocks = this.curState.getObjectsOfTrueClass(Sokoban2Domain.CLASSBLOCK);
+		List <ObjectInstance> blocks = this.curState.getObjectsOfClass(Sokoban2Domain.CLASSBLOCK);
 		for(ObjectInstance o : blocks){
-			if(o.getDiscValForAttribute(Sokoban2Domain.ATTX) == cellX && o.getDiscValForAttribute(Sokoban2Domain.ATTY) == cellY){
+			if(o.getIntValForAttribute(Sokoban2Domain.ATTX) == cellX && o.getIntValForAttribute(Sokoban2Domain.ATTY) == cellY){
 				this.selectedObject = o;
 				return;
 			}
@@ -916,7 +918,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	
 	protected int nextRoomObNameNumber(State s){
-		return this.nextObNameNumber(s.getObjectsOfTrueClass(Sokoban2Domain.CLASSROOM));
+		return this.nextObNameNumber(s.getObjectsOfClass(Sokoban2Domain.CLASSROOM));
 	}
 	
 	protected int nextObNameNumber(List<ObjectInstance> obs){

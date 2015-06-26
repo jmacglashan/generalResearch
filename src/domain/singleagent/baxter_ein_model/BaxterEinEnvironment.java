@@ -4,6 +4,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.GroundedProp;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.environment.DomainEnvironmentWrapper;
 import burlap.oomdp.singleagent.environment.Environment;
 import burlap.oomdp.singleagent.explorer.TerminalExplorer;
@@ -107,7 +108,7 @@ public class BaxterEinEnvironment extends Environment implements RosListenDelega
 	@Override
 	public void receive(JsonNode data, String stringRep) {
 
-		State s = new State();
+		State s = new MutableState();
 		JsonNode objects = data.get("msg").get("objects");
 		for(int i = 0; i < objects.size(); i++){
 			JsonNode ob = objects.get(i);

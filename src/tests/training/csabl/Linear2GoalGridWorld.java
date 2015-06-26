@@ -112,8 +112,8 @@ public class Linear2GoalGridWorld {
 		public double[] generateFeatureVectorFrom(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			double [] vec = new double[this.locations.length];
 			for(int i = 0; i < vec.length; i++){

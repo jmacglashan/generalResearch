@@ -188,7 +188,7 @@ public class TaskInductionTraining extends OOMDPPlanner implements
 	}
 	
 	protected GroundedAction worldAction(State s, GroundedAction ga){
-		List <GroundedAction> wgas = s.getAllGroundedActionsFor(this.actions);
+		List <GroundedAction> wgas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, s);
 		for(GroundedAction wga : wgas){
 			if(wga.equals(ga)){
 				return wga;

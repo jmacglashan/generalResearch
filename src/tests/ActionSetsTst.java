@@ -25,8 +25,8 @@ public class ActionSetsTst {
 		GridWorldDomain.setAgent(s2, 2, 2);
 		
 		Set<GroundedAction> gas = new HashSet<GroundedAction>();
-		List<GroundedAction> gas1 = s1.getAllGroundedActionsFor(acitons);
-		List<GroundedAction> gas2 = s2.getAllGroundedActionsFor(acitons);
+		List<GroundedAction> gas1 = Action.getAllApplicableGroundedActionsFromActionList(acitons, s1);
+		List<GroundedAction> gas2 = Action.getAllApplicableGroundedActionsFromActionList(acitons, s2);
 		
 		for(GroundedAction ga : gas1){
 			gas.add(ga);

@@ -42,7 +42,7 @@ public class TBFSSRFWS4Param implements ParameterizedRF {
 		}
 		else{
 		
-			List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+			List <ObjectInstance> agentObs = s.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 			for(ObjectInstance aob : agentObs){
 				if(!aob.getName().equals(a1name)){
 					a2name = aob.getName();
@@ -118,8 +118,8 @@ public class TBFSSRFWS4Param implements ParameterizedRF {
 		}
 		else if(actionName.equals(TBForageSteal.ACTIONPUNCH)){
 			
-			int actPN = actingAgent.getDiscValForAttribute(TBForageSteal.ATTPN);
-			int actSA = actingAgent.getDiscValForAttribute(TBForageSteal.ATTPTA);
+			int actPN = actingAgent.getIntValForAttribute(TBForageSteal.ATTPN);
+			int actSA = actingAgent.getIntValForAttribute(TBForageSteal.ATTPTA);
 			if(actPN == 0){
 				
 				

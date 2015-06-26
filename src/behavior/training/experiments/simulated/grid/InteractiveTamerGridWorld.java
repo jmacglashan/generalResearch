@@ -524,8 +524,8 @@ public class InteractiveTamerGridWorld {
 		@Override
 		public boolean satisfies(State s) {
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int x = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int y = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int x = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int y = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			return x == this.x && y == this.y;
 		}
@@ -565,8 +565,8 @@ public class InteractiveTamerGridWorld {
 		@Override
 		public double[] generateFeatureVectorFrom(State s) {
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			double [] fv = new double[2];
 			

@@ -38,6 +38,7 @@ import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.visualizer.Visualizer;
@@ -571,7 +572,7 @@ private static final long serialVersionUID = 1L;
 	       			trajectory = trainEl.trajectory;
 					//System.out.println("Finished Loading File.");
 					
-					painter.updateState(new State()); //clear screen
+					painter.updateState(new MutableState()); //clear screen
 					this.setIterationListData();
 					
 					selectedOnNewTrajectory = false;

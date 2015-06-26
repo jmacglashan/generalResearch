@@ -764,7 +764,7 @@ public class SimpleLearningExp {
 		public AbstractGroundedAction getAction(State s) {
 			
 			
-			int sn = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE);
+			int sn = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getIntValForAttribute(FSSimple.ATTSTATENODE);
 			
 			double r = this.rand.nextDouble();
 			
@@ -808,8 +808,8 @@ public class SimpleLearningExp {
 		public void observe(State s, JointAction ja,
 				Map<String, Double> reward, State sp) {
 			
-			int sn0 = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE);
-			int sn1 = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE);
+			int sn0 = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getIntValForAttribute(FSSimple.ATTSTATENODE);
+			int sn1 = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getIntValForAttribute(FSSimple.ATTSTATENODE);
 			
 			System.out.println(reward.get("player1") + "\t" + ja.action("player0").action.actionName + "\t" + sn0 + " " + sn1);
 			

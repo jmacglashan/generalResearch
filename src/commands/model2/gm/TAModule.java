@@ -495,7 +495,7 @@ public class TAModule extends MNPEMModule {
 	protected boolean htSupportedInState(HollowTaskValue htv, State s){
 		for(ClassVarPair cvp : htv.vars){
 			String className = cvp.varClass;
-			if(s.getObjectsOfTrueClass(className).size() == 0){
+			if(s.getObjectsOfClass(className).size() == 0){
 				return false;
 			}
 		}
@@ -553,7 +553,7 @@ public class TAModule extends MNPEMModule {
 		
 		for(ClassVarPair cvp : classMap.keySet()){
 			List <GroundedProp> propsForCVP = classMap.get(cvp);
-			List <ObjectInstance> possibleObjectsBindings = s.getObjectsOfTrueClass(cvp.varClass);
+			List <ObjectInstance> possibleObjectsBindings = s.getObjectsOfClass(cvp.varClass);
 			boolean foundSatisfying = false;
 			for(ObjectInstance o : possibleObjectsBindings){
 				if(this.bindingSatisfies(o.getName(), propsForCVP, s)){

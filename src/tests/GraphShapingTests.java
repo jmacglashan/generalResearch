@@ -197,8 +197,8 @@ public class GraphShapingTests {
 	
 	
 	public static int stateNode(State s){
-		ObjectInstance o = s.getObjectsOfTrueClass(GraphDefinedDomain.CLASSAGENT).get(0);
-		return o.getDiscValForAttribute(GraphDefinedDomain.ATTNODE);
+		ObjectInstance o = s.getObjectsOfClass(GraphDefinedDomain.CLASSAGENT).get(0);
+		return o.getIntValForAttribute(GraphDefinedDomain.ATTNODE);
 	}
 	
 	

@@ -5,6 +5,8 @@ import java.util.List;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;
 import burlap.oomdp.core.Attribute.AttributeType;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 
@@ -60,7 +62,7 @@ public class BinaryLockDomain implements DomainGenerator {
 	
 	
 	public static ObjectInstance findObWithBitPos(State s, int bpos){
-		List<ObjectInstance> objects = s.getObjectsOfTrueClass(CLASSBIT);
+		List<ObjectInstance> objects = s.getObjectsOfClass(CLASSBIT);
 		return findObWithBitPos(objects, bpos);
 	}
 	
@@ -68,7 +70,7 @@ public class BinaryLockDomain implements DomainGenerator {
 	public static ObjectInstance findObWithBitPos(List<ObjectInstance> objects, int bpos){
 		
 		for(ObjectInstance o : objects){
-			int op = o.getDiscValForAttribute(ATTBITPOS);
+			int op = o.getIntValForAttribute(ATTBITPOS);
 			if(op == bpos){
 				return o;
 			}
@@ -80,15 +82,15 @@ public class BinaryLockDomain implements DomainGenerator {
 	
 	public static State getStartState(Domain domain, int nBits){
 		
-		State s = new State();
+		State s = new MutableState();
 		
-		ObjectInstance head = new ObjectInstance(domain.getObjectClass(CLASSHEAD), "head");
+		ObjectInstance head = new MutableObjectInstance(domain.getObjectClass(CLASSHEAD), "head");
 		head.setValue(ATTCURBIT, 0);
 		s.addObject(head);
 		
 		
 		for(int i = 0; i < nBits; i++){
-			ObjectInstance bit = new ObjectInstance(domain.getObjectClass(CLASSBIT), "bit" + i);
+			ObjectInstance bit = new MutableObjectInstance(domain.getObjectClass(CLASSBIT), "bit" + i);
 			bit.setValue(ATTBITPOS, i);
 			bit.setValue(ATTBITVAL, 2); //unset
 			s.addObject(bit);
@@ -100,17 +102,17 @@ public class BinaryLockDomain implements DomainGenerator {
 	
 	public static State getState(Domain domain, int headPos, int...bitSequence){
 		
-		State s = new State();
+		State s = new MutableState();
 		
 		int nBits = bitSequence.length;
 		
-		ObjectInstance head = new ObjectInstance(domain.getObjectClass(CLASSHEAD), "head");
+		ObjectInstance head = new MutableObjectInstance(domain.getObjectClass(CLASSHEAD), "head");
 		head.setValue(ATTCURBIT, headPos);
 		s.addObject(head);
 		
 		
 		for(int i = 0; i < nBits; i++){
-			ObjectInstance bit = new ObjectInstance(domain.getObjectClass(CLASSBIT), "bit" + i);
+			ObjectInstance bit = new MutableObjectInstance(domain.getObjectClass(CLASSBIT), "bit" + i);
 			bit.setValue(ATTBITPOS, i);
 			bit.setValue(ATTBITVAL, bitSequence[i]); //unset
 			s.addObject(bit);
@@ -135,9 +137,9 @@ public class BinaryLockDomain implements DomainGenerator {
 		public boolean applicableInState(State s, String [] params){
 
 			ObjectInstance head = s.getFirstObjectOfClass(CLASSHEAD);
-			int hpos = head.getDiscValForAttribute(ATTCURBIT);
+			int hpos = head.getIntValForAttribute(ATTCURBIT);
 			
-			if(hpos < s.getObjectsOfTrueClass(CLASSBIT).size()){
+			if(hpos < s.getObjectsOfClass(CLASSBIT).size()){
 				return true; 
 			}
 			return false;
@@ -147,11 +149,11 @@ public class BinaryLockDomain implements DomainGenerator {
 		protected State performActionHelper(State s, String[] params) {
 			
 			ObjectInstance head = s.getFirstObjectOfClass(CLASSHEAD);
-			int hpos = head.getDiscValForAttribute(ATTCURBIT);
+			int hpos = head.getIntValForAttribute(ATTCURBIT);
 			
-			List<ObjectInstance> bits = s.getObjectsOfTrueClass(CLASSBIT);
+			List<ObjectInstance> bits = s.getObjectsOfClass(CLASSBIT);
 			ObjectInstance curBit = bits.get(hpos);
-			if(curBit.getDiscValForAttribute(ATTBITPOS) != hpos){
+			if(curBit.getIntValForAttribute(ATTBITPOS) != hpos){
 				curBit = findObWithBitPos(bits, hpos);
 			}
 			

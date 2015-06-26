@@ -85,9 +85,9 @@ public class NonObParamActions {
 			int yd = Integer.parseInt(params[0]);
 			int xd = 0;
 			
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			int nx = ax+xd;
 			int ny = ay+yd;

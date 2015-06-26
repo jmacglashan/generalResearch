@@ -133,10 +133,10 @@ public class Sokoban2Visualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			int top = ob.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-			int left = ob.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-			int bottom = ob.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-			int right = ob.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+			int top = ob.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+			int left = ob.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+			int bottom = ob.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+			int right = ob.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 			
 			Color rcol = colorForName(ob.getStringValForAttribute(Sokoban2Domain.ATTCOLOR));
 			float [] hsb = new float[3];
@@ -197,10 +197,10 @@ public class Sokoban2Visualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			int top = ob.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-			int left = ob.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-			int bottom = ob.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-			int right = ob.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+			int top = ob.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+			int left = ob.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+			int bottom = ob.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+			int right = ob.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 			
 			g2.setColor(Color.white);
 			
@@ -252,8 +252,8 @@ public class Sokoban2Visualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			int x = ob.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int y = ob.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int x = ob.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int y = ob.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			float rx = x*width;
 			float ry = cHeight - height - y*height;
@@ -326,8 +326,8 @@ public class Sokoban2Visualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			int x = ob.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int y = ob.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int x = ob.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int y = ob.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			float rx = x*width;
 			float ry = cHeight - height - y*height;
@@ -421,8 +421,8 @@ public class Sokoban2Visualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			int x = ob.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int y = ob.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int x = ob.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int y = ob.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			float rx = x*width;
 			float ry = cHeight - height - y*height;

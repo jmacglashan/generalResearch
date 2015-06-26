@@ -777,8 +777,8 @@ public class GeneralPuddlesIRL {
 		public double[] generateFeatureVectorFrom(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			double [] vec = new double[this.getDim()];
 
@@ -915,8 +915,8 @@ public class GeneralPuddlesIRL {
 		public double[] generateFeatureVectorFrom(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			double [] vec = new double[this.getDim()];
 
@@ -1048,8 +1048,8 @@ public class GeneralPuddlesIRL {
 		public double[] generateFeatureVectorFrom(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			double [] vec = new double[this.getDim()];
 
@@ -1170,8 +1170,8 @@ public class GeneralPuddlesIRL {
 		public double[] generateFeatureVectorFrom(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			double [] vec = new double[this.getDim()];
 

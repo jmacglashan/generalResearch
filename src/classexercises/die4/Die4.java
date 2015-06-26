@@ -18,6 +18,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -58,10 +60,10 @@ public class Die4 {
 			
 			@Override
 			public double reward(State s, GroundedAction a, State sprime) {
-				ObjectInstance agent = sprime.getObjectsOfTrueClass(CLASSAGENT).get(0);
-				int gov = agent.getDiscValForAttribute(ATTGOV);
+				ObjectInstance agent = sprime.getObjectsOfClass(CLASSAGENT).get(0);
+				int gov = agent.getIntValForAttribute(ATTGOV);
 				if(gov == 1){
-					return agent.getDiscValForAttribute(ATTSCORE);
+					return agent.getIntValForAttribute(ATTSCORE);
 				}
 				return 0;
 			}
@@ -71,12 +73,12 @@ public class Die4 {
 			
 			@Override
 			public boolean isTerminal(State s) {
-				ObjectInstance agent = s.getObjectsOfTrueClass(CLASSAGENT).get(0);
-				int gov = agent.getDiscValForAttribute(ATTGOV);
+				ObjectInstance agent = s.getObjectsOfClass(CLASSAGENT).get(0);
+				int gov = agent.getIntValForAttribute(ATTGOV);
 				if(gov==1){
 					return true;
 				}
-				int score = agent.getDiscValForAttribute(ATTSCORE);
+				int score = agent.getIntValForAttribute(ATTSCORE);
 				if(score >= 300){
 					return true;
 				}
@@ -88,8 +90,8 @@ public class Die4 {
 		
 		ValueIteration vi = new ValueIteration(domain, rf, tf, 1., hashingFactory, 0.001, 10000);
 		
-		State initialState = new State();
-		ObjectInstance agentob = new ObjectInstance(agent, "agent");
+		State initialState = new MutableState();
+		ObjectInstance agentob = new MutableObjectInstance(agent, "agent");
 		agentob.setValue(ATTSCORE, 0);
 		agentob.setValue(ATTGOV, 0);
 		initialState.addObject(agentob);
@@ -122,7 +124,7 @@ public class Die4 {
 		@Override
 		protected State performActionHelper(State st, String[] params) {
 			
-			ObjectInstance agent = st.getObjectsOfTrueClass(CLASSAGENT).get(0);
+			ObjectInstance agent = st.getObjectsOfClass(CLASSAGENT).get(0);
 			
 			int r = rand.nextInt(6) + 1;
 			
@@ -131,7 +133,7 @@ public class Die4 {
 				agent.setValue(ATTGOV, 1);
 			}
 			else{
-				int oldScore = agent.getDiscValForAttribute(ATTSCORE);
+				int oldScore = agent.getIntValForAttribute(ATTSCORE);
 				agent.setValue(ATTSCORE, oldScore+r);
 			}
 			
@@ -143,15 +145,15 @@ public class Die4 {
 			
 			List <TransitionProbability> tps = new ArrayList<TransitionProbability>();
 			
-			ObjectInstance agent = st.getObjectsOfTrueClass(CLASSAGENT).get(0);
-			int oldscore = agent.getDiscValForAttribute(ATTSCORE);
+			ObjectInstance agent = st.getObjectsOfClass(CLASSAGENT).get(0);
+			int oldscore = agent.getIntValForAttribute(ATTSCORE);
 			
 			for(int i = 1; i <= 6; i++){
 				
 				if(i == 4){
 					
 					State ns = st.copy();
-					ObjectInstance newagent = ns.getObjectsOfTrueClass(CLASSAGENT).get(0);
+					ObjectInstance newagent = ns.getObjectsOfClass(CLASSAGENT).get(0);
 					newagent.setValue(ATTSCORE, 0);
 					newagent.setValue(ATTGOV, 1);
 					
@@ -162,7 +164,7 @@ public class Die4 {
 				else{
 					
 					State ns = st.copy();
-					ObjectInstance newagent = ns.getObjectsOfTrueClass(CLASSAGENT).get(0);
+					ObjectInstance newagent = ns.getObjectsOfClass(CLASSAGENT).get(0);
 					newagent.setValue(ATTSCORE, oldscore+i);
 					
 					TransitionProbability tp = new TransitionProbability(ns, 1./6.);
@@ -189,7 +191,7 @@ public class Die4 {
 		@Override
 		protected State performActionHelper(State st, String[] params) {
 			
-			ObjectInstance agent = st.getObjectsOfTrueClass(CLASSAGENT).get(0);
+			ObjectInstance agent = st.getObjectsOfClass(CLASSAGENT).get(0);
 			agent.setValue(ATTGOV, 1);
 			
 			return st;

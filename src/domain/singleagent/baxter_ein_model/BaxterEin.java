@@ -2,6 +2,8 @@ package domain.singleagent.baxter_ein_model;
 
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.ActionObserver;
 import burlap.oomdp.singleagent.GroundedAction;
@@ -62,7 +64,7 @@ public class BaxterEin implements DomainGenerator {
 	public static State addObjectToState(Domain domain, State s, String type, double x, double y, double z){
 		String className = getObjectClassForType(domain, type);
 		int index = s.getObjectsOfClass(className).size();
-		ObjectInstance ob = new ObjectInstance(domain.getObjectClass(className), type);
+		ObjectInstance ob = new MutableObjectInstance(domain.getObjectClass(className), type);
 		ob.setValue(ATTX, x);
 		ob.setValue(ATTY, y);
 		ob.setValue(ATTZ, z);
@@ -269,7 +271,7 @@ public class BaxterEin implements DomainGenerator {
 
 		BaxterEin bein = new BaxterEin();
 		Domain domain = bein.generateDomain();
-		State s = new State();
+		State s = new MutableState();
 
 		BaxterEin.addObjectToState(domain, s, "woodenBowl", 0.44, 0.65, 0.);
 		BaxterEin.addObjectToState(domain, s, "brownMug", 0.25, 0.75, 0.);

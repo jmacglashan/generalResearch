@@ -14,6 +14,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -62,10 +64,10 @@ public class PaintPolish implements DomainGenerator {
 	
 	public static State getInitialState(Domain domain, int numObjects){
 		
-		State s = new State();
+		State s = new MutableState();
 		
 		for(int i = 0; i < numObjects; i++){
-			ObjectInstance o = new ObjectInstance(domain.getObjectClass(CLASSOBJECT), CLASSOBJECT+i);
+			ObjectInstance o = new MutableObjectInstance(domain.getObjectClass(CLASSOBJECT), CLASSOBJECT+i);
 			o.setValue(ATTPAINTED, false);
 			o.setValue(ATTPOLISHED, false);
 			o.setValue(ATTSCRATCHED, false);
@@ -261,7 +263,7 @@ public class PaintPolish implements DomainGenerator {
 		public boolean applicableInState(State s, String [] params){
 			
 			ObjectInstance o = s.getObject(params[0]);
-			return o.getBooleanValue(ATTPAINTED) && o.getBooleanValue(ATTPOLISHED) && !o.getBooleanValue(ATTSCRATCHED) && !o.getBooleanValue(ATTFINISHED);
+			return o.getBooleanValForAttribute(ATTPAINTED) && o.getBooleanValForAttribute(ATTPOLISHED) && !o.getBooleanValForAttribute(ATTSCRATCHED) && !o.getBooleanValForAttribute(ATTFINISHED);
 		}
 
 		@Override
@@ -292,9 +294,9 @@ public class PaintPolish implements DomainGenerator {
 
 		@Override
 		public boolean isTerminal(State s) {
-			List<ObjectInstance> os = s.getObjectsOfTrueClass(CLASSOBJECT);
+			List<ObjectInstance> os = s.getObjectsOfClass(CLASSOBJECT);
 			for(ObjectInstance o : os){
-				if(!o.getBooleanValue(ATTFINISHED)){
+				if(!o.getBooleanValForAttribute(ATTFINISHED)){
 					return false;
 				}
 			}

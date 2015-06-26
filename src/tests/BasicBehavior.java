@@ -194,20 +194,20 @@ public class BasicBehavior {
 			@Override
 			public double potentialValue(State s) {
 				
-				if(s.getObjectsOfTrueClass(ModeledDomainGenerator.RMAXFICTIOUSSTATENAME).size() > 0){
+				if(s.getObjectsOfClass(ModeledDomainGenerator.RMAXFICTIOUSSTATENAME).size() > 0){
 					return 0.;
 				}
 				
-				ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
-				ObjectInstance location = s.getObjectsOfTrueClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
+				ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
+				ObjectInstance location = s.getObjectsOfClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
 				
 				//get agent position
-				int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//get location position
-				int lx = location.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ly = location.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int lx = location.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ly = location.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//compute Manhattan distance
 				double mdist = Math.abs(ax-lx) + Math.abs(ay-ly);
@@ -326,16 +326,16 @@ public class BasicBehavior {
 			@Override
 			public double h(State s) {
 				
-				ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
-				ObjectInstance location = s.getObjectsOfTrueClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
+				ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
+				ObjectInstance location = s.getObjectsOfClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
 				
 				//get agent position
-				int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//get location position
-				int lx = location.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ly = location.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int lx = location.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ly = location.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//compute Manhattan distance
 				double mdist = Math.abs(ax-lx) + Math.abs(ay-ly);
@@ -392,16 +392,16 @@ public class BasicBehavior {
 			
 			@Override
 			public double value(State s) {
-				ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
-				ObjectInstance location = s.getObjectsOfTrueClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
+				ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0); //assume one agent
+				ObjectInstance location = s.getObjectsOfClass(GridWorldDomain.CLASSLOCATION).get(0); //assume one goal location in state
 				
 				//get agent position
-				int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//get location position
-				int lx = location.getDiscValForAttribute(GridWorldDomain.ATTX);
-				int ly = location.getDiscValForAttribute(GridWorldDomain.ATTY);
+				int lx = location.getIntValForAttribute(GridWorldDomain.ATTX);
+				int ly = location.getIntValForAttribute(GridWorldDomain.ATTY);
 				
 				//compute Manhattan distance
 				double mdist = Math.abs(ax-lx) + Math.abs(ay-ly);
@@ -562,8 +562,8 @@ public class BasicBehavior {
 		public boolean isTerminal(State s) {
 			
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			if(ax == 1 && ay == 5){
 				return true;
@@ -587,7 +587,7 @@ public class BasicBehavior {
 			double negativeR = -1.;
 			double defaultR = 0.;
 			
-			List<GroundedProp> possibleInLocationPFs = sprime.getAllGroundedPropsFor(domain.getPropFunction(GridWorldDomain.PFATLOCATION));
+			List<GroundedProp> possibleInLocationPFs = domain.getPropFunction(GridWorldDomain.PFATLOCATION).getAllGroundedPropsForState(sprime);
 			for(GroundedProp gp : possibleInLocationPFs){
 				if(gp.isTrue(sprime)){
 					//what is the name of the location where the agent is?

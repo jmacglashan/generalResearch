@@ -40,7 +40,7 @@ public class SimpleGGStateGen extends SGStateGenerator {
 		
 		
 		//rename the agent class object instances to match the name of the corresponding agents in the world 
-		List<ObjectInstance> agentObs = s.getObjectsOfTrueClass(GridGame.CLASSAGENT);
+		List<ObjectInstance> agentObs = s.getObjectsOfClass(GridGame.CLASSAGENT);
 		s.renameObject(agentObs.get(0), agents.get(0).getAgentName());
 		
 		if(agents.size() == 2){

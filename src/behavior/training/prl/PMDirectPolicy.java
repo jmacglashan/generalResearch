@@ -145,7 +145,7 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 
 	@Override
 	public List<ActionProb> getActionDistributionForState(State s) {
-		List <GroundedAction> gas = s.getAllGroundedActionsFor(this.actions);
+		List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, s);
 		
 		StateHashTuple sh = this.hashingFactory.hashState(s);
 		PolicyNode node = this.preferences.get(sh);
@@ -232,7 +232,7 @@ public class PMDirectPolicy extends PreferenceModifiablePolicy {
 		public PolicyNode(StateHashTuple sh){
 			this.sh = sh;
 			this.preferences = new ArrayList<ActionPreference>();
-			List <GroundedAction> gas = sh.s.getAllGroundedActionsFor(actions);
+			List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(actions, sh.s);
 			double uni = 1./(double)gas.size();
 			for(GroundedAction ga : gas){
 				this.preferences.add(new ActionPreference(ga, uni));

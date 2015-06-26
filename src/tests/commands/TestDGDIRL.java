@@ -90,7 +90,7 @@ public class TestDGDIRL {
 	}
 	
 	protected static void addTCsForProp(State s, PropositionalFunction pf, List <TaskCondition> tcs){
-		List <GroundedProp> gps = s.getAllGroundedPropsFor(pf);
+		List <GroundedProp> gps = pf.getAllGroundedPropsForState(s);
 		for(GroundedProp gp : gps){
 			TerminalFunction tf = new MPOneGPTerminalFunction(gp);
 			RewardFunction rf = new MPOneGPRewardFunction(gp);

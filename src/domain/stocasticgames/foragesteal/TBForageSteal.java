@@ -8,6 +8,8 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.stochasticgames.JointActionModel;
 import burlap.oomdp.stochasticgames.JointReward;
 import burlap.oomdp.stochasticgames.SGDomain;
@@ -140,9 +142,9 @@ public class TBForageSteal {
 	public static State getGameStartState(Domain domain, int [] falts, int playerTurn){
 		
 		
-		State s = new State();
-		ObjectInstance a1 = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "player0");
-		ObjectInstance a2 = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "player1");
+		State s = new MutableState();
+		ObjectInstance a1 = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), "player0");
+		ObjectInstance a2 = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), "player1");
 		
 		a1.setValue(ATTPN, 0);
 		a2.setValue(ATTPN, 1);
@@ -164,7 +166,7 @@ public class TBForageSteal {
 		s.addObject(a2);
 		
 		for(int i = 0; i < falts.length; i++){
-			ObjectInstance fa = new ObjectInstance(domain.getObjectClass(CLASSFALT), "FA"+i);
+			ObjectInstance fa = new MutableObjectInstance(domain.getObjectClass(CLASSFALT), "FA"+i);
 			fa.setValue(ATTFA, falts[i]);
 			s.addObject(fa);
 		}
@@ -176,7 +178,7 @@ public class TBForageSteal {
 	
 	
 	public static void setForageAlternaive(State s, int fa, int t){
-		ObjectInstance fao = s.getObjectsOfTrueClass(CLASSFALT).get(fa);
+		ObjectInstance fao = s.getObjectsOfClass(CLASSFALT).get(fa);
 		setForageAlternative(fao, t);
 	}
 	
@@ -186,9 +188,9 @@ public class TBForageSteal {
 	
 	public static boolean isRootNode(State s){
 		
-		List <ObjectInstance> agents = s.getObjectsOfTrueClass(CLASSAGENT);
+		List <ObjectInstance> agents = s.getObjectsOfClass(CLASSAGENT);
 		for(ObjectInstance a : agents){
-			int ptv = a.getDiscValForAttribute(ATTPTA);
+			int ptv = a.getIntValForAttribute(ATTPTA);
 			if(ptv != 0){
 				return false;
 			}
@@ -218,15 +220,15 @@ public class TBForageSteal {
 				return false;
 			}
 			
-			int pt = agent.getDiscValForAttribute(ATTISTURN);
+			int pt = agent.getIntValForAttribute(ATTISTURN);
 			if(pt == 0){
 				return false; //must be player's turn
 			}
 			
 			//must have forage alt
-			List<ObjectInstance> forageAlts = s.getObjectsOfTrueClass(CLASSFALT);
+			List<ObjectInstance> forageAlts = s.getObjectsOfClass(CLASSFALT);
 			for(ObjectInstance f : forageAlts){
-				int fa = f.getDiscValForAttribute(ATTFA);
+				int fa = f.getIntValForAttribute(ATTFA);
 				if(fa == forageAlt){
 					return true;
 				}
@@ -253,7 +255,7 @@ public class TBForageSteal {
 				return false;
 			}
 			
-			int pt = agent.getDiscValForAttribute(ATTISTURN);
+			int pt = agent.getIntValForAttribute(ATTISTURN);
 			if(pt == 0){
 				return false; //must be player's turn
 			}
@@ -273,7 +275,7 @@ public class TBForageSteal {
 		public boolean isApplicableInState(State s, String actingAgent,
 				String[] params) {
 			
-			if(isRootNode(s) && s.getObject(actingAgent).getDiscValForAttribute(ATTISTURN) == 1){
+			if(isRootNode(s) && s.getObject(actingAgent).getIntValForAttribute(ATTISTURN) == 1){
 				return false; //cannot take noop in first time for this action
 			}
 			
@@ -298,7 +300,7 @@ public class TBForageSteal {
 				return false; //must NOT be root node
 			}
 			
-			int pt = agent.getDiscValForAttribute(ATTISTURN);
+			int pt = agent.getIntValForAttribute(ATTISTURN);
 			if(pt == 0){
 				return false; //must be player's turn
 			}
@@ -321,9 +323,9 @@ public class TBForageSteal {
 		@Override
 		public boolean isTrue(State s, String[] params) {
 			
-			List <ObjectInstance> agents = s.getObjectsOfTrueClass(CLASSAGENT);
+			List <ObjectInstance> agents = s.getObjectsOfClass(CLASSAGENT);
 			for(ObjectInstance a : agents){
-				int v = a.getDiscValForAttribute(ATTISTURN);
+				int v = a.getIntValForAttribute(ATTISTURN);
 				if(v == 1){
 					return false;
 				}

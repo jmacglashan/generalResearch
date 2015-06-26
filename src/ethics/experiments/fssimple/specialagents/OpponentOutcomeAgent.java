@@ -193,7 +193,7 @@ public class OpponentOutcomeAgent extends Agent {
 		ObjectInstance me = s.getObject(this.worldAgentName);
 		
 		//which player am I
-		int pNum = me.getDiscValForAttribute(FSSimple.ATTPN);
+		int pNum = me.getIntValForAttribute(FSSimple.ATTPN);
 		
 		return pNum;
 
@@ -202,15 +202,15 @@ public class OpponentOutcomeAgent extends Agent {
 	
 	protected boolean punisherBackIsTurned(State s){
 		ObjectInstance punisher = null;
-		for(ObjectInstance player : s.getObjectsOfTrueClass(FSSimple.CLASSPLAYER)){
-			int pNum = player.getDiscValForAttribute(FSSimple.ATTPN);
+		for(ObjectInstance player : s.getObjectsOfClass(FSSimple.CLASSPLAYER)){
+			int pNum = player.getIntValForAttribute(FSSimple.ATTPN);
 			if(pNum == 1){
 				punisher = player;
 				break;
 			}
 		}
 		
-		return punisher.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 1;
+		return punisher.getIntValForAttribute(FSSimple.ATTBACKTURNED) == 1;
 	}
 	
 	

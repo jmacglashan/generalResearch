@@ -13,6 +13,7 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
+import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.singleagent.ActionObserver;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -25,6 +26,7 @@ import burlap.oomdp.singleagent.explorer.SpecialExplorerAction;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
 import burlap.oomdp.visualizer.Visualizer;
 import burlap.ros.AsynchronousRosEnvironment;
+import com.fasterxml.jackson.databind.JsonNode;
 import domain.singleagent.sokoban2.SokoTurtleBot;
 import domain.singleagent.sokoban2.Sokoban2Domain;
 import domain.singleagent.sokoban2.Sokoban2Visualizer;
@@ -141,8 +143,8 @@ public class ROSSoko {
 		public double reward(State s, GroundedAction a, State sprime) {
 
 			ObjectInstance agent = sprime.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int x = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int y = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int x = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int y = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 
 			if(gx == x && gy == y){
 				return 1.;
@@ -167,8 +169,8 @@ public class ROSSoko {
 		public boolean isTerminal(State s) {
 
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int x = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int y = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int x = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int y = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 
 			if(gx == x && gy == y){
 				return true;
@@ -193,23 +195,18 @@ public class ROSSoko {
 		}
 
 		@Override
-		public void receive(Map<String, Object> data, String stringRep) {
-
-			//System.out.println("In receive...");
-
-			Map<String, Object> msg = (Map<String,Object>)data.get("msg");
-			Map<String, Object> header = (Map<String, Object>)msg.get("header");
-			this.curSeq = (Integer)header.get("seq");
-			//System.out.println(seq);
-			super.receive(data, stringRep);
+		public void receive(JsonNode data, String stringRep) {
+			this.curSeq = data.get("msg").get("header").get("seq").asInt();
+			//super.receive(data, stringRep);
 		}
+
 
 
 
 		@Override
 		protected State onStateReceive(State s) {
 
-			ObjectInstance room = new ObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSROOM), "macroRoom");
+			ObjectInstance room = new MutableObjectInstance(this.domain.getObjectClass(Sokoban2Domain.CLASSROOM), "macroRoom");
 			room.setValue(Sokoban2Domain.ATTTOP, 11);
 			room.setValue(Sokoban2Domain.ATTLEFT, 0);
 			room.setValue(Sokoban2Domain.ATTBOTTOM, 0);
@@ -240,8 +237,8 @@ public class ROSSoko {
 
 		protected String agentString(State s){
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 			String dir = agent.getStringValForAttribute(Sokoban2Domain.ATTDIR).substring(0, 1);
 			return "(" + ax + "," + ay + "," + dir + ")";
 		}

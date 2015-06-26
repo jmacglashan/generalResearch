@@ -89,8 +89,8 @@ public class RTDPConvergeTest {
 		@Override
 		public boolean isTerminal(State s) {
 			
-			int hpos = s.getFirstObjectOfClass(BinaryLockDomain.CLASSHEAD).getDiscValForAttribute(BinaryLockDomain.ATTCURBIT);
-			List<ObjectInstance> bits = s.getObjectsOfTrueClass(BinaryLockDomain.CLASSBIT);
+			int hpos = s.getFirstObjectOfClass(BinaryLockDomain.CLASSHEAD).getIntValForAttribute(BinaryLockDomain.ATTCURBIT);
+			List<ObjectInstance> bits = s.getObjectsOfClass(BinaryLockDomain.CLASSBIT);
 			
 			if(hpos >= bits.size()){
 				return true;
@@ -98,7 +98,7 @@ public class RTDPConvergeTest {
 			
 			for(int i = 0; i < this.bitSequence.length; i++){
 				int b = this.bitSequence[i];
-				int actual = bits.get(i).getDiscValForAttribute(BinaryLockDomain.ATTBITVAL);
+				int actual = bits.get(i).getIntValForAttribute(BinaryLockDomain.ATTBITVAL);
 				if(b != actual){
 					return false;
 				}

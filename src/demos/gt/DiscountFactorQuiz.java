@@ -17,6 +17,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -78,8 +80,8 @@ public class DiscountFactorQuiz {
 	}
 
 	public State getInitialState(){
-		State s = new State();
-		ObjectInstance agent = new ObjectInstance(domain.getObjectClass(CLASSAGENT), NAMEAGENT);
+		State s = new MutableState();
+		ObjectInstance agent = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), NAMEAGENT);
 		agent.setValue(ATTSTATE, STATEINIT);
 
 		s.addObject(agent);

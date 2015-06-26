@@ -331,10 +331,10 @@ public class OptionStateGeneralizationTest {
 		@Override
 		public boolean satisfies(State s) {
 			
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0); //get the agent object
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0); //get the agent object
 			
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			if(ax >= this.leftBound && ax <= this.rightBound && ay >= this.bottomBound && ay <= this.topBound){
 				return true;
@@ -408,10 +408,10 @@ public class OptionStateGeneralizationTest {
 		@Override
 		public boolean satisfies(State s) {
 
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0); //get the agent object
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0); //get the agent object
 			
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			if(ax == this.x && ay == this.y){
 				return true;
@@ -437,9 +437,9 @@ public class OptionStateGeneralizationTest {
 		@Override
 		public GroundedAction getAction(State s) {
 			
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			int xd = hx-ax;
 			int yd = hy-ay;

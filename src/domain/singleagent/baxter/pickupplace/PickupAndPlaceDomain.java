@@ -11,6 +11,8 @@ import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.PropositionalFunction;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
@@ -150,15 +152,15 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	
 	public static State getCleanState(Domain domain, int nObjects, int nRegions){
-		State s = new State();
+		State s = new MutableState();
 		
 		for(int i = 0; i < nObjects; i++){
-			ObjectInstance o = new ObjectInstance(domain.getObjectClass(CLASSOBJECT), CLASSOBJECT+i);
+			ObjectInstance o = new MutableObjectInstance(domain.getObjectClass(CLASSOBJECT), CLASSOBJECT+i);
 			s.addObject(o);
 		}
 		
 		for(int i = 0; i < nRegions; i++){
-			ObjectInstance o = new ObjectInstance(domain.getObjectClass(CLASSREGION), CLASSREGION+i);
+			ObjectInstance o = new MutableObjectInstance(domain.getObjectClass(CLASSREGION), CLASSREGION+i);
 			s.addObject(o);
 		}
 		
@@ -168,7 +170,7 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	public static void tileRegions(State s, int rows, int cols, double xLower, double xUpper, double zLower, double zUpper, double height){
 		
-		List<ObjectInstance> regions = s.getObjectsOfTrueClass(CLASSREGION);
+		List<ObjectInstance> regions = s.getObjectsOfClass(CLASSREGION);
 		
 		if(regions.size() != rows*cols){
 			throw new RuntimeException("Error: number of rows and columns does not match number of regions in state. Requested " + (rows*cols) + " but had " + regions.size() + " regions.");
@@ -198,14 +200,14 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	
 	public static void setObject(State s, int i, double x, double y, double z){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSOBJECT).get(i);
+		ObjectInstance o = s.getObjectsOfClass(CLASSOBJECT).get(i);
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
 		o.setValue(ATTZ, z);
 	}
 	
 	public static void setObject(State s, int i, double x, double y, double z, String color){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSOBJECT).get(i);
+		ObjectInstance o = s.getObjectsOfClass(CLASSOBJECT).get(i);
 		o.setValue(ATTX, x);
 		o.setValue(ATTY, y);
 		o.setValue(ATTZ, z);
@@ -214,7 +216,7 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 	
 	
 	public static void setRegion(State s, int i, double left, double right, double top, double bottom, double height){
-		ObjectInstance o = s.getObjectsOfTrueClass(CLASSREGION).get(i);
+		ObjectInstance o = s.getObjectsOfClass(CLASSREGION).get(i);
 		o.setValue(ATTLEFT, left);
 		o.setValue(ATTRIGHT, right);
 		o.setValue(ATTTOP, top);
@@ -276,7 +278,7 @@ public class PickupAndPlaceDomain implements DomainGenerator {
 			double rb = r.getRealValForAttribute(ATTBOTTOM);
 			double rh = r.getRealValForAttribute(ATTHEIGHT);
 			
-			List<ObjectInstance> objects = s.getObjectsOfTrueClass(CLASSOBJECT);
+			List<ObjectInstance> objects = s.getObjectsOfClass(CLASSOBJECT);
 			for(ObjectInstance o : objects){
 				double x = o.getRealValForAttribute(ATTX);
 				double y = o.getRealValForAttribute(ATTY);

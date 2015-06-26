@@ -150,7 +150,7 @@ public class MatchAnalyzerWInteraction extends MatchAnalizer {
 	protected int whichAgentToScoreForStartState(State s){
 		
 		ObjectInstance a0Ob = s.getObject(agent0.getAgentName());
-		if(a0Ob.getDiscValForAttribute(TBForageSteal.ATTISTURN) == 1){
+		if(a0Ob.getIntValForAttribute(TBForageSteal.ATTISTURN) == 1){
 			return 0;
 		}
 		

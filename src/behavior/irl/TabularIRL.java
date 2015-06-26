@@ -17,6 +17,7 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -200,7 +201,7 @@ public class TabularIRL {
 		neighbors.add(s);
 		
 		for(Action a : actions){
-			List <GroundedAction> gas = s.getAllGroundedActionsFor(a);
+			List <GroundedAction> gas = a.getAllApplicableGroundedActions(s);
 			for(GroundedAction ga : gas){
 				List<TransitionProbability> transitions = ga.action.getTransitions(s, ga.params);
 				for(TransitionProbability tp : transitions){
@@ -238,7 +239,7 @@ public class TabularIRL {
 	}
 	
 	protected void addTerminateWithValue(State s, int v){
-		ObjectInstance o = new ObjectInstance(terminateClassMarker, "terminatedMarker");
+		ObjectInstance o = new MutableObjectInstance(terminateClassMarker, "terminatedMarker");
 		o.setValue(TERMINATEATTNAME, v);
 		s.addObject(o);
 	}
@@ -292,7 +293,7 @@ public class TabularIRL {
 		@Override
 		public boolean isTerminal(State s) {
 			ObjectInstance o = s.getObject("terminatedMarker");
-			int tv = o.getDiscValForAttribute(TERMINATEATTNAME);
+			int tv = o.getIntValForAttribute(TERMINATEATTNAME);
 			return tv == 1;
 		}
 		

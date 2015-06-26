@@ -8,6 +8,7 @@ import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
+import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 
 public class PMBoltzmannPolicy extends PMDirectPolicy {
@@ -134,7 +135,7 @@ public class PMBoltzmannPolicy extends PMDirectPolicy {
 	
 	@Override
 	public List<ActionProb> getActionDistributionForState(State s) {
-		List <GroundedAction> gas = s.getAllGroundedActionsFor(this.actions);
+		List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, s);
 		
 		StateHashTuple sh = this.hashingFactory.hashState(s);
 		PolicyNode node = this.preferences.get(sh);

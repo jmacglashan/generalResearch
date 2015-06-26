@@ -29,7 +29,7 @@ public class FSSimplePOJR extends FSSimpleJR {
 		
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance player = s.getObject(gsa.actingAgent);
-			if(player.getDiscValForAttribute(FSSimple.ATTPN) == 0){
+			if(player.getIntValForAttribute(FSSimple.ATTPN) == 0){
 				player0Action = gsa;
 				player0 = player;
 			}
@@ -53,7 +53,7 @@ public class FSSimplePOJR extends FSSimpleJR {
 				r.put(player0Action.actingAgent, this.stealerReward);
 				if(player1Action != null){
 					//is the agent aware?
-					if(player1.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 0){
+					if(player1.getIntValForAttribute(FSSimple.ATTBACKTURNED) == 0){
 						r.put(player1Action.actingAgent, this.stealeeReward);
 					}
 					else{
@@ -69,7 +69,7 @@ public class FSSimplePOJR extends FSSimpleJR {
 				
 				if(player0Action != null){
 					//is the agent aware?
-					if(player0.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 0){
+					if(player0.getIntValForAttribute(FSSimple.ATTBACKTURNED) == 0){
 						r.put(player0Action.actingAgent, this.puncheeReward);
 					}
 					else{

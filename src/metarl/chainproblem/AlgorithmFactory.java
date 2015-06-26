@@ -55,7 +55,7 @@ public class AlgorithmFactory {
 
 		@Override
 		public double qValue(State s, AbstractGroundedAction a) {
-			int cNodeId = s.getObjectsOfTrueClass(GraphDefinedDomain.CLASSAGENT).get(0).getDiscValForAttribute(GraphDefinedDomain.ATTNODE);
+			int cNodeId = s.getObjectsOfClass(GraphDefinedDomain.CLASSAGENT).get(0).getIntValForAttribute(GraphDefinedDomain.ATTNODE);
 			int aId = this.actionId(a);
 			return qInit[cNodeId][aId];
 		}

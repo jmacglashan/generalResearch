@@ -18,6 +18,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -158,27 +160,27 @@ public class TableBoxBlock implements DomainGenerator {
 	 * @return a state with the given numbers of objects and one robot object
 	 */
 	public static State getCleanState(Domain d, int nTables, int nBlocks, int nBoxes){
-		State s = new State();
+		State s = new MutableState();
 		
 		//create robot
-		ObjectInstance robot = new ObjectInstance(d.getObjectClass(CLASSROBOT), CLASSROBOT);
+		ObjectInstance robot = new MutableObjectInstance(d.getObjectClass(CLASSROBOT), CLASSROBOT);
 		s.addObject(robot);
 		
 		//create tables
 		for(int i = 0; i < nTables; i++){
-			ObjectInstance ob = new ObjectInstance(d.getObjectClass(CLASSTABLE), CLASSTABLE + i);
+			ObjectInstance ob = new MutableObjectInstance(d.getObjectClass(CLASSTABLE), CLASSTABLE + i);
 			s.addObject(ob);
 		}
 		
 		//create blocks
 		for(int i = 0; i < nBlocks; i++){
-			ObjectInstance ob = new ObjectInstance(d.getObjectClass(CLASSBLOCK), CLASSBLOCK + i);
+			ObjectInstance ob = new MutableObjectInstance(d.getObjectClass(CLASSBLOCK), CLASSBLOCK + i);
 			s.addObject(ob);
 		}
 		
 		//create boxes
 		for(int i = 0; i < nBoxes; i++){
-			ObjectInstance ob = new ObjectInstance(d.getObjectClass(CLASSBOX), CLASSBOX + i);
+			ObjectInstance ob = new MutableObjectInstance(d.getObjectClass(CLASSBOX), CLASSBOX + i);
 			s.addObject(ob);
 		}
 				
@@ -486,7 +488,6 @@ public class TableBoxBlock implements DomainGenerator {
 		/**
 		 * Creates a put down action; will putdown whatever object the robot is hold at the table where the robot is.
 		 * @param d the domain of the action
-		 * @param classToPutDown the object class that this action can put down
 		 */
 		public PutdownAction(Domain d){
 			super(ACTIONPUTDOWN, d, "");
@@ -553,9 +554,9 @@ public class TableBoxBlock implements DomainGenerator {
 		s.getFirstObjectOfClass(CLASSTABLE).addRelationalTarget(ATTHAS, s.getFirstObjectOfClass(CLASSBOX).getName());
 		
 		//set half the blocks to be at the first table, half to be at the second, the even numebred blocks to red and the odd numebred to be blue
-		List<ObjectInstance> blocks = s.getObjectsOfTrueClass(CLASSBLOCK);
+		List<ObjectInstance> blocks = s.getObjectsOfClass(CLASSBLOCK);
 		ObjectInstance firstTable = s.getFirstObjectOfClass(CLASSTABLE);
-		ObjectInstance secondTable = s.getObjectsOfTrueClass(CLASSTABLE).get(1);
+		ObjectInstance secondTable = s.getObjectsOfClass(CLASSTABLE).get(1);
 		for(int i = 0; i < blocks.size(); i++){
 			
 			ObjectInstance block = blocks.get(i);
@@ -588,9 +589,9 @@ public class TableBoxBlock implements DomainGenerator {
 		s.getFirstObjectOfClass(CLASSROBOT).setValue(ATTRAT, s.getFirstObjectOfClass(CLASSTABLE).getName());
 		
 		//set half the blocks to be at the first table, half to be at the second, the even numebred blocks to red and the odd numebred to be blue
-		List<ObjectInstance> blocks = s.getObjectsOfTrueClass(CLASSBLOCK);
+		List<ObjectInstance> blocks = s.getObjectsOfClass(CLASSBLOCK);
 		ObjectInstance firstTable = s.getFirstObjectOfClass(CLASSTABLE);
-		ObjectInstance secondTable = s.getObjectsOfTrueClass(CLASSTABLE).get(1);
+		ObjectInstance secondTable = s.getObjectsOfClass(CLASSTABLE).get(1);
 		for(int i = 0; i < blocks.size(); i++){
 			
 			ObjectInstance block = blocks.get(i);
@@ -687,7 +688,7 @@ public class TableBoxBlock implements DomainGenerator {
 				
 				
 				//No blocks can be in any box either
-				for(ObjectInstance box : s.getObjectsOfTrueClass(CLASSBOX)){
+				for(ObjectInstance box : s.getObjectsOfClass(CLASSBOX)){
 					if(box.getAllRelationalTargets(ATTHAS).size() > 0){
 						return false;
 					}
@@ -696,7 +697,7 @@ public class TableBoxBlock implements DomainGenerator {
 				
 				
 				//get all tables
-				List <ObjectInstance> tables = s.getObjectsOfTrueClass(CLASSTABLE);
+				List <ObjectInstance> tables = s.getObjectsOfClass(CLASSTABLE);
 				ObjectInstance firstTable = tables.get(0);
 				ObjectInstance secondTable = tables.get(1);
 				

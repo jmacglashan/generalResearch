@@ -38,9 +38,9 @@ public class TaxiLearn {
 			public boolean isTerminal(State s) {
 				
 				ObjectInstance p = s.getFirstObjectOfClass(TaxiDomain.PASSENGERCLASS);
-				int px = p.getDiscValForAttribute(TaxiDomain.XATT);
-				int py = p.getDiscValForAttribute(TaxiDomain.YATT);
-				int intaxi = p.getDiscValForAttribute(TaxiDomain.INTAXIATT);
+				int px = p.getIntValForAttribute(TaxiDomain.XATT);
+				int py = p.getIntValForAttribute(TaxiDomain.YATT);
+				int intaxi = p.getIntValForAttribute(TaxiDomain.INTAXIATT);
 				
 				if(intaxi == 0 && px == 0 && py == 4){
 					return true;
@@ -56,9 +56,9 @@ public class TaxiLearn {
 			public double reward(State s, GroundedAction a, State sprime) {
 				
 				ObjectInstance p = s.getFirstObjectOfClass(TaxiDomain.PASSENGERCLASS);
-				int px = p.getDiscValForAttribute(TaxiDomain.XATT);
-				int py = p.getDiscValForAttribute(TaxiDomain.YATT);
-				int intaxi = p.getDiscValForAttribute(TaxiDomain.INTAXIATT);
+				int px = p.getIntValForAttribute(TaxiDomain.XATT);
+				int py = p.getIntValForAttribute(TaxiDomain.YATT);
+				int intaxi = p.getIntValForAttribute(TaxiDomain.INTAXIATT);
 				
 				if(intaxi == 0 && px == 0 && py == 4){
 					return 20.;

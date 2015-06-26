@@ -48,7 +48,7 @@ public class StateRVValue extends RVariableValue {
 	
 	protected String orderInvariantStringRep(){
 		
-		List<List<ObjectInstance>> objectsByClass = s.getAllObjectsByTrueClass();
+		List<List<ObjectInstance>> objectsByClass = s.getAllObjectsByClass();
 		
 		List <String> orderedByClassAndString = new ArrayList<String>();
 		int size = 0;

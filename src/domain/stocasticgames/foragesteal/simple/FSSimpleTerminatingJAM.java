@@ -28,7 +28,7 @@ public class FSSimpleTerminatingJAM extends JointActionModel {
 		
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance player = s.getObject(gsa.actingAgent);
-			if(player.getDiscValForAttribute(FSSimple.ATTPN) == 0){
+			if(player.getIntValForAttribute(FSSimple.ATTPN) == 0){
 				player0Action = gsa;
 			}
 		}
@@ -61,7 +61,7 @@ public class FSSimpleTerminatingJAM extends JointActionModel {
 
 		@Override
 		public boolean isTerminal(State s) {
-			int sn = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE);
+			int sn = s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getIntValForAttribute(FSSimple.ATTSTATENODE);
 			return sn == 3;
 		}
 		

@@ -129,8 +129,8 @@ public class RmaxQuestion {
 		public double reward(State s, GroundedAction a, State sprime) {
 
 			ObjectInstance nagent = sprime.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int nx = nagent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ny = nagent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int nx = nagent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ny = nagent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			//did agent reach goal location?
 			if(nx == this.gx && ny == this.gy){
@@ -138,8 +138,8 @@ public class RmaxQuestion {
 			}
 
 			ObjectInstance pagent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int px = pagent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int py = pagent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int px = pagent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int py = pagent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			//if agent didn't change position, they must have hit a wall
 			if(px == nx && py == ny){

@@ -56,10 +56,10 @@ public class SokobanVisualizer {
 				g2.setColor(Color.darkGray);
 			}
 
-			float topX = ob.getDiscValForAttribute(SokobanDomain.TOPXATTNAME);
-			float bottomX = ob.getDiscValForAttribute(SokobanDomain.BOTTOMXATTNAME);
-			float topY = ob.getDiscValForAttribute(SokobanDomain.TOPYATTNAME);
-			float bottomY = ob.getDiscValForAttribute(SokobanDomain.BOTTOMYATTNAME);
+			float topX = ob.getIntValForAttribute(SokobanDomain.TOPXATTNAME);
+			float bottomX = ob.getIntValForAttribute(SokobanDomain.BOTTOMXATTNAME);
+			float topY = ob.getIntValForAttribute(SokobanDomain.TOPYATTNAME);
+			float bottomY = ob.getIntValForAttribute(SokobanDomain.BOTTOMYATTNAME);
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 
@@ -110,8 +110,8 @@ public class SokobanVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 
-			float rx = ob.getDiscValForAttribute(SokobanDomain.XATTNAME)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(SokobanDomain.YATTNAME)*height;
+			float rx = ob.getIntValForAttribute(SokobanDomain.XATTNAME)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(SokobanDomain.YATTNAME)*height;
 
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -134,8 +134,8 @@ public class SokobanVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 
-			float rx = ob.getDiscValForAttribute(SokobanDomain.XATTNAME)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(SokobanDomain.YATTNAME)*height;
+			float rx = ob.getIntValForAttribute(SokobanDomain.XATTNAME)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(SokobanDomain.YATTNAME)*height;
 
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -167,8 +167,8 @@ public class SokobanVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 
-			float rx = ob.getDiscValForAttribute(SokobanDomain.XATTNAME)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(SokobanDomain.YATTNAME)*height;
+			float rx = ob.getIntValForAttribute(SokobanDomain.XATTNAME)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(SokobanDomain.YATTNAME)*height;
 
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			

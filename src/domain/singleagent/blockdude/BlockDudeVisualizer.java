@@ -55,8 +55,8 @@ public class BlockDudeVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(BlockDude.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(BlockDude.ATTY)*height;
+			float rx = ob.getIntValForAttribute(BlockDude.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(BlockDude.ATTY)*height;
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -67,7 +67,7 @@ public class BlockDudeVisualizer {
 			float eyeHeight = height*0.25f;
 			
 			float ex = rx;
-			if(ob.getDiscValForAttribute(BlockDude.ATTDIR) == 1){
+			if(ob.getIntValForAttribute(BlockDude.ATTDIR) == 1){
 				ex = (rx+width) - eyeWidth;
 			}
 			
@@ -112,8 +112,8 @@ public class BlockDudeVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(BlockDude.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(BlockDude.ATTY)*height;
+			float rx = ob.getIntValForAttribute(BlockDude.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(BlockDude.ATTY)*height;
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -155,8 +155,8 @@ public class BlockDudeVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(BlockDude.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(BlockDude.ATTY)*height;
+			float rx = ob.getIntValForAttribute(BlockDude.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(BlockDude.ATTY)*height;
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -196,8 +196,8 @@ public class BlockDudeVisualizer {
 			float domainYScale = (maxy + 1) - miny;
 			
 			
-			float px = ob.getDiscValForAttribute(BlockDude.ATTX);
-			float ph = ob.getDiscValForAttribute(BlockDude.ATTHEIGHT);
+			float px = ob.getIntValForAttribute(BlockDude.ATTX);
+			float ph = ob.getIntValForAttribute(BlockDude.ATTHEIGHT);
 			
 			
 			//determine the normalized width

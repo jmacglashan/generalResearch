@@ -9,6 +9,8 @@ import burlap.behavior.singleagent.planning.deterministic.uninformed.bfs.BFS;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.core.*;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.SADomain;
 import burlap.oomdp.singleagent.common.UniformCostRF;
@@ -55,21 +57,21 @@ public class SokoAMDP implements DomainGenerator{
 
 	public static State projectToAMDPState(State s, Domain aDomain){
 
-		State as = new State();
+		State as = new MutableState();
 
-		ObjectInstance aagent = new ObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT);
+		ObjectInstance aagent = new MutableObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSAGENT), Sokoban2Domain.CLASSAGENT);
 		as.addObject(aagent);
 
 
-		List<ObjectInstance> rooms = s.getObjectsOfTrueClass(Sokoban2Domain.CLASSROOM);
+		List<ObjectInstance> rooms = s.getObjectsOfClass(Sokoban2Domain.CLASSROOM);
 		for(ObjectInstance r : rooms){
-			ObjectInstance ar = new ObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSROOM), r.getName());
+			ObjectInstance ar = new MutableObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSROOM), r.getName());
 			as.addObject(ar);
 		}
 
-		List<ObjectInstance> doors = s.getObjectsOfTrueClass(Sokoban2Domain.CLASSDOOR);
+		List<ObjectInstance> doors = s.getObjectsOfClass(Sokoban2Domain.CLASSDOOR);
 		for(ObjectInstance d : doors){
-			ObjectInstance dr = new ObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSDOOR), d.getName());
+			ObjectInstance dr = new MutableObjectInstance(aDomain.getObjectClass(Sokoban2Domain.CLASSDOOR), d.getName());
 			as.addObject(dr);
 		}
 
@@ -77,8 +79,8 @@ public class SokoAMDP implements DomainGenerator{
 		//set agent position
 		//first try room
 		ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-		int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-		int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+		int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+		int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 		ObjectInstance inRoom = Sokoban2Domain.roomContainingPoint(s, ax, ay);
 
 		if(inRoom != null){
@@ -93,19 +95,19 @@ public class SokoAMDP implements DomainGenerator{
 		//now set room and door connections
 		for(ObjectInstance r : rooms){
 
-			int rt = r.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-			int rl = r.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-			int rb = r.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-			int rr = r.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+			int rt = r.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+			int rl = r.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+			int rb = r.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+			int rr = r.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 
 			ObjectInstance ar = as.getObject(r.getName());
 
 			for(ObjectInstance d : doors){
 
-				int dt = d.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
-				int dl = d.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-				int db = d.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-				int dr = d.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
+				int dt = d.getIntValForAttribute(Sokoban2Domain.ATTTOP);
+				int dl = d.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+				int db = d.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+				int dr = d.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
 
 				if(rectanglesIntersect(rt, rl, rb, rr, dt, dl, db, dr)){
 					ObjectInstance ad = as.getObject(d.getName());

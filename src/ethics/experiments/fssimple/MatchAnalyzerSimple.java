@@ -19,7 +19,7 @@ public class MatchAnalyzerSimple extends MatchAnalyzerWInteraction {
 	protected int whichAgentToScoreForStartState(State s){
 		
 		ObjectInstance a0Ob = s.getObject(agent0.getAgentName());
-		int pn = a0Ob.getDiscValForAttribute(FSSimple.ATTPN);
+		int pn = a0Ob.getIntValForAttribute(FSSimple.ATTPN);
 		if(pn == 0){
 			if(FSSimple.isRootNode(s)){
 				return 0;

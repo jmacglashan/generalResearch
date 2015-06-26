@@ -241,8 +241,8 @@ public class DefaultMatrixConstructor {
 		public double reward(State s, GroundedAction a, State sprime) {
 
 			ObjectInstance agent = sprime.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			if(ax == gx && ay == gy){
 				return 10;

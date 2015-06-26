@@ -9,6 +9,7 @@ import burlap.domain.stochasticgames.normalform.SingleStageNormalFormGame;
 import burlap.oomdp.auxiliary.common.NullTermination;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.stochasticgames.Agent;
 import burlap.oomdp.stochasticgames.AgentType;
 import burlap.oomdp.stochasticgames.JointActionModel;
@@ -72,7 +73,7 @@ public class FSBimatrixTest {
 		@Override
 		public State generateState(List<Agent> agents) {
 			
-			State s = new State();
+			State s = new MutableState();
 			
 			ObjectInstance a0 = this.getAgentObjectInstance(agents.get(0));
 			a0.setValue(SingleStageNormalFormGame.ATTPN, 0);

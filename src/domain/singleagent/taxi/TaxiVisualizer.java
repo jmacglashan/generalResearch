@@ -94,8 +94,8 @@ public class TaxiVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(TaxiDomain.XATT)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(TaxiDomain.YATT)*height;
+			float rx = ob.getIntValForAttribute(TaxiDomain.XATT)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(TaxiDomain.YATT)*height;
 			
 			if(this.shape == 0){
 				g2.fill(new Rectangle2D.Float(rx, ry, width, height));
@@ -159,7 +159,7 @@ public class TaxiVisualizer {
 		@Override
 		public void paintObject(Graphics2D g2, State s, ObjectInstance ob, float cWidth, float cHeight) {
 			
-			int type = ob.getDiscValForAttribute(TaxiDomain.LOCATIONATT);
+			int type = ob.getIntValForAttribute(TaxiDomain.LOCATIONATT);
 			
 			Color col = this.baseColors.get(type);
 			
@@ -174,8 +174,8 @@ public class TaxiVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(TaxiDomain.XATT)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(TaxiDomain.YATT)*height;
+			float rx = ob.getIntValForAttribute(TaxiDomain.XATT)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(TaxiDomain.YATT)*height;
 			
 			if(this.shape == 0){
 				g2.fill(new Rectangle2D.Float(rx, ry, width, height));
@@ -232,7 +232,7 @@ public class TaxiVisualizer {
 		@Override
 		public void paintObject(Graphics2D g2, State s, ObjectInstance ob, float cWidth, float cHeight) {
 			
-			int type = ob.getDiscValForAttribute(TaxiDomain.LOCATIONATT);
+			int type = ob.getIntValForAttribute(TaxiDomain.LOCATIONATT);
 			
 			Color col = this.baseColors.get(type);
 			
@@ -247,8 +247,8 @@ public class TaxiVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(TaxiDomain.XATT)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(TaxiDomain.YATT)*height;
+			float rx = ob.getIntValForAttribute(TaxiDomain.XATT)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(TaxiDomain.YATT)*height;
 			
 			float rcx = rx + width/2f;
 			float rcy = ry + height/2f;
@@ -256,7 +256,7 @@ public class TaxiVisualizer {
 			//now scale
 			float sfactor = 0.8f;
 			
-			int inTaxi = ob.getDiscValForAttribute(TaxiDomain.INTAXIATT);
+			int inTaxi = ob.getIntValForAttribute(TaxiDomain.INTAXIATT);
 			if(inTaxi == 1){
 				sfactor = 0.5f;
 			}
@@ -300,9 +300,9 @@ public class TaxiVisualizer {
 			
 			int p0x, p0y, p1x, p1y;
 			
-			int wp = ob.getDiscValForAttribute(TaxiDomain.WALLOFFSETATT);
-			int e1 = ob.getDiscValForAttribute(TaxiDomain.WALLMINATT);
-			int e2 = ob.getDiscValForAttribute(TaxiDomain.WALLMAXATT);
+			int wp = ob.getIntValForAttribute(TaxiDomain.WALLOFFSETATT);
+			int e1 = ob.getIntValForAttribute(TaxiDomain.WALLMINATT);
+			int e2 = ob.getIntValForAttribute(TaxiDomain.WALLMAXATT);
 			
 			if(vertical){
 				p0x = p1x = wp;

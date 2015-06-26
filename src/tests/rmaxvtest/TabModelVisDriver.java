@@ -180,7 +180,7 @@ public class TabModelVisDriver {
 		public boolean isTerminal(State s) {
 
 			//RMaxStates are terminal states
-			if(s.getObjectsOfTrueClass(ModeledDomainGenerator.RMAXFICTIOUSSTATENAME).size() > 0){
+			if(s.getObjectsOfClass(ModeledDomainGenerator.RMAXFICTIOUSSTATENAME).size() > 0){
 				return true;
 			}
 

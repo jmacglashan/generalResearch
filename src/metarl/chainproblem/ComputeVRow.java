@@ -252,7 +252,7 @@ public class ComputeVRow {
 	
 	public static int nodeId(State s){
 		ObjectInstance o = s.getFirstObjectOfClass(GraphDefinedDomain.CLASSAGENT);
-		return o.getDiscValForAttribute(GraphDefinedDomain.ATTNODE);
+		return o.getIntValForAttribute(GraphDefinedDomain.ATTNODE);
 	}
 	
 

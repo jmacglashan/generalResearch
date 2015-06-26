@@ -18,6 +18,8 @@ import burlap.domain.singleagent.gridworld.GridWorldStateParser;
 import burlap.oomdp.auxiliary.DomainGenerator;
 import burlap.oomdp.auxiliary.StateParser;
 import burlap.oomdp.core.*;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -749,13 +751,13 @@ public class EnvironmentMDP implements DomainGenerator{
 	//-- a specification object instance.
 	public static State getNewState(Domain domain, int[] initPos, int indFormula, int [] paramFormula, int specTrue, int specFalse) {
 
-		State s = new State();
-		ObjectInstance agent = new ObjectInstance(domain.getObjectClass(CLASSAGENT), "agent0");
+		State s = new MutableState();
+		ObjectInstance agent = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), "agent0");
 		agent.setValue(ATTX, initPos[0]);
 		agent.setValue(ATTY, initPos[1]);
 
 		// wm
-		ObjectInstance specification = new ObjectInstance(domain.getObjectClass(CLASSSPEC), "spec0");
+		ObjectInstance specification = new MutableObjectInstance(domain.getObjectClass(CLASSSPEC), "spec0");
 		specification.setValue(ATTSPEC, 0);
 		specification.setValue(ATTSPECTRUE, specTrue);
 		specification.setValue(ATTSPECFALSE, specFalse);

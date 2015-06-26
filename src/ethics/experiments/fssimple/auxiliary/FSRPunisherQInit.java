@@ -73,7 +73,7 @@ public class FSRPunisherQInit implements ValueFunctionInitialization {
 		
 		GroundedSingleAction gsa = (GroundedSingleAction)a;
 		
-		State singleAgentState = GraphDefinedDomain.getState(this.domain, s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getDiscValForAttribute(FSSimple.ATTSTATENODE));
+		State singleAgentState = GraphDefinedDomain.getState(this.domain, s.getFirstObjectOfClass(FSSimple.CLASSSTATENODE).getIntValForAttribute(FSSimple.ATTSTATENODE));
 		GroundedAction ga = this.getGroundedActionMapping(gsa);
 		return this.planner.getQ(singleAgentState, ga).q;
 	}

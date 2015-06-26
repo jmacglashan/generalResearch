@@ -64,7 +64,7 @@ public class TBFSAlternatingTurnSG extends SGStateGenerator {
 		
 		
 		//rename the create agent object instances to the names of the agents in the world
-		List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+		List <ObjectInstance> agentObs = s.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 		s.renameObject(agentObs.get(0), agents.get(0).getAgentName());
 		s.renameObject(agentObs.get(1), agents.get(1).getAgentName());
 		

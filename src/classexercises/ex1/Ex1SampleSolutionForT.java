@@ -102,11 +102,11 @@ public class Ex1SampleSolutionForT {
 			
 			//get the list of objects that belong to the class with the name stored in the string GridWorldDomain.CLASSAGENT
 			//then retrieve the first of those object instances (we only expect there to ever be one agent object!)
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
 			
 			//extract the agent object's x and y position
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			//return true (s is a terminal state) if the agent is in the same position as the goal loction or pit location
 			return (ax==this.gx && ay==this.gy) || (ax==this.px && ay==this.py);
@@ -140,11 +140,11 @@ public class Ex1SampleSolutionForT {
 			//get the list of objects that belong to the class with the name stored in the string GridWorldDomain.CLASSAGENT
 			//then retrieve the first of those object instances (we only expect there to ever be one agent object!)
 			//note that the object is retrieved from sprime because for the reward we want to know where the agent ended up!
-			ObjectInstance agent = sprime.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
+			ObjectInstance agent = sprime.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
 			
 			//extract the agent object's x and y position
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			//in goal?
 			if(ax==this.gx && ay==this.gy){

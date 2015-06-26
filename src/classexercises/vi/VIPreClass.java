@@ -16,8 +16,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
-import burlap.oomdp.singleagent.GroundedAction;
-import burlap.oomdp.singleagent.RewardFunction;
+import burlap.oomdp.singleagent.*;
+
 
 public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 
@@ -33,7 +33,7 @@ public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 	@Override
 	public List<QValue> getQs(State s) {
 		
-		List <GroundedAction> gas = s.getAllGroundedActionsFor(this.actions);
+		List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, s);
 		List <QValue> qs = new ArrayList<QValue>(gas.size());
 		for(GroundedAction ga : gas){
 			QValue q = this.getQ(s, ga);
@@ -136,7 +136,7 @@ public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
 			this.v.put(cur, 0.);
 			
 			//expand; get all grounded actions in this state
-			List <GroundedAction> gas = cur.s.getAllGroundedActionsFor(this.actions);
+			List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, cur.s);
 			for(GroundedAction ga : gas){
 				//all possible outcomes
 				List<TransitionProbability> tps = ga.action.getTransitions(cur.s, ga.params);

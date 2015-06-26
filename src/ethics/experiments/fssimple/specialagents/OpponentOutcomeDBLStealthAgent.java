@@ -202,7 +202,7 @@ public class OpponentOutcomeDBLStealthAgent extends Agent {
 		ObjectInstance me = s.getObject(this.worldAgentName);
 		
 		//which player am I
-		int pNum = me.getDiscValForAttribute(FSSimple.ATTPN);
+		int pNum = me.getIntValForAttribute(FSSimple.ATTPN);
 		
 		return pNum;
 
@@ -211,28 +211,28 @@ public class OpponentOutcomeDBLStealthAgent extends Agent {
 	
 	protected boolean punisherBackIsTurned(State s){
 		ObjectInstance punisher = null;
-		for(ObjectInstance player : s.getObjectsOfTrueClass(FSSimple.CLASSPLAYER)){
-			int pNum = player.getDiscValForAttribute(FSSimple.ATTPN);
+		for(ObjectInstance player : s.getObjectsOfClass(FSSimple.CLASSPLAYER)){
+			int pNum = player.getIntValForAttribute(FSSimple.ATTPN);
 			if(pNum == 1){
 				punisher = player;
 				break;
 			}
 		}
 		
-		return punisher.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 1;
+		return punisher.getIntValForAttribute(FSSimple.ATTBACKTURNED) == 1;
 	}
 	
 	protected boolean thiefIsSleeping(State s){
 		ObjectInstance thief = null;
-		for(ObjectInstance player : s.getObjectsOfTrueClass(FSSimple.CLASSPLAYER)){
-			int pNum = player.getDiscValForAttribute(FSSimple.ATTPN);
+		for(ObjectInstance player : s.getObjectsOfClass(FSSimple.CLASSPLAYER)){
+			int pNum = player.getIntValForAttribute(FSSimple.ATTPN);
 			if(pNum == 0){
 				thief = player;
 				break;
 			}
 		}
 		
-		return thief.getDiscValForAttribute(FSSimple.ATTBACKTURNED) == 1;
+		return thief.getIntValForAttribute(FSSimple.ATTBACKTURNED) == 1;
 	}
 	
 	

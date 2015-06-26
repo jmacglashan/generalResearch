@@ -72,7 +72,7 @@ public class HostileWorldVisualizer {
 			
 			
 			ObjectInstance agent = s.getFirstObjectOfClass(HostileWorldDomain.CLASSAGENT);
-			int ah = agent.getDiscValForAttribute(HostileWorldDomain.ATTHEALTH);
+			int ah = agent.getIntValForAttribute(HostileWorldDomain.ATTHEALTH);
 			String ahs = "" + ah;
 			
 			g2.setFont(new Font("Helvetica", Font.PLAIN, 48));
@@ -140,8 +140,8 @@ public class HostileWorldVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(HostileWorldDomain.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(HostileWorldDomain.ATTY)*height;
+			float rx = ob.getIntValForAttribute(HostileWorldDomain.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(HostileWorldDomain.ATTY)*height;
 			
 			if(this.shape == 0){
 				g2.fill(new Rectangle2D.Float(rx, ry, width, height));
@@ -184,7 +184,7 @@ public class HostileWorldVisualizer {
 		@Override
 		public void paintObject(Graphics2D g2, State s, ObjectInstance ob, float cWidth, float cHeight) {
 			
-			int type = ob.getDiscValForAttribute(HostileWorldDomain.ATTLOCTYPE);
+			int type = ob.getIntValForAttribute(HostileWorldDomain.ATTLOCTYPE);
 			Color col = Color.red.darker();
 			if(type == 0){
 				col = Color.blue;
@@ -200,8 +200,8 @@ public class HostileWorldVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(HostileWorldDomain.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(HostileWorldDomain.ATTY)*height;
+			float rx = ob.getIntValForAttribute(HostileWorldDomain.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(HostileWorldDomain.ATTY)*height;
 			
 			if(this.shape == 0){
 				g2.fill(new Rectangle2D.Float(rx, ry, width, height));

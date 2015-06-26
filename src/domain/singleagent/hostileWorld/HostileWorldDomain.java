@@ -32,6 +32,8 @@ import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.core.TransitionProbability;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -234,20 +236,20 @@ public class HostileWorldDomain implements DomainGenerator {
 	}
 	
 	public static void setLocation(State s, int i, int x, int y, int t){
-		ObjectInstance l = s.getObjectsOfTrueClass(CLASSLOC).get(i);
+		ObjectInstance l = s.getObjectsOfClass(CLASSLOC).get(i);
 		l.setValue(ATTX, x);
 		l.setValue(ATTY, y);
 		l.setValue(ATTLOCTYPE, t);
 	}
 	
 	public static State getState(Domain domain, int nl){
-		State s = new State();
+		State s = new MutableState();
 		
-		ObjectInstance agent = new ObjectInstance(domain.getObjectClass(CLASSAGENT), CLASSAGENT);
+		ObjectInstance agent = new MutableObjectInstance(domain.getObjectClass(CLASSAGENT), CLASSAGENT);
 		s.addObject(agent);
 		
 		for(int i = 0; i < nl; i++){
-			ObjectInstance l = new ObjectInstance(domain.getObjectClass(CLASSLOC), CLASSLOC+i);
+			ObjectInstance l = new MutableObjectInstance(domain.getObjectClass(CLASSLOC), CLASSLOC+i);
 			s.addObject(l);
 		}
 		
@@ -259,9 +261,9 @@ public class HostileWorldDomain implements DomainGenerator {
 		
 		ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
 		
-		int ax = agent.getDiscValForAttribute(ATTX);
-		int ay = agent.getDiscValForAttribute(ATTY);
-		int ah = agent.getDiscValForAttribute(ATTHEALTH);
+		int ax = agent.getIntValForAttribute(ATTX);
+		int ay = agent.getIntValForAttribute(ATTY);
+		int ah = agent.getIntValForAttribute(ATTHEALTH);
 		
 		if(ah == 0){
 			return; //agent cannot do anything when they're dead!
@@ -287,7 +289,7 @@ public class HostileWorldDomain implements DomainGenerator {
 			ny = this.height-1;
 		}
 		
-		List<ObjectInstance> locations = s.getObjectsOfTrueClass(CLASSLOC);
+		List<ObjectInstance> locations = s.getObjectsOfClass(CLASSLOC);
 		List<ObjectInstance> foodSources = this.filterLocType(locations, 0);
 		
 		//handle hunger
@@ -312,7 +314,7 @@ public class HostileWorldDomain implements DomainGenerator {
 			double r = this.rand.nextDouble();
 			if(r <= this.probPredator){
 				//he appears in agent's previous location
-				predator = new ObjectInstance(domain.getObjectClass(CLASSPREDATOR), CLASSPREDATOR);
+				predator = new MutableObjectInstance(domain.getObjectClass(CLASSPREDATOR), CLASSPREDATOR);
 				predator.setValue(ATTX, ax);
 				predator.setValue(ATTY, ay);
 				s.addObject(predator);
@@ -339,8 +341,8 @@ public class HostileWorldDomain implements DomainGenerator {
 			}
 			else{
 				boolean lostPredator = true;
-				int px = predator.getDiscValForAttribute(ATTX);
-				int py = predator.getDiscValForAttribute(ATTY);
+				int px = predator.getIntValForAttribute(ATTX);
+				int py = predator.getIntValForAttribute(ATTY);
 				
 				if(Math.abs(nx-px) != 2 && Math.abs(ny-py) != 2){
 					lostPredator = false;
@@ -388,9 +390,9 @@ public class HostileWorldDomain implements DomainGenerator {
 		ObjectInstance sucAgent = success.getFirstObjectOfClass(CLASSAGENT);
 		ObjectInstance failAgent = fail.getFirstObjectOfClass(CLASSAGENT);
 		
-		int ax = agent.getDiscValForAttribute(ATTX);
-		int ay = agent.getDiscValForAttribute(ATTY);
-		int ah = agent.getDiscValForAttribute(ATTHEALTH);
+		int ax = agent.getIntValForAttribute(ATTX);
+		int ay = agent.getIntValForAttribute(ATTY);
+		int ah = agent.getIntValForAttribute(ATTHEALTH);
 		
 		if(ah == 0){
 			TransitionProbability endTP = new TransitionProbability(success, 1.);
@@ -418,7 +420,7 @@ public class HostileWorldDomain implements DomainGenerator {
 			ny = this.height-1;
 		}
 		
-		List<ObjectInstance> locations = s.getObjectsOfTrueClass(CLASSLOC);
+		List<ObjectInstance> locations = s.getObjectsOfClass(CLASSLOC);
 		List<ObjectInstance> foodSources = this.filterLocType(locations, 0);
 		
 		//handle hunger
@@ -450,7 +452,7 @@ public class HostileWorldDomain implements DomainGenerator {
 			TransitionProbability sucTP = new TransitionProbability(success, 1.-this.probPredator);
 		
 			//he appears in agent's previous location
-			predator = new ObjectInstance(domain.getObjectClass(CLASSPREDATOR), CLASSPREDATOR);
+			predator = new MutableObjectInstance(domain.getObjectClass(CLASSPREDATOR), CLASSPREDATOR);
 			predator.setValue(ATTX, ax);
 			predator.setValue(ATTY, ay);
 			fail.addObject(predator);
@@ -494,8 +496,8 @@ public class HostileWorldDomain implements DomainGenerator {
 				sucAgent.setValue(ATTHEALTH, Math.max(nh, 0));
 				failAgent.setValue(ATTHEALTH, Math.max(nh, 0));
 				
-				int px = predator.getDiscValForAttribute(ATTX);
-				int py = predator.getDiscValForAttribute(ATTY);
+				int px = predator.getIntValForAttribute(ATTX);
+				int py = predator.getIntValForAttribute(ATTY);
 				
 				ObjectInstance fPredator = fail.getFirstObjectOfClass(CLASSPREDATOR);
 				fPredator.setValue(ATTX, nx);
@@ -549,7 +551,7 @@ public class HostileWorldDomain implements DomainGenerator {
 		
 		List<ObjectInstance> result = new ArrayList<ObjectInstance>(locations.size());
 		for(ObjectInstance o : locations){
-			int lt = o.getDiscValForAttribute(ATTLOCTYPE);
+			int lt = o.getIntValForAttribute(ATTLOCTYPE);
 			if(lt == locType){
 				result.add(o);
 			}
@@ -570,8 +572,8 @@ public class HostileWorldDomain implements DomainGenerator {
 	}
 	
 	protected boolean sameLocation(ObjectInstance o, int ax, int ay){
-		int lx = o.getDiscValForAttribute(ATTX);
-		int ly = o.getDiscValForAttribute(ATTY);
+		int lx = o.getIntValForAttribute(ATTX);
+		int ly = o.getIntValForAttribute(ATTY);
 		
 		if(ax == lx && ay == ly){
 			return true;
@@ -600,12 +602,12 @@ public class HostileWorldDomain implements DomainGenerator {
 				return true;
 			}
 			
-			int px = predator.getDiscValForAttribute(ATTX);
-			int py = predator.getDiscValForAttribute(ATTY);
+			int px = predator.getIntValForAttribute(ATTX);
+			int py = predator.getIntValForAttribute(ATTY);
 			
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(ATTX);
-			int ay = agent.getDiscValForAttribute(ATTY);
+			int ax = agent.getIntValForAttribute(ATTX);
+			int ay = agent.getIntValForAttribute(ATTY);
 			
 			if(ax == px && ay == py){
 				return false;
@@ -645,12 +647,12 @@ public class HostileWorldDomain implements DomainGenerator {
 				return false;
 			}
 			
-			int px = predator.getDiscValForAttribute(ATTX);
-			int py = predator.getDiscValForAttribute(ATTY);
+			int px = predator.getIntValForAttribute(ATTX);
+			int py = predator.getIntValForAttribute(ATTY);
 			
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(ATTX);
-			int ay = agent.getDiscValForAttribute(ATTY);
+			int ax = agent.getIntValForAttribute(ATTX);
+			int ay = agent.getIntValForAttribute(ATTY);
 			
 			if(ax == px && ay == py){
 				return true;
@@ -741,7 +743,7 @@ public class HostileWorldDomain implements DomainGenerator {
 			@Override
 			public boolean isTerminal(State s) {
 				ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-				return agent.getDiscValForAttribute(ATTHEALTH) == 0;
+				return agent.getIntValForAttribute(ATTHEALTH) == 0;
 			}
 		};
 		
@@ -816,7 +818,7 @@ public class HostileWorldDomain implements DomainGenerator {
 				continue; //don't expand
 			}
 			
-			List <GroundedAction> gas = sh.s.getAllGroundedActionsFor(actions);
+			List <GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(actions, sh.s);
 			for(GroundedAction ga : gas){
 				List <TransitionProbability> tps = ga.action.getTransitions(sh.s, ga.params);
 				for(TransitionProbability tp : tps){
@@ -833,8 +835,8 @@ public class HostileWorldDomain implements DomainGenerator {
 							}
 							else{
 								StateHashTuple stored = noPred.get(rh);
-								int sth = stored.s.getFirstObjectOfClass(CLASSAGENT).getDiscValForAttribute(ATTHEALTH);
-								int rhh = rh.s.getFirstObjectOfClass(CLASSAGENT).getDiscValForAttribute(ATTHEALTH);
+								int sth = stored.s.getFirstObjectOfClass(CLASSAGENT).getIntValForAttribute(ATTHEALTH);
+								int rhh = rh.s.getFirstObjectOfClass(CLASSAGENT).getIntValForAttribute(ATTHEALTH);
 								if(rhh > sth){
 									openList.offer(nsh);
 									noPred.put(rh, rh);
@@ -867,7 +869,7 @@ public class HostileWorldDomain implements DomainGenerator {
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
 			ObjectInstance agent = s.getFirstObjectOfClass(CLASSAGENT);
-			if(agent.getDiscValForAttribute(ATTHEALTH) == 0){
+			if(agent.getIntValForAttribute(ATTHEALTH) == 0){
 				return 0.;
 			}
 			return 1.;
@@ -882,14 +884,14 @@ public class HostileWorldDomain implements DomainGenerator {
 		public double reward(State s, GroundedAction a, State sprime) {
 			
 			ObjectInstance agentp = sprime.getFirstObjectOfClass(CLASSAGENT);
-			int ah = agentp.getDiscValForAttribute(ATTHEALTH);
+			int ah = agentp.getIntValForAttribute(ATTHEALTH);
 			int healthCost = 0;
 			if(ah < 8){
 				healthCost = -1;
 			}
 			
 			ObjectInstance agento = s.getFirstObjectOfClass(CLASSAGENT);
-			int aho = agento.getDiscValForAttribute(ATTHEALTH);
+			int aho = agento.getIntValForAttribute(ATTHEALTH);
 			
 			int hurtCost = 0;
 			if(ah - aho < -1){

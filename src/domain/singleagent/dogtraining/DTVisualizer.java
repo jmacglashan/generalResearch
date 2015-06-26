@@ -125,10 +125,10 @@ public class DTVisualizer {
 				float cWidth, float cHeight) {
 			
 			
-			ObjectInstance dog = s.getObjectsOfTrueClass(DogTraining.CLASSDOG).get(0);
-			int holding = dog.getDiscValForAttribute(DogTraining.ATTHOLDING);
+			ObjectInstance dog = s.getObjectsOfClass(DogTraining.CLASSDOG).get(0);
+			int holding = dog.getIntValForAttribute(DogTraining.ATTHOLDING);
 			if(holding > 0){
-				ObjectInstance heldToy = s.getObjectsOfTrueClass(DogTraining.CLASSTOY).get(holding-1);
+				ObjectInstance heldToy = s.getObjectsOfClass(DogTraining.CLASSTOY).get(holding-1);
 				if(heldToy == ob){
 					return; //don't render a held toy because that will be handled by the dog renderer
 				}
@@ -143,8 +143,8 @@ public class DTVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(DogTraining.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(DogTraining.ATTY)*height;
+			float rx = ob.getIntValForAttribute(DogTraining.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(DogTraining.ATTY)*height;
 			
 			float dwidth = 0.2f*width;
 			float dheight = 0.2f*height;
@@ -211,8 +211,8 @@ public class DTVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(DogTraining.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(DogTraining.ATTY)*height;
+			float rx = ob.getIntValForAttribute(DogTraining.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(DogTraining.ATTY)*height;
 			
 			float dwidth = 0.9f*width;
 			float dheight = 0.9f*height;
@@ -228,7 +228,7 @@ public class DTVisualizer {
 			
 			
 			
-			int lookingDir = ob.getDiscValForAttribute(DogTraining.ATTLOOKING);
+			int lookingDir = ob.getIntValForAttribute(DogTraining.ATTLOOKING);
 			
 			
 			
@@ -299,7 +299,7 @@ public class DTVisualizer {
 			/*
 			if(lookingDir != 4){ //only render head if not looking up
 				g2.fill(new Rectangle2D.Float(hx, hy, hwidth, hheight));
-				int holding = ob.getDiscValForAttribute(DogTraining.ATTHOLDING);
+				int holding = ob.getIntValForAttribute(DogTraining.ATTHOLDING);
 				if(holding > 0){
 					g2.setColor(Color.yellow);
 					g2.fill(new Ellipse2D.Float(tx, ty, tw, th));
@@ -307,7 +307,7 @@ public class DTVisualizer {
 			}
 			*/
 			
-			int holding = ob.getDiscValForAttribute(DogTraining.ATTHOLDING);
+			int holding = ob.getIntValForAttribute(DogTraining.ATTHOLDING);
 			if(holding > 0){
 				g2.setColor(Color.yellow);
 				g2.fill(new Ellipse2D.Float(tx, ty, tw, th));
@@ -365,8 +365,8 @@ public class DTVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(DogTraining.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(DogTraining.ATTY)*height;
+			float rx = ob.getIntValForAttribute(DogTraining.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(DogTraining.ATTY)*height;
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			
@@ -405,8 +405,8 @@ public class DTVisualizer {
 			float width = (1.0f / domainXScale) * cWidth;
 			float height = (1.0f / domainYScale) * cHeight;
 			
-			float rx = ob.getDiscValForAttribute(DogTraining.ATTX)*width;
-			float ry = cHeight - height - ob.getDiscValForAttribute(DogTraining.ATTY)*height;
+			float rx = ob.getIntValForAttribute(DogTraining.ATTX)*width;
+			float ry = cHeight - height - ob.getIntValForAttribute(DogTraining.ATTY)*height;
 			
 			g2.fill(new Rectangle2D.Float(rx, ry, width, height));
 			

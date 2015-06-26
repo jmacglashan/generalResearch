@@ -276,11 +276,11 @@ public class VFATest {
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
 			
-			if(sprime.somePFGroundingIsTrue(onPad)){
+			if(onPad.somePFGroundingIsTrue(sprime)){
 				return goalReward;
 			}
 			
-			if(sprime.somePFGroundingIsTrue(onGround) || sprime.somePFGroundingIsTrue(touchingPad) || sprime.somePFGroundingIsTrue(touchingSurface)){
+			if(onGround.somePFGroundingIsTrue(sprime) || touchingPad.somePFGroundingIsTrue(sprime) || touchingSurface.somePFGroundingIsTrue(sprime)){
 				return collisionReward;
 			}
 			

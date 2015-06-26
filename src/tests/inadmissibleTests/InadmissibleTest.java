@@ -174,7 +174,7 @@ public class InadmissibleTest {
 
 				double trueV = values.value(s);
 				ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-				int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
+				int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
 
 				double v = trueV;
 				if(ax >= axSplit){

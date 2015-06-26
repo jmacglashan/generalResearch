@@ -124,15 +124,15 @@ public class SokoAStarPlanner implements PolicyGenerator {
 			
 			//get the agent
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			//get room
 			ObjectInstance room = s.getObject(this.roomName);
-			int l = room.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-			int r = room.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
-			int b = room.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-			int t = room.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
+			int l = room.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+			int r = room.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
+			int b = room.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+			int t = room.getIntValForAttribute(Sokoban2Domain.ATTTOP);
 			
 			int dist = toRoomManDistance(ax, ay, l, r, b, t, this.delta);
 			
@@ -167,20 +167,20 @@ public class SokoAStarPlanner implements PolicyGenerator {
 			
 			//get the agent
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			//get room
 			ObjectInstance room = s.getObject(this.roomName);
-			int l = room.getDiscValForAttribute(Sokoban2Domain.ATTLEFT);
-			int r = room.getDiscValForAttribute(Sokoban2Domain.ATTRIGHT);
-			int b = room.getDiscValForAttribute(Sokoban2Domain.ATTBOTTOM);
-			int t = room.getDiscValForAttribute(Sokoban2Domain.ATTTOP);
+			int l = room.getIntValForAttribute(Sokoban2Domain.ATTLEFT);
+			int r = room.getIntValForAttribute(Sokoban2Domain.ATTRIGHT);
+			int b = room.getIntValForAttribute(Sokoban2Domain.ATTBOTTOM);
+			int t = room.getIntValForAttribute(Sokoban2Domain.ATTTOP);
 			
 			//get the block
 			ObjectInstance block = s.getObject(this.blockName);
-			int bx = block.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int by = block.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int bx = block.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int by = block.getIntValForAttribute(Sokoban2Domain.ATTY);
 			
 			int dist = manDistance(ax, ay, bx, by)-1; //need to be one step away from block to push it
 			
@@ -204,13 +204,13 @@ public class SokoAStarPlanner implements PolicyGenerator {
 		public double h(State s) {
 			//get the agent
 			ObjectInstance agent = s.getFirstObjectOfClass(Sokoban2Domain.CLASSAGENT);
-			int ax = agent.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int ay = agent.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int ax = agent.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int ay = agent.getIntValForAttribute(Sokoban2Domain.ATTY);
 
 			//get the block
 			ObjectInstance block = s.getObject(this.blockName);
-			int bx = block.getDiscValForAttribute(Sokoban2Domain.ATTX);
-			int by = block.getDiscValForAttribute(Sokoban2Domain.ATTY);
+			int bx = block.getIntValForAttribute(Sokoban2Domain.ATTX);
+			int by = block.getIntValForAttribute(Sokoban2Domain.ATTY);
 
 			int dist = manDistance(ax, ay, bx, by)-1; //need to be one step away from block to push it
 

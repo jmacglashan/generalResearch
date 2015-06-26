@@ -15,6 +15,8 @@ import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.ObjectClass;
 import burlap.oomdp.core.ObjectInstance;
 import burlap.oomdp.core.State;
+import burlap.oomdp.core.objects.MutableObjectInstance;
+import burlap.oomdp.core.states.MutableState;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
@@ -51,8 +53,8 @@ public class BeliefTiger implements DomainGenerator {
 	}
 	
 	public static State getInitialState(Domain domain){
-		State s = new State();
-		ObjectInstance so = new ObjectInstance(domain.getObjectClass(CLASSSTATE), "state");
+		State s = new MutableState();
+		ObjectInstance so = new MutableObjectInstance(domain.getObjectClass(CLASSSTATE), "state");
 		so.setValue(ATTLEFTTIGERBELIEF, 0.5);
 		s.addObject(so);
 		return s;

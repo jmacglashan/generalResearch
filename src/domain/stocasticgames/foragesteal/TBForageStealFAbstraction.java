@@ -12,7 +12,7 @@ public class TBForageStealFAbstraction implements StateAbstraction {
 	public State abstraction(State s) {
 		
 		State sc = s.copy();
-		List<ObjectInstance> falts = sc.getObjectsOfTrueClass(TBForageSteal.CLASSFALT);
+		List<ObjectInstance> falts = sc.getObjectsOfClass(TBForageSteal.CLASSFALT);
 		for(ObjectInstance fa : falts){
 			sc.removeObject(fa);
 		}

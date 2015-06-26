@@ -37,7 +37,7 @@ public class FSSimpleBTJAM extends JointActionModel {
 		ObjectInstance player1 = null;
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance player = s.getObject(gsa.actingAgent);
-			if(player.getDiscValForAttribute(FSSimple.ATTPN) == 0){
+			if(player.getIntValForAttribute(FSSimple.ATTPN) == 0){
 				player0Action = gsa;;
 			}
 			else{
@@ -50,7 +50,7 @@ public class FSSimpleBTJAM extends JointActionModel {
 		
 		if(FSSimple.isRootNode(s)){
 			//only change state from root node if steal action is taken and if back is not turned
-			int backTurned = player1.getDiscValForAttribute(FSSimple.ATTBACKTURNED);
+			int backTurned = player1.getIntValForAttribute(FSSimple.ATTBACKTURNED);
 			if(player0Action.action.actionName.equals(FSSimple.ACTIONSTEAL) && backTurned == 0){
 				sn.setValue(FSSimple.ATTSTATENODE, 2);
 			}

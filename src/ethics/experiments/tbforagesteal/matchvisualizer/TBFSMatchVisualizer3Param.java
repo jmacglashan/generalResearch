@@ -745,7 +745,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		}
 		
 		State s0 = TBForageSteal.getGameStartState(domain, arrayFA, forAgent);
-		List <ObjectInstance> agentObs = s0.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+		List <ObjectInstance> agentObs = s0.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 		s0.renameObject(agentObs.get(0), anames[0]);
 		s0.renameObject(agentObs.get(1), anames[1]);
 		
@@ -811,7 +811,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		}
 		
 		State s0 = TBForageSteal.getGameStartState(domain, arrayFA, forAgent);
-		List <ObjectInstance> agentObs = s0.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+		List <ObjectInstance> agentObs = s0.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 		s0.renameObject(agentObs.get(0), anames[0]);
 		s0.renameObject(agentObs.get(1), anames[1]);
 		
@@ -844,7 +844,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		//now do when their opponent stole and punched them
 		State s2 = s0.copy();
 		ObjectInstance qAgent = s2.getObject(anames[forAgent]);
-		int pn = qAgent.getDiscValForAttribute(TBForageSteal.ATTPN);
+		int pn = qAgent.getIntValForAttribute(TBForageSteal.ATTPN);
 		int sa = 4;
 		if(pn == 1){
 			sa = 3;
@@ -865,7 +865,7 @@ public class TBFSMatchVisualizer3Param extends JFrame {
 		//now do when they stole and their opponent punched them for punishment
 		State s3 = s0.copy();
 		qAgent = s3.getObject(anames[forAgent]);
-		pn = qAgent.getDiscValForAttribute(TBForageSteal.ATTPN);
+		pn = qAgent.getIntValForAttribute(TBForageSteal.ATTPN);
 		sa = 3;
 		if(pn == 1){
 			sa = 4;

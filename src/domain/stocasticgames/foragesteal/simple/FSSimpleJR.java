@@ -40,7 +40,7 @@ public class FSSimpleJR implements JointReward {
 		
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance player = s.getObject(gsa.actingAgent);
-			if(player.getDiscValForAttribute(FSSimple.ATTPN) == 0){
+			if(player.getIntValForAttribute(FSSimple.ATTPN) == 0){
 				player0Action = gsa;
 			}
 			else{

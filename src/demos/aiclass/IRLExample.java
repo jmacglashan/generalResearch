@@ -332,7 +332,7 @@ public class IRLExample {
 			for(GroundedProp gp : gps){
 				if(gp.isTrue(s)){
 					ObjectInstance l = s.getObject(gp.params[1]);
-					int lt = l.getDiscValForAttribute(GridWorldDomain.ATTLOCTYPE);
+					int lt = l.getIntValForAttribute(GridWorldDomain.ATTLOCTYPE);
 					return lt;
 				}
 			}
@@ -363,8 +363,8 @@ public class IRLExample {
 
 			//agents position in the world
 			ObjectInstance agent = s.getFirstObjectOfClass(GridWorldDomain.CLASSAGENT);
-			int x = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int y = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			int x = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int y = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 
 			//figure out in which macro cell that x-y and is in
 			int macroX = x / this.macroCellWidth;

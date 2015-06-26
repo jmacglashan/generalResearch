@@ -116,9 +116,9 @@ public class Exercise1 {
 		@Override
 		public boolean isTerminal(State s) {
 			
-			ObjectInstance agent = s.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			ObjectInstance agent = s.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			return (ax==this.gx && ay==this.gy) || (ax==this.px && ay==this.py);
 		}
@@ -148,9 +148,9 @@ public class Exercise1 {
 		@Override
 		public double reward(State s, GroundedAction a, State sprime) {
 			
-			ObjectInstance agent = sprime.getObjectsOfTrueClass(GridWorldDomain.CLASSAGENT).get(0);
-			int ax = agent.getDiscValForAttribute(GridWorldDomain.ATTX);
-			int ay = agent.getDiscValForAttribute(GridWorldDomain.ATTY);
+			ObjectInstance agent = sprime.getObjectsOfClass(GridWorldDomain.CLASSAGENT).get(0);
+			int ax = agent.getIntValForAttribute(GridWorldDomain.ATTX);
+			int ay = agent.getIntValForAttribute(GridWorldDomain.ATTY);
 			
 			if(ax==this.gx && ay==this.gy){
 				return goalR;

@@ -46,7 +46,7 @@ public class TBFSStandardReward implements JointReward {
 		for(GroundedSingleAction gsa : ja){
 			ObjectInstance ao = s.getObject(gsa.actingAgent);
 			
-			int turn = ao.getDiscValForAttribute(TBForageSteal.ATTISTURN);
+			int turn = ao.getIntValForAttribute(TBForageSteal.ATTISTURN);
 			if(turn == 1){
 				agentForTurnAction = gsa;
 			}

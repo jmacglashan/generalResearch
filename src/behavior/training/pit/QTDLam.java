@@ -190,7 +190,7 @@ public class QTDLam {
 		
 		if(node == null){
 			node = new QLearningStateNode(s);
-			List<GroundedAction> gas = s.s.getAllGroundedActionsFor(this.actions);
+			List<GroundedAction> gas = Action.getAllApplicableGroundedActionsFromActionList(this.actions, s.s);
 			for(GroundedAction ga : gas){
 				node.addQValue(ga, qInit);
 			}

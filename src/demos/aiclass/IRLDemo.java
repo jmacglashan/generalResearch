@@ -233,7 +233,7 @@ public class IRLDemo {
 			for(GroundedProp gp : gps){
 				if(gp.isTrue(s)){
 					ObjectInstance l = s.getObject(gp.params[1]);
-					int lt = l.getDiscValForAttribute(GridWorldDomain.ATTLOCTYPE);
+					int lt = l.getIntValForAttribute(GridWorldDomain.ATTLOCTYPE);
 					return lt;
 				}
 			}

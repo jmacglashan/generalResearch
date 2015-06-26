@@ -41,7 +41,7 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 		}
 		else{
 		
-			List <ObjectInstance> agentObs = s.getObjectsOfTrueClass(TBForageSteal.CLASSAGENT);
+			List <ObjectInstance> agentObs = s.getObjectsOfClass(TBForageSteal.CLASSAGENT);
 			for(ObjectInstance aob : agentObs){
 				if(!aob.getName().equals(a1name)){
 					a2name = aob.getName();
@@ -61,11 +61,11 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 			a2or = orewards.get(a2name);
 		}
 		
-		int a1pn = a1Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
-		int a2pn = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPN);
+		int a1pn = a1Ob.getIntValForAttribute(TBForageSteal.ATTPN);
+		int a2pn = a2Ob.getIntValForAttribute(TBForageSteal.ATTPN);
 		
-		int a1pa = a1Ob.getDiscValForAttribute(TBForageSteal.ATTPTA);
-		int a2pa = a2Ob.getDiscValForAttribute(TBForageSteal.ATTPTA);
+		int a1pa = a1Ob.getIntValForAttribute(TBForageSteal.ATTPTA);
+		int a2pa = a2Ob.getIntValForAttribute(TBForageSteal.ATTPTA);
 		
 		double a1sr = a1or + this.subjectiveBias(ja.action(a1name).action.actionName, a1pn, a2pa);
 		double a2sr = 0.;
@@ -139,7 +139,7 @@ public class TBFSSubjectiveRFWS implements ParameterizedRF {
 	protected int getPreviousTurnAction(String aname, State s){
 		
 		ObjectInstance o = s.getObject(aname);
-		int pa = o.getDiscValForAttribute(TBForageSteal.ATTPTA);
+		int pa = o.getIntValForAttribute(TBForageSteal.ATTPTA);
 		
 		return pa;
 	}
