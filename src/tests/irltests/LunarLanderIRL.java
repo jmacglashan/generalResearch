@@ -57,7 +57,8 @@ public class LunarLanderIRL {
 	protected State initialState;
 
 	protected String expertDir = "oomdpResearch/irlLL";
-	protected String trainedDir = "oomdpResearch/irlLLTrained";
+	//protected String trainedDir = "oomdpResearch/irlLLTrained";
+	protected String trainedDir = "oomdpResearch/irlLLTrained_test";
 
 
 	public LunarLanderIRL(){
@@ -111,13 +112,13 @@ public class LunarLanderIRL {
 		timer.start();;
 
 		LLDRFFV fvgen = new LLDRFFV();
-		//DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
-		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+0), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+1), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONIDLE), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNL), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));
+		DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
+//		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
+//				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+0), ""),
+//				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+1), ""),
+//				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONIDLE), ""),
+//				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNL), ""),
+//				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));
 
 
 		List<EpisodeAnalysis> eas = EpisodeAnalysis.parseFilesIntoEAList(this.expertDir, domain, new LLStateParser(domain));
@@ -131,9 +132,9 @@ public class LunarLanderIRL {
 		}
 		*/
 
-		int depth = 0;
-		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 1., new NameDependentStateHashFactory(), depth, -1, 5);
-		DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
+		int depth = 3;
+		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 1., new NameDependentStateHashFactory(), depth, -1, 5);
+		//DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
 		dss.toggleDebugPrinting(false);
 
 		MLIRLRequest request = new MLIRLRequest(domain, dss, eas, rf);
@@ -147,7 +148,7 @@ public class LunarLanderIRL {
 		System.out.println("Training time: " + timer.getTime());
 
 
-		/* //uncomment to run tests
+		 //uncomment to run tests
 		System.out.println(this.getStringRepOfWeights(rf.getParameters()));
 
 		Policy p = new GreedyQPolicy(dss);
@@ -158,10 +159,10 @@ public class LunarLanderIRL {
 		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(s, new NullRewardFunction(), new LunarLanderTF(domain), 500);
 
 		System.out.println("num steps in trained policy: " + trainedEpisode.numTimeSteps());
-		//trainedEpisode.writeToFile(trainedDir+"/irlTestH3", new LLStateParser(domain));
+		trainedEpisode.writeToFile(trainedDir+"/irlTestH3", new LLStateParser(domain));
 
 		new EpisodeSequenceVisualizer(v, domain, new LLStateParser(domain), trainedDir);
-		*/
+
 
 		/*
 		State ls = trainedEpisode.getState(trainedEpisode.numTimeSteps()-1);
