@@ -17,6 +17,7 @@ import javax.swing.KeyStroke;
 
 import auxiliary.DynamicVisualFeedbackEnvironment;
 import auxiliary.StateVisualizingGUI;
+import behavior.training.taskinduction.RewardValueVisualization;
 import burlap.oomdp.core.State;
 import burlap.oomdp.visualizer.Visualizer;
 
@@ -26,6 +27,7 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 	
 	protected Visualizer									painter;
 	protected DynamicVisualFeedbackEnvironment				env;
+	protected RewardValueVisualization						rvis = null;
 	
 	protected int											cWidth = 800;
 	protected int											cHeight = 800;
@@ -38,6 +40,17 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 	public DynamicFeedbackGUI(Visualizer v, DynamicVisualFeedbackEnvironment env) {
 		this.painter = v;
 		this.env = env;
+	}
+
+	public void addRvis(RewardValueVisualization rvis){
+		this.rvis = rvis;
+		this.painter.addRenderLayer(rvis);
+	}
+
+	public void resetRewardVis(){
+		if(this.rvis != null){
+			this.rvis.setCurrentReward(0.);
+		}
 	}
 	
 	public void initGUI(){
@@ -61,6 +74,8 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 			public void actionPerformed(ActionEvent arg0) {
 				System.out.println("punish");
 				env.setReward(-1.);
+				rvis.setCurrentReward(-1.);
+				painter.repaint();
 			}
 		};
 		punishB.addActionListener(punishAct);
@@ -80,6 +95,8 @@ public class DynamicFeedbackGUI  extends JFrame implements StateVisualizingGUI{
 			public void actionPerformed(ActionEvent arg0) {
 				System.out.println("reward");
 				env.setReward(1.);
+				rvis.setCurrentReward(1.);
+				painter.repaint();
 			}
 		};
 		rewardB.addActionListener(rewardAct);

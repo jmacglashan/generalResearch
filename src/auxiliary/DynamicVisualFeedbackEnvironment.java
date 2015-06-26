@@ -1,6 +1,7 @@
 package auxiliary;
 
 import behavior.learning.Environment;
+import behavior.training.DynamicFeedbackGUI;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
@@ -41,6 +42,9 @@ public class DynamicVisualFeedbackEnvironment extends Environment {
 		//System.out.println("Beginning action execution: " + aname);
 		
 		this.lastReward = 0.;
+		if(this.gui instanceof DynamicFeedbackGUI){
+			((DynamicFeedbackGUI)this.gui).resetRewardVis();
+		}
 		Action a = this.operatingDomain.getAction(aname);
 		final State nextState = a.performAction(curState, params);
 		

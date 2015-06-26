@@ -34,7 +34,7 @@ public class TDVFATest {
 
 		MountainCar mcGen = new MountainCar();
 		Domain domain = mcGen.generateDomain();
-		TerminalFunction tf = mcGen.new ClassicMCTF();
+		TerminalFunction tf = new MountainCar.ClassicMCTF();
 		RewardFunction rf = new GoalBasedRF(tf, 100);
 
 		//get a state definition earlier, we'll use it soon.

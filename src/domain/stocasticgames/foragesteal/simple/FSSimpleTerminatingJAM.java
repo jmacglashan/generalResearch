@@ -83,7 +83,7 @@ public class FSSimpleTerminatingJAM extends JointActionModel {
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0);
 		
 		SGTerminalExplorer exp = new SGTerminalExplorer(domain, jam);
-		exp.setTrackingRF(r);
+		exp.setRewardFunction(r);
 		
 		for(int i = 0; i < gen.nfalts; i++){
 			exp.addActionShortHand("f"+i, FSSimple.ACTIONFORAGEBASE+i);

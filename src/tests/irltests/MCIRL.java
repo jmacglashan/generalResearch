@@ -28,6 +28,7 @@ import burlap.behavior.singleagent.vfa.rbf.RBFFeatureDatabase;
 import burlap.behavior.singleagent.vfa.rbf.functions.GaussianRBF;
 import burlap.behavior.singleagent.vfa.rbf.metrics.EuclideanDistance;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.debugtools.MyTimer;
 import burlap.domain.singleagent.lunarlander.LLStateParser;
 import burlap.domain.singleagent.lunarlander.LunarLanderTF;
 import burlap.domain.singleagent.mountaincar.MountainCar;
@@ -100,6 +101,10 @@ public class MCIRL {
 
 
 	public void runIRL(){
+
+		MyTimer timer = new MyTimer();
+		timer.start();
+
 		MCFVGen fvgen = new MCFVGen();
 
 		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList(expertDir, domain, sp);
@@ -138,6 +143,11 @@ public class MCIRL {
 
 		irl.performIRL();
 
+		timer.stop();
+		System.out.println("Trainign time: " + timer.getTime());
+
+
+		/* //uncomment to run tests
 		Policy p = new GreedyQPolicy(dss);
 		//Policy p = new GreedyQPolicy(zsp);
 
@@ -153,6 +163,7 @@ public class MCIRL {
 
 
 		new EpisodeSequenceVisualizer(v, domain, sp, trainedDir);
+		*/
 
 	}
 
@@ -172,7 +183,7 @@ public class MCIRL {
 		}
 		*/
 
-		TerminalFunction tf = this.mcg.new ClassicMCTF();
+		TerminalFunction tf = new MountainCar.ClassicMCTF();
 		LinearStateDiffVF vf = new LinearStateDiffVF(fvgen, fvgen.dim());
 		RewardFunction objectiveRF = new UniformCostRF();
 		DiffVFRF rf = new DiffVFRF(objectiveRF, vf);
@@ -271,7 +282,7 @@ public class MCIRL {
 		colors.add(Color.red);
 		colors.add(Color.blue);
 		List<EpisodeAnalysis> trainedEp = EpisodeAnalysis.parseFilesIntoEAList("oomdpResearch/irlMCH1Trained", this.domain, this.sp);
-		TrajectoryRenderer tr = new TrajectoryRenderer(trainedEp, MountainCar.CLASSAGENT, MountainCar.ATTX, MountainCar.ATTV, new double[]{this.mcg.xmin, this.mcg.xmax, 0.}, new double[]{this.mcg.vmin, this.mcg.vmax, 0.}, 5.f, 5.f);
+		TrajectoryRenderer tr = new TrajectoryRenderer(trainedEp, MountainCar.CLASSAGENT, MountainCar.ATTX, MountainCar.ATTV, new double[]{this.mcg.physParams.xmin, this.mcg.physParams.xmax, 0.}, new double[]{this.mcg.physParams.vmin, this.mcg.physParams.vmax, 0.}, 5.f, 5.f);
 		tr.setColors(colors);
 		gui.getMultiLayerRenderer().addRenderLayer(tr);
 
@@ -283,6 +294,9 @@ public class MCIRL {
 
 	public void runSupervised(){
 
+		MyTimer timer = new MyTimer();
+		timer.start();
+
 		StateToFeatureVectorGenerator svarGen  = new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT);
 		MCFVGen fvgen = new MCFVGen();
 
@@ -292,9 +306,14 @@ public class MCIRL {
 		System.out.println("expert size: " + episodes.get(0).numTimeSteps());
 		System.out.println(episodes.get(0).getActionSequenceString(" "));
 
-		//WekaPolicy p = new WekaPolicy(fvgen, new J48(), this.domain.getActions(), episodes);
-		WekaPolicy p = new WekaPolicy(fvgen, new Logistic(), this.domain.getActions(), episodes);
+		WekaPolicy p = new WekaPolicy(fvgen, new J48(), this.domain.getActions(), episodes);
+		//WekaPolicy p = new WekaPolicy(fvgen, new Logistic(), this.domain.getActions(), episodes);
 
+		timer.stop();
+		System.out.println("Training time: " + timer.getTime());
+
+
+		/*
 		State ns = this.initialState.copy();
 
 		System.out.println("starting episode...");
@@ -306,6 +325,7 @@ public class MCIRL {
 
 
 		new EpisodeSequenceVisualizer(v, domain, sp, trainedDir);
+		*/
 
 
 	}
@@ -318,12 +338,12 @@ public class MCIRL {
 		System.out.println("expert size: " + episodes.get(0).numTimeSteps());
 		System.out.println(episodes.get(0).getActionSequenceString(" "));
 
-		SupervisedRHC p = new SupervisedRHC(this.domain, new UniformCostRF(), this.mcg.new ClassicMCTF(), 0.99, 1, -1, fvgen, new LinearRegression(), episodes);
+		SupervisedRHC p = new SupervisedRHC(this.domain, new UniformCostRF(), new MountainCar.ClassicMCTF(), 0.99, 1, -1, fvgen, new LinearRegression(), episodes);
 
 		State ns = this.initialState.copy();
 
 		System.out.println("starting episode...");
-		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(ns, new NullRewardFunction(), this.mcg.new ClassicMCTF(), 500);
+		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(ns, new NullRewardFunction(), new MountainCar.ClassicMCTF(), 500);
 
 		System.out.println("num steps in trained policy: " + trainedEpisode.numTimeSteps());
 
@@ -433,13 +453,13 @@ public class MCIRL {
 		MCIRL mcirl = new MCIRL();
 		//mcirl.launchExplorer();
 		//mcirl.launchSavedEpisodeViewer();
-		//mcirl.runIRL();
-		mcirl.runSupervised();
+		mcirl.runIRL();
+		//mcirl.runSupervised();
 
 		//mcirl.runVFIRL();
 
 		//mcirl.launchTrainedViewer();
-		//mcirl.visLearnedRF();
+		mcirl.visLearnedRF();
 		//mcirl.runSupervisedRHC();
 	}
 

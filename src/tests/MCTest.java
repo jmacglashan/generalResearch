@@ -64,7 +64,7 @@ public class MCTest {
 		mcGen = new MountainCar();
 		domain = mcGen.generateDomain();
 		rf = new UniformCostRF();
-		tf = mcGen.new ClassicMCTF();
+		tf = new MountainCar.ClassicMCTF();
 		sp = new MountainCarStateParser(domain);
 		initialState = mcGen.getCleanState(domain);
 	}
@@ -106,8 +106,8 @@ public class MCTest {
 		int nTilings = 5;
 		CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings, TilingArrangement.RANDOMJITTER);
 		double resolution = 10.;
-		cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.xmax - mcGen.xmin)/resolution);
-		cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.vmax - mcGen.vmin)/resolution);
+		cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.physParams.xmax - mcGen.physParams.xmin)/resolution);
+		cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.physParams.vmax - mcGen.physParams.vmin)/resolution);
 		
 		//create linear VFA over CMAC
 		double defaultQ = 0.0;
@@ -145,8 +145,8 @@ public class MCTest {
 				int nTilings = 5;
 				CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings, TilingArrangement.RANDOMJITTER);
 				double resolution = 10.;
-				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.xmax - mcGen.xmin)/resolution);
-				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.vmax - mcGen.vmin)/resolution);
+				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.physParams.xmax - mcGen.physParams.xmin)/resolution);
+				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.physParams.vmax - mcGen.physParams.vmin)/resolution);
 				
 				//create linear VFA over CMAC
 				double defaultQ = 0.0;
@@ -174,8 +174,8 @@ public class MCTest {
 				int nTilings = 5;
 				CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings, TilingArrangement.RANDOMJITTER);
 				double resolution = 10.;
-				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.xmax - mcGen.xmin)/resolution);
-				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.vmax - mcGen.vmin)/resolution);
+				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTX), (mcGen.physParams.xmax - mcGen.physParams.xmin)/resolution);
+				cmac.addSpecificationForAllTilings(MountainCar.CLASSAGENT, domain.getAttribute(MountainCar.ATTV), (mcGen.physParams.vmax - mcGen.physParams.vmin)/resolution);
 				
 				//create linear VFA over CMAC
 				double defaultQ = 0.0;
@@ -207,8 +207,8 @@ public class MCTest {
 				
 				EuclideanDistance dist = new EuclideanDistance(new ConcatenatedObjectFeatureVectorGenerator(MountainCar.CLASSAGENT));
 				
-				double xRange = mcGen.xmax - mcGen.xmin;
-				double vRange = mcGen.vmax - mcGen.vmin;
+				double xRange = mcGen.physParams.xmax - mcGen.physParams.xmin;
+				double vRange = mcGen.physParams.vmax - mcGen.physParams.vmin;
 				
 				double distRatio = 200;
 				double bandwidth = Math.sqrt((xRange*xRange/distRatio) + (vRange*vRange/distRatio));
@@ -243,13 +243,13 @@ public class MCTest {
 	
 	protected void addRBFs(RBFFeatureDatabase rbfdb, DistanceMetric dist, int resolution, double bandwidth){
 		
-		double windowX = (this.mcGen.xmax - this.mcGen.xmin) / resolution;
-		double windowV = (this.mcGen.vmax - this.mcGen.vmin) / resolution;
+		double windowX = (this.mcGen.physParams.xmax - this.mcGen.physParams.xmin) / resolution;
+		double windowV = (this.mcGen.physParams.vmax - this.mcGen.physParams.vmin) / resolution;
 		
-		double x = this.mcGen.xmin;
-		while(x <= this.mcGen.xmax){
-			double v = this.mcGen.vmin;
-			while(v <= this.mcGen.vmax){
+		double x = this.mcGen.physParams.xmin;
+		while(x <= this.mcGen.physParams.xmax){
+			double v = this.mcGen.physParams.vmin;
+			while(v <= this.mcGen.physParams.vmax){
 				
 				State c = this.mcGen.getState(this.domain, x, v);
 				RBF rbf = new GaussianRBF(c, dist, bandwidth);

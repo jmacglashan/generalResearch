@@ -16,7 +16,8 @@ import domain.singleagent.sokoban2.Sokoban2Visualizer;
 public class SokoEpisodeViewer {
 
 	public static void main(String[] args) {
-		String path = "oomdpResearch/sokoUserTrain/154fa045b73fbc_1";
+		//String path = "oomdpResearch/sokoUserTrain/15512393f71c6b_1";
+		String path = "oomdpResearch/amt_soko_logs_2/1552ac1fd34fdb_1";
 		Sokoban2Domain soko = new Sokoban2Domain();
 		soko.includeDirectionAttribute(true);
 		Domain d = soko.generateDomain();

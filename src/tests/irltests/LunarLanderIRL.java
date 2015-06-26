@@ -20,6 +20,7 @@ import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.singleagent.vfa.common.ConcatenatedObjectFeatureVectorGenerator;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.debugtools.MyTimer;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.lunarlander.*;
 import burlap.oomdp.auxiliary.StateParser;
@@ -105,14 +106,18 @@ public class LunarLanderIRL {
 
 
 	public void runIRL(){
+
+		MyTimer timer = new MyTimer();
+		timer.start();;
+
 		LLDRFFV fvgen = new LLDRFFV();
-		DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
-		/*LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
+		//DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
+		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+0), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+1), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONIDLE), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNL), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));*/
+				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));
 
 
 		List<EpisodeAnalysis> eas = EpisodeAnalysis.parseFilesIntoEAList(this.expertDir, domain, new LLStateParser(domain));
@@ -126,9 +131,9 @@ public class LunarLanderIRL {
 		}
 		*/
 
-		int depth = 3;
-		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 1., new NameDependentStateHashFactory(), depth, -1, 5);
-		//DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
+		int depth = 0;
+		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 1., new NameDependentStateHashFactory(), depth, -1, 5);
+		DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
 		dss.toggleDebugPrinting(false);
 
 		MLIRLRequest request = new MLIRLRequest(domain, dss, eas, rf);
@@ -138,6 +143,11 @@ public class LunarLanderIRL {
 
 		irl.performIRL();
 
+		timer.stop();
+		System.out.println("Training time: " + timer.getTime());
+
+
+		/* //uncomment to run tests
 		System.out.println(this.getStringRepOfWeights(rf.getParameters()));
 
 		Policy p = new GreedyQPolicy(dss);
@@ -151,6 +161,7 @@ public class LunarLanderIRL {
 		//trainedEpisode.writeToFile(trainedDir+"/irlTestH3", new LLStateParser(domain));
 
 		new EpisodeSequenceVisualizer(v, domain, new LLStateParser(domain), trainedDir);
+		*/
 
 		/*
 		State ls = trainedEpisode.getState(trainedEpisode.numTimeSteps()-1);
@@ -220,6 +231,9 @@ public class LunarLanderIRL {
 
 	public void runSupervised(){
 
+		MyTimer timer = new MyTimer();
+		timer.start();
+
 		LLDRFFV fvgen = new LLDRFFV();
 		StateToFeatureVectorGenerator svarGen = new ConcatenatedObjectFeatureVectorGenerator(true, LunarLanderDomain.AGENTCLASS);
 
@@ -228,6 +242,10 @@ public class LunarLanderIRL {
 		//WekaPolicy p = new WekaPolicy(fvgen, new J48(), this.domain.getActions(), eas);
 		WekaPolicy p = new WekaPolicy(fvgen, new Logistic(), this.domain.getActions(), eas);
 
+		timer.stop();
+		System.out.println("Training time: " + timer.getTime());
+
+		/* //uncomment to test
 		System.out.println("starting episode...");
 		State s = this.initialState.copy();
 		LunarLanderDomain.setAgent(s, 0, 50, 0.);
@@ -238,6 +256,7 @@ public class LunarLanderIRL {
 		trainedEpisode.writeToFile(trainedDir+"/logisticAgent	Easy", new LLStateParser(domain));
 
 		new EpisodeSequenceVisualizer(v, domain, new LLStateParser(domain), trainedDir);
+		*/
 
 	}
 
@@ -309,7 +328,7 @@ public class LunarLanderIRL {
 
 	protected Visualizer getTrajectoryRenderLayerBase(){
 		StateRenderLayer srl = new StateRenderLayer();
-		srl.addObjectClassPainter(LunarLanderDomain.PADCLASS, new LLVisualizer.PadPainter(this.ldg));
+		srl.addObjectClassPainter(LunarLanderDomain.PADCLASS, new LLVisualizer.PadPainter(this.ldg.getPhysParams()));
 		Visualizer v = new Visualizer(srl);
 		return v;
 	}

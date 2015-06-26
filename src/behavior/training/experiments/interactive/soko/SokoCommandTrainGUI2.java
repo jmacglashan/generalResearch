@@ -150,8 +150,8 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 
 
 		feedbackStrategies.add(balanced);
-		feedbackStrategies.add(RPlusPMinus);
-		feedbackStrategies.add(RMinusPPlus);
+		//feedbackStrategies.add(RPlusPMinus);
+		//feedbackStrategies.add(RMinusPPlus);
 
 		//feedbackStrategies.add(new FeedbackStrategy(0.5, 0.5, 0.1));
 		//feedbackStrategies.add(new FeedbackStrategy(0.1, 0.6, 0.1)); //R+/P-

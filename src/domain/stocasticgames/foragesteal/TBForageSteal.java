@@ -65,7 +65,7 @@ public class TBForageSteal {
 		JointReward subjectiveRF = new TBFSSRFWS4Param(objectiveRF, new double[]{-1., 0.5, 1.0, -2.});
 		
 		SGTerminalExplorer exp = new SGTerminalExplorer(d, jam);
-		exp.setTrackingRF(subjectiveRF);
+		exp.setRewardFunction(subjectiveRF);
 		exp.addActionShortHand("n", ACTIONNOP);
 		exp.addActionShortHand("s", ACTIONSTEAL);
 		exp.addActionShortHand("p", ACTIONPUNCH);

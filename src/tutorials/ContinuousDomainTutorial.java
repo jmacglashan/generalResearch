@@ -10,7 +10,6 @@ import burlap.behavior.singleagent.learning.lspi.SARSCollector;
 import burlap.behavior.singleagent.learning.lspi.SARSData;
 import burlap.behavior.singleagent.learning.tdmethods.vfa.GradientDescentSarsaLam;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
-import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
 import burlap.behavior.singleagent.planning.stochastic.sparsesampling.SparseSampling;
 import burlap.behavior.singleagent.vfa.ValueFunctionApproximation;
 import burlap.behavior.singleagent.vfa.cmac.CMACFeatureDatabase;
@@ -40,9 +39,7 @@ import burlap.oomdp.visualizer.Visualizer;
 
 import java.util.List;
 
-/**
- * @author James MacGlashan.
- */
+
 public class ContinuousDomainTutorial {
 
 	public static void main(String [] args){
@@ -60,14 +57,15 @@ public class ContinuousDomainTutorial {
 
 		MountainCar mcGen = new MountainCar();
 		Domain domain = mcGen.generateDomain();
-		TerminalFunction tf = mcGen.new ClassicMCTF();
+		TerminalFunction tf = new MountainCar.ClassicMCTF();
 		RewardFunction rf = new GoalBasedRF(tf, 100);
 
 		StateGenerator rStateGen = new MCRandomStateGenerator(domain);
 		SARSCollector collector = new SARSCollector.UniformRandomSARSCollector(domain);
 		SARSData dataset = collector.collectNInstances(rStateGen, rf, 5000, 20, tf, null);
 
-		ConcatenatedObjectFeatureVectorGenerator featureVectorGenerator = new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT);
+		ConcatenatedObjectFeatureVectorGenerator featureVectorGenerator =
+				new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT);
 		FourierBasis fb = new FourierBasis(featureVectorGenerator, 4);
 
 		LSPI lspi = new LSPI(domain, rf, tf, 0.99, fb);
@@ -96,7 +94,7 @@ public class ContinuousDomainTutorial {
 
 		MountainCar mcGen = new MountainCar();
 		Domain domain = mcGen.generateDomain();
-		TerminalFunction tf = mcGen.new ClassicMCTF();
+		TerminalFunction tf = new MountainCar.ClassicMCTF();
 		RewardFunction rf = new GoalBasedRF(tf, 100);
 
 		//get a state definition earlier, we'll use it soon.
@@ -112,7 +110,9 @@ public class ContinuousDomainTutorial {
 		gridder.gridEntireDomainSpace(domain, 5);
 		List<State> griddedStates = gridder.gridInputState(s);
 
-		DistanceMetric metric = new EuclideanDistance(new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT));
+		DistanceMetric metric = new EuclideanDistance(
+				new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT));
+
 		for(State g : griddedStates){
 			rbf.addRBF(new GaussianRBF(g, metric, .2));
 		}
@@ -144,14 +144,15 @@ public class ContinuousDomainTutorial {
 	public static void IPSS(){
 
 		InvertedPendulum ip = new InvertedPendulum();
-		ip.actionNoise = 0.;
+		ip.physParams.actionNoise = 0.;
 		Domain domain = ip.generateDomain();
 		RewardFunction rf = new InvertedPendulum.InvertedPendulumRewardFunction(Math.PI/8.);
 		TerminalFunction tf = new InvertedPendulum.InvertedPendulumTerminalFunction(Math.PI/8.);
 		State initialState = InvertedPendulum.getInitialState(domain);
 
 
-		SparseSampling ss = new SparseSampling(domain, rf, tf, 1, new NameDependentStateHashFactory(), 10, 1);
+		SparseSampling ss = new SparseSampling(domain, rf, tf, 1,
+				new NameDependentStateHashFactory(), 10, 1);
 		ss.setForgetPreviousPlanResults(true);
 		Policy p = new GreedyQPolicy(ss);
 
@@ -182,7 +183,8 @@ public class ContinuousDomainTutorial {
 		LunarLanderDomain.setPad(s, 75., 95., 0., 10.);
 
 		int nTilings = 5;
-		CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings, CMACFeatureDatabase.TilingArrangement.RANDOMJITTER);
+		CMACFeatureDatabase cmac = new CMACFeatureDatabase(nTilings,
+				CMACFeatureDatabase.TilingArrangement.RANDOMJITTER);
 		double resolution = 10.;
 
 		double angleWidth = 2 * lld.getAngmax() / resolution;
@@ -190,20 +192,31 @@ public class ContinuousDomainTutorial {
 		double yWidth = (lld.getYmax() - lld.getYmin()) / resolution;
 		double velocityWidth = 2 * lld.getVmax() / resolution;
 
-		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS, domain.getAttribute(LunarLanderDomain.AATTNAME), angleWidth);
-		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS, domain.getAttribute(LunarLanderDomain.XATTNAME), xWidth);
-		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS, domain.getAttribute(LunarLanderDomain.YATTNAME), yWidth);
-		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS, domain.getAttribute(LunarLanderDomain.VXATTNAME), velocityWidth);
-		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS, domain.getAttribute(LunarLanderDomain.VYATTNAME), velocityWidth);
+		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS,
+				domain.getAttribute(LunarLanderDomain.AATTNAME),
+				angleWidth);
+		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS,
+				domain.getAttribute(LunarLanderDomain.XATTNAME),
+				xWidth);
+		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS,
+				domain.getAttribute(LunarLanderDomain.YATTNAME),
+				yWidth);
+		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS,
+				domain.getAttribute(LunarLanderDomain.VXATTNAME),
+				velocityWidth);
+		cmac.addSpecificationForAllTilings(LunarLanderDomain.AGENTCLASS,
+				domain.getAttribute(LunarLanderDomain.VYATTNAME),
+				velocityWidth);
 
 		double defaultQ = 0.5;
 		ValueFunctionApproximation vfa = cmac.generateVFA(defaultQ/nTilings);
-		GradientDescentSarsaLam agent = new GradientDescentSarsaLam(domain, rf, tf, 0.99, vfa, 0.02, 10000, 0.5);
+		GradientDescentSarsaLam agent = new GradientDescentSarsaLam(domain, rf, tf, 0.99,
+				vfa, 0.02, 10000, 0.5);
 
 		for(int i = 0; i < 5000; i++){
 			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(s); //run learning episode
 			ea.writeToFile(String.format("lunarLander/e%04d", i), sp); //record episode to a file
-			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
+			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance
 		}
 
 

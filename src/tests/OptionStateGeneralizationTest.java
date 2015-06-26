@@ -62,7 +62,7 @@ public class OptionStateGeneralizationTest {
 		String outputPath = "output"; //directory to record results
 		
 		//example.runSarsa(outputPath);
-		example.runGDSarsaLam(outputPath, 0, domainType);
+		example.runGDSarsaLam(outputPath, 1, domainType);
 		example.visualize(outputPath);
 
 	}

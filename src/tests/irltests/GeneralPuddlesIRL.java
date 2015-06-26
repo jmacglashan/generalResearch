@@ -26,6 +26,7 @@ import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.singleagent.vfa.common.ConcatenatedObjectFeatureVectorGenerator;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.debugtools.MyTimer;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
 import burlap.domain.singleagent.gridworld.GridWorldStateParser;
 import burlap.domain.singleagent.gridworld.GridWorldTerminalFunction;
@@ -164,18 +165,21 @@ public class GeneralPuddlesIRL {
 
 	public void runIRL(){
 
+		MyTimer timer = new MyTimer();
+		timer.start();
+
 		PuddleMapFV ofvgen = new PuddleMapFV(this.puddleMap, 5, 20, 20);
 
 		//PuddleMapFV fvgen = new PuddleMapFV(this.puddleMap, 5, 20, 20);
-		//PuddleMapFVComponent fvgen = new PuddleMapFVComponent(this.puddleMap, 5, 20, 20);
+		PuddleMapFVComponent fvgen = new PuddleMapFVComponent(this.puddleMap, 5, 20, 20);
 		//StateToFeatureVectorGenerator fvgen = new ConcatenatedObjectFeatureVectorGenerator(false, GridWorldDomain.CLASSAGENT);
-		PuddleMapExactFV fvgen = new PuddleMapExactFV(this.puddleMap, 5);
-		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
-		/*LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
+		//PuddleMapExactFV fvgen = new PuddleMapExactFV(this.puddleMap, 5);
+		//LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
+		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
 				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONNORTH), ""),
 				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONSOUTH), ""),
 				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONEAST), ""),
-				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONWEST), ""));*/
+				new GroundedAction(this.domain.getAction(GridWorldDomain.ACTIONWEST), ""));
 
 		LinearStateDifferentiableRF objectiveRF = new LinearStateDifferentiableRF(ofvgen, ofvgen.getDim());
 		objectiveRF.setParameters(new double[]{1., -10, -10, 0, -10, 0, 0, 0, 0, 0});
@@ -184,22 +188,27 @@ public class GeneralPuddlesIRL {
 		java.util.List<EpisodeAnalysis> eas = EpisodeAnalysis.parseFilesIntoEAList(this.expertDir, domain, this.sp);
 
 
-		int depth = 45;
+		int depth = 6;
 		double beta = 10;
-		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new NameDependentStateHashFactory(), depth, -1, beta);
-		//DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
+		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(domain, rf, new NullTermination(), 0.99, new NameDependentStateHashFactory(), depth, -1, beta);
+		DifferentiableZeroStepPlanner dss = new DifferentiableZeroStepPlanner(domain, rf);
 		dss.toggleDebugPrinting(false);
 
 		MLIRLRequest request = new MLIRLRequest(domain, dss, eas, rf);
 		request.setBoltzmannBeta(beta);
 
-		MLIRL irl = new MLIRL(request, 0.001, 0.01, 10); //use this for only the given features
+		//MLIRL irl = new MLIRL(request, 0.001, 0.01, 10); //use this for only the given features
 		//MLIRL irl = new MLIRL(request, 0.00001, 0.01, 10);
-		//MLIRL irl = new MLIRL(request, 0.0001, 0.01, 10);
+		MLIRL irl = new MLIRL(request, 0.0001, 0.01, 10);
 
 		irl.performIRL();
 
 		//System.out.println(this.getFVAndShapeString(rf.getParameters()));
+
+		timer.stop();
+		System.out.println("Training time: " + timer.getTime());
+
+		/*//uncomment to run test examples
 
 		String baseName = "RH45";
 
@@ -240,7 +249,7 @@ public class GeneralPuddlesIRL {
 
 
 		new EpisodeSequenceVisualizer(this.v, this.domain, this.sp, this.trainedDir);
-
+		*/
 
 	}
 
@@ -425,6 +434,9 @@ public class GeneralPuddlesIRL {
 
 	public void runSupervised(){
 
+		MyTimer timer = new MyTimer();
+		timer.start();
+
 		PuddleMapFV agentfv = new PuddleMapFV(this.puddleMap, 5, 20, 20);
 		PuddleMapFVComponent agentCompFV = new PuddleMapFVComponent(this.puddleMap, 5, 20, 20);
 		StateToFeatureVectorGenerator svar = new ConcatenatedObjectFeatureVectorGenerator(false, GridWorldDomain.CLASSAGENT);
@@ -432,9 +444,12 @@ public class GeneralPuddlesIRL {
 		LinearStateDifferentiableRF objectiveRF = new LinearStateDifferentiableRF(agentfv, agentfv.getDim());
 		objectiveRF.setParameters(new double[]{1., -10, -10, 0, -10, 0, 0, 0, 0, 0});
 
-		//WekaPolicy p = new WekaPolicy(agentfv, new J48(), this.domain.getActions(), eas);
-		WekaPolicy p = new WekaPolicy(svar, new Logistic(), this.domain.getActions(), eas);
+		WekaPolicy p = new WekaPolicy(agentfv, new J48(), this.domain.getActions(), eas);
+		//WekaPolicy p = new WekaPolicy(svar, new Logistic(), this.domain.getActions(), eas);
 
+		timer.stop();
+
+		System.out.println("Training Time: " + timer.getTime());
 
 		String baseName = "Svar";
 
@@ -443,13 +458,13 @@ public class GeneralPuddlesIRL {
 		State simple = this.initialState.copy();
 		GridWorldDomain.setAgent(simple, 18, 0);
 		EpisodeAnalysis trainedEp1 = p.evaluateBehavior(simple, objectiveRF, tf, 200);
-		trainedEp1.writeToFile(trainedDir+"/logistic" + baseName + "EpSimple", this.sp);
+		trainedEp1.writeToFile(trainedDir+"/j48" + baseName + "EpSimple", this.sp);
 
 
 		State hardAgent = this.initialState.copy();
 		GridWorldDomain.setAgent(hardAgent, 0, 9);
 		EpisodeAnalysis trainedEp2 = p.evaluateBehavior(hardAgent, objectiveRF, tf, 200);
-		trainedEp2.writeToFile(trainedDir+"/logistic" + baseName + "EpHardAgent", this.sp);
+		trainedEp2.writeToFile(trainedDir+"/j48" + baseName + "EpHardAgent", this.sp);
 
 
 		int ngx = 12;
@@ -464,7 +479,7 @@ public class GeneralPuddlesIRL {
 
 
 		EpisodeAnalysis trainedEp3 = p.evaluateBehavior(hardGoal, objectiveRF, tf, 200);
-		trainedEp3.writeToFile(trainedDir+"/logistic" + baseName + "EpHardGoal", this.sp);
+		trainedEp3.writeToFile(trainedDir+"/j48" + baseName + "EpHardGoal", this.sp);
 
 
 		new EpisodeSequenceVisualizer(this.v, this.domain, this.sp, this.trainedDir);
@@ -500,12 +515,15 @@ public class GeneralPuddlesIRL {
 		ValueIteration vi = new ValueIteration(this.domain, objectiveRF, new NullTermination(), 0.99, new DiscreteStateHashFactory(), 0.01, 200);
 		//vi.planFromState(this.initialState);
 
+		SparseSampling ssLearned = new SparseSampling(this.domain, request.getRf(), new NullTermination(), 0.99, new DiscreteStateHashFactory(), depth, -1);
+		SparseSampling ssObjective = new SparseSampling(this.domain, objectiveRF, new NullTermination(), 0.99, new DiscreteStateHashFactory(), depth, -1);
+
 		StateRewardFunctionValue objectiveRFVis = new StateRewardFunctionValue(this.domain, objectiveRF);
 		StateRewardFunctionValue learnedRFVis = new StateRewardFunctionValue(this.domain, rf);
 
 		List<State> allStates = StateReachability.getReachableStates(this.initialState, (SADomain)this.domain, new DiscreteStateHashFactory());
 
-		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, learnedRFVis, null);
+		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, ssObjective, null);
 		StateValuePainter2D vpainter = (StateValuePainter2D)gui.getSvp();
 		vpainter.toggleValueStringRendering(false);
 		LandmarkColorBlendInterpolation colorBlend = new LandmarkColorBlendInterpolation();
@@ -1189,14 +1207,14 @@ public class GeneralPuddlesIRL {
 		//exp.generateExpertTrajectories();
 		//exp.launchSavedEpisodeViewer();
 		//exp.runIRL();
-		exp.runSupervised();
+		//exp.runSupervised();
 		//exp.runVFIRL();
 		//exp.runVFRFIRL();
 
 		//exp.launchTrajectoryRenderer();
 
 		//exp.launchTrainedViewer();
-		//exp.visualizeFunctions();
+		exp.visualizeFunctions();
 	}
 
 }

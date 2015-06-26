@@ -1,5 +1,6 @@
 package tests.stochasticgames;
 
+import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.behavior.stochasticgame.GameAnalysis;
 import burlap.behavior.stochasticgame.GameSequenceVisualizer;
@@ -21,6 +22,9 @@ import burlap.oomdp.stochasticgames.*;
 import burlap.oomdp.stochasticgames.common.ConstantSGStateGenerator;
 import burlap.oomdp.stochasticgames.common.VisualWorldObserver;
 import burlap.oomdp.visualizer.Visualizer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -82,8 +86,8 @@ public class ExampleSG {
 		this.tf = new GridGame.GGTerminalFunction(this.domain);
 
 		//set the grid game agents will play to turkey
-		this.initialStste = GridGame.getTurkeyInitialState(this.domain);
-		//this.initialStste = GridGame.getPrisonersDilemmaInitialState(this.domain);
+		//this.initialStste = GridGame.getTurkeyInitialState(this.domain);
+		this.initialStste = GridGame.getPrisonersDilemmaInitialState(this.domain);
 
 		this.hashingFactory = new DiscreteStateHashFactory();
 
@@ -125,13 +129,14 @@ public class ExampleSG {
 
 		//if we want to watch our agents visually, then we can set up a visual world observer that delays actions
 		//for 1 second
-		VisualWorldObserver wob = new VisualWorldObserver(domain, v);
-		wob.setFrameDelay(1000);
-		wob.initGUI();
-		this.w.addWorldObserver(wob);
+		//VisualWorldObserver wob = new VisualWorldObserver(domain, v);
+		//wob.setFrameDelay(1000);
+		//wob.initGUI();
+		//this.w.addWorldObserver(wob);
 
 		//continually restart the game after it ends so we can keep watching until we quit.
 		//adda  delay
+		List<GameAnalysis> gas = new ArrayList<GameAnalysis>();
 		while(true){
 
 			//update our visualizer to the start state of the game
@@ -145,9 +150,14 @@ public class ExampleSG {
 			}
 
 			//run the game.
-			w.runGame();
+			gas.add(w.runGame());
+
+			break;
+
 
 		}
+
+		GameSequenceVisualizer vis = new GameSequenceVisualizer(v, domain, gas);
 
 
 	}

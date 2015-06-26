@@ -1,6 +1,7 @@
 package tests;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import burlap.behavior.singleagent.*;
@@ -56,17 +57,17 @@ public class TBasicBehavior {
 		
 		//uncomment the example you want to see (and comment-out the rest)
 		
-		example.BFSExample(outputPath);
+		//example.BFSExample(outputPath);
 		//example.DFSExample(outputPath);
 		//example.AStarExample(outputPath);
 		//example.ValueIterationExample(outputPath);
-		//example.QLearningExample(outputPath);
+		example.QLearningExample(outputPath);
 		//example.SarsaLearningExample(outputPath);
 		//example.experimenterAndPlotter();
 		
 		
 		//run the visualizer (only use if you don't use the experiment plotter example)
-		example.visualize(outputPath);
+		//example.visualize(outputPath);
 		
 		
 
@@ -102,8 +103,8 @@ public class TBasicBehavior {
 		//add visual observer
 		VisualActionObserver observer = new VisualActionObserver(domain, 
 			GridWorldVisualizer.getVisualizer(domain, gwdg.getMap()));
-		((SADomain)this.domain).setActionObserverForAllAction(observer);
-		observer.initGUI();		
+		//((SADomain)this.domain).setActionObserverForAllAction(observer);
+		//observer.initGUI();
 		
 			
 	}
@@ -242,11 +243,17 @@ public class TBasicBehavior {
 		LearningAgent agent = new QLearning(domain, rf, tf, 0.99, hashingFactory, 0., 0.9);
 		
 		//run learning for 100 episodes
+		List <EpisodeAnalysis> allEpisodes = new ArrayList<EpisodeAnalysis>();
 		for(int i = 0; i < 100; i++){
 			EpisodeAnalysis ea = agent.runLearningEpisodeFrom(initialState);
-			ea.writeToFile(String.format("%se%03d", outputPath, i), sp); 
+			allEpisodes.add(ea);
+			ea.writeToFile(String.format("%se%d", outputPath, i), sp);
 			System.out.println(i + ": " + ea.numTimeSteps());
 		}
+
+		Visualizer v = GridWorldVisualizer.getVisualizer(domain, gwdg.getMap());
+		EpisodeSequenceVisualizer evis = new EpisodeSequenceVisualizer(v,
+				domain, allEpisodes);
 		
 	}
 	

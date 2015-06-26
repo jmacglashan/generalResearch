@@ -44,7 +44,7 @@ public class LSPIShaping {
 	public LSPIShaping(){
 		this.mc = new MountainCar();
 		this.domain = this.mc.generateDomain();
-		this.tf = this.mc.new ClassicMCTF();
+		this.tf = new MountainCar.ClassicMCTF();
 		this.rf = new GoalBasedRF(this.tf, 100.);
 		this.valleyState = this.mc.getCleanState(this.domain);
 	}

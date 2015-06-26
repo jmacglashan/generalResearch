@@ -13,10 +13,7 @@ import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.*;
 
 import java.util.*;
 
@@ -116,7 +113,10 @@ public class NMLIRL extends MLIRL {
 
 		}
 
-		LUDecomposition lu = new LUDecomposition(fisher);
+		//LUDecomposition lu = new LUDecomposition(fisher);
+		SingularValueDecomposition svd = new SingularValueDecomposition(fisher);
+
+		/*
 		if(!lu.getSolver().isNonSingular()){
 			System.out.println("Using vanilla...");
 			for(int i = 0; i < fisher.getRowDimension(); i++){
@@ -124,8 +124,10 @@ public class NMLIRL extends MLIRL {
 			}
 			return gradient;
 		}
+		*/
 
-		RealMatrix inverseFisher = lu.getSolver().getInverse();
+		//RealMatrix inverseFisher = lu.getSolver().getInverse();
+		RealMatrix inverseFisher = svd.getSolver().getInverse();
 		RealMatrix vanillaGrad = MatrixUtils.createColumnRealMatrix(gradient);
 		RealMatrix naturalGradientMatrix = inverseFisher.multiply(vanillaGrad);
 

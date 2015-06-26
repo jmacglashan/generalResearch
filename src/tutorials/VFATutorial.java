@@ -118,7 +118,7 @@ public class VFATutorial {
 
 		final MountainCar mcGen = new MountainCar();
 		final Domain domain = mcGen.generateDomain();
-		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final TerminalFunction tf = new MountainCar.ClassicMCTF();
 		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
 		final StateParser sp = new MountainCarStateParser(domain);
 		State s = mcGen.getCleanState(domain);
@@ -172,7 +172,7 @@ public class VFATutorial {
 	public static void SSPend(){
 
 		InvertedPendulum ip = new InvertedPendulum();
-		ip.actionNoise = 0.;
+		ip.physParams.actionNoise = 0.;
 		Domain domain = ip.generateDomain();
 		RewardFunction rf = new InvertedPendulum.InvertedPendulumRewardFunction(Math.PI/8.);
 		TerminalFunction tf = new InvertedPendulum.InvertedPendulumTerminalFunction(Math.PI/8.);
@@ -197,7 +197,7 @@ public class VFATutorial {
 	public static void LSPIPend(){
 
 		InvertedPendulum ip = new InvertedPendulum();
-		ip.actionNoise = 0.;
+		ip.physParams.actionNoise = 0.;
 		Domain domain = ip.generateDomain();
 		RewardFunction rf = new InvertedPendulum.InvertedPendulumRewardFunction(Math.PI/8);
 		TerminalFunction tf = new InvertedPendulum.InvertedPendulumTerminalFunction(Math.PI/8);
@@ -248,7 +248,7 @@ public class VFATutorial {
 	public static void SSCartPole(){
 		
 		CartPoleDomain cpd = new CartPoleDomain();
-		cpd.isFiniteTrack = false;
+		cpd.physParams.isFiniteTrack = false;
 		Domain domain = cpd.generateDomain();
 		RewardFunction rf = new CartPoleDomain.CartPoleRewardFunction();
 		TerminalFunction tf = new CartPoleDomain.CartPoleTerminalFunction();
@@ -274,7 +274,7 @@ public class VFATutorial {
 	public static void LSPICartPole(){
 		
 		CartPoleDomain cpd = new CartPoleDomain();
-		cpd.isFiniteTrack = false;
+		cpd.physParams.isFiniteTrack = false;
 		Domain domain = cpd.generateDomain();
 		RewardFunction rf = new CartPoleDomain.CartPoleRewardFunction(Math.PI/2.-0.01);
 		TerminalFunction tf = new CartPoleDomain.CartPoleTerminalFunction(Math.PI/2.-0.01);

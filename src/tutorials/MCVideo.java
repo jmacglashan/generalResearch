@@ -25,7 +25,7 @@ public class MCVideo {
 
 		MountainCar mcGen = new MountainCar();
 		Domain domain = mcGen.generateDomain();
-		TerminalFunction tf = mcGen.new ClassicMCTF();
+		TerminalFunction tf = new MountainCar.ClassicMCTF();
 		RewardFunction rf = new GoalBasedRF(tf, 100);
 
 		StateGenerator rStateGen = new MCRandomStateGenerator(domain);

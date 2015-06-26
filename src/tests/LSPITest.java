@@ -10,8 +10,12 @@ import burlap.behavior.singleagent.learning.lspi.SARSCollector;
 import burlap.behavior.singleagent.learning.lspi.SARSData;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
+import burlap.behavior.singleagent.vfa.FeatureDatabase;
+import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.singleagent.vfa.ValueFunctionApproximation;
 import burlap.behavior.singleagent.vfa.common.ConcatenatedObjectFeatureVectorGenerator;
+import burlap.behavior.singleagent.vfa.common.FDFeatureVectorGenerator;
+import burlap.behavior.singleagent.vfa.common.FVToFeatureDatabase;
 import burlap.behavior.singleagent.vfa.fourier.FourierBasis;
 import burlap.behavior.singleagent.vfa.rbf.DistanceMetric;
 import burlap.behavior.singleagent.vfa.rbf.RBF;
@@ -49,7 +53,7 @@ public static void main(String [] args){
 		
 		final MountainCar mcGen = new MountainCar();
 		final Domain domain = mcGen.generateDomain();
-		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final TerminalFunction tf = new ClassicMCTF();
 		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
 		final StateParser sp = new MountainCarStateParser(domain);
 		
@@ -86,8 +90,8 @@ public static void main(String [] args){
 				
 				Random rand = RandomFactory.getMapped(0);
 				
-				double rx = rand.nextDouble()*(mcGen.xmax - mcGen.xmin) + mcGen.xmin;
-				double rv = rand.nextDouble()*(mcGen.vmax - mcGen.vmin) + mcGen.vmin;
+				double rx = rand.nextDouble()*(mcGen.physParams.xmax - mcGen.physParams.xmin) + mcGen.physParams.xmin;
+				double rv = rand.nextDouble()*(mcGen.physParams.vmax - mcGen.physParams.vmin) + mcGen.physParams.vmin;
 				
 				State s = mcGen.getState(domain, rx, rv);
 				return s;
@@ -112,7 +116,7 @@ public static void main(String [] args){
 		
 		final GreedyQPolicy p = new GreedyQPolicy(lspi);
 		State s = mcGen.getCleanState(domain);
-		MountainCar.setAgent(s, s.getFirstObjectOfClass(MountainCar.CLASSAGENT).getRealValForAttribute(MountainCar.ATTX)+(0.2*Math.random()*(mcGen.xmax-mcGen.xmin)), 0);
+		MountainCar.setAgent(s, s.getFirstObjectOfClass(MountainCar.CLASSAGENT).getRealValForAttribute(MountainCar.ATTX)+(0.2*Math.random()*(mcGen.physParams.xmax-mcGen.physParams.xmin)), 0);
 		p.evaluateBehavior(s, rf, tf);
 		System.out.println("Done.");
 		
@@ -121,7 +125,7 @@ public static void main(String [] args){
 	public static void initialStatePlan(){
 		final MountainCar mcGen = new MountainCar();
 		final Domain domain = mcGen.generateDomain();
-		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final TerminalFunction tf = new ClassicMCTF();
 		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
 		final StateParser sp = new MountainCarStateParser(domain);
 		
@@ -129,8 +133,8 @@ public static void main(String [] args){
 		
 		EuclideanDistance dist = new EuclideanDistance(new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT));
 		
-		double xRange = mcGen.xmax - mcGen.xmin;
-		double vRange = mcGen.vmax - mcGen.vmin;
+		double xRange = mcGen.physParams.xmax - mcGen.physParams.xmin;
+		double vRange = mcGen.physParams.vmax - mcGen.physParams.vmin;
 		double xvRange = Math.sqrt(xRange*xRange + vRange*vRange);
 		
 		//double distRatio = 200;
@@ -155,7 +159,7 @@ public static void main(String [] args){
 		
 		final GreedyQPolicy p = new GreedyQPolicy(lspi);
 		State s = mcGen.getCleanState(domain);
-		MountainCar.setAgent(s, s.getFirstObjectOfClass(MountainCar.CLASSAGENT).getRealValForAttribute(MountainCar.ATTX)+(0.2*Math.random()*(mcGen.xmax-mcGen.xmin)), 0);
+		MountainCar.setAgent(s, s.getFirstObjectOfClass(MountainCar.CLASSAGENT).getRealValForAttribute(MountainCar.ATTX)+(0.2*Math.random()*(mcGen.physParams.xmax-mcGen.physParams.xmin)), 0);
 		p.evaluateBehavior(s, rf, tf);
 		System.out.println("Done.");
 	}
@@ -165,11 +169,13 @@ public static void main(String [] args){
 		
 		final MountainCar mcGen = new MountainCar();
 		final Domain domain = mcGen.generateDomain();
-		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final TerminalFunction tf = new ClassicMCTF();
 		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
 		final StateParser sp = new MountainCarStateParser(domain);
 		
 		FourierBasis fb = new FourierBasis(new ConcatenatedObjectFeatureVectorGenerator(true, MountainCar.CLASSAGENT), 4);
+		fb.getStateFeatures(mcGen.getCleanState(domain));
+		System.out.println(fb.numberOfFeatures());
 		
 		StateGenerator rStateGen = new MCRandomStateGenerator(domain);
 		
@@ -178,8 +184,11 @@ public static void main(String [] args){
 		System.out.println("Beginning data collection");
 		SARSData dataset = collector.collectNInstances(rStateGen, rf, 5000, 20, tf, null);
 		System.out.println("Ending data collection");
-		
-		LSPI lspi = new LSPI(domain, rf, tf, 0.99, fb);
+
+		StateToFeatureVectorGenerator fdtofv = new FDFeatureVectorGenerator(fb);
+		FeatureDatabase fvtofd = new FVToFeatureDatabase(fdtofv, fb.numberOfFeatures());
+
+		LSPI lspi = new LSPI(domain, rf, tf, 0.99, fvtofd);
 		lspi.setDataset(dataset);
 		
 		System.out.println("Beginning PI");
@@ -209,7 +218,7 @@ public static void main(String [] args){
 		
 		final MountainCar mcGen = new MountainCar();
 		final Domain domain = mcGen.generateDomain();
-		final TerminalFunction tf = mcGen.new ClassicMCTF();
+		final TerminalFunction tf = new ClassicMCTF();
 		final RewardFunction rf = new GoalBasedRF(new TFGoalCondition(tf), 100);
 		final StateParser sp = new MountainCarStateParser(domain);
 		
@@ -243,8 +252,8 @@ public static void main(String [] args){
 				
 				Random rand = RandomFactory.getMapped(0);
 				
-				double rx = rand.nextDouble()*(mcGen.xmax - mcGen.xmin) + mcGen.xmin;
-				double rv = rand.nextDouble()*(mcGen.vmax - mcGen.vmin) + mcGen.vmin;
+				double rx = rand.nextDouble()*(mcGen.physParams.xmax - mcGen.physParams.xmin) + mcGen.physParams.xmin;
+				double rv = rand.nextDouble()*(mcGen.physParams.vmax - mcGen.physParams.vmin) + mcGen.physParams.vmin;
 				
 				State s = mcGen.getState(domain, rx, rv);
 				return s;
@@ -306,13 +315,13 @@ public static void main(String [] args){
 	
 	protected static void addRBFs(MountainCar mcGen, Domain domain, RBFFeatureDatabase rbfdb, DistanceMetric dist, int resolution, double bandwidth){
 		
-		double windowX = (mcGen.xmax - mcGen.xmin) / resolution;
-		double windowV = (mcGen.vmax - mcGen.vmin) / resolution;
+		double windowX = (mcGen.physParams.xmax - mcGen.physParams.xmin) / resolution;
+		double windowV = (mcGen.physParams.vmax - mcGen.physParams.vmin) / resolution;
 		
-		double x = mcGen.xmin;
-		while(x <= mcGen.xmax){
-			double v = mcGen.vmin;
-			while(v <= mcGen.vmax){
+		double x = mcGen.physParams.xmin;
+		while(x <= mcGen.physParams.xmax){
+			double v = mcGen.physParams.vmin;
+			while(v <= mcGen.physParams.vmax){
 				
 				State c = mcGen.getState(domain, x, v);
 				RBF rbf = new GaussianRBF(c, dist, bandwidth);

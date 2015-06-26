@@ -35,6 +35,7 @@ public class PrepGWVideo {
 
 		Visualizer v = GridWorldVisualizer.getVisualizer(gwd.getMap());
 		VisualActionObserver ob = new VisualActionObserver(domain, v);
+		ob.setFrameDelay((long)(1./24.*1000));
 		((SADomain)domain).addActionObserverForAllAction(ob);
 		ob.initGUI();
 

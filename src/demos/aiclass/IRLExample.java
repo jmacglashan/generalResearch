@@ -14,6 +14,7 @@ import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateDiffer
 import burlap.behavior.singleagent.learnbydemo.mlirl.differentiableplanners.DifferentiableVI;
 import burlap.behavior.singleagent.planning.QComputablePlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.debugtools.RandomFactory;
@@ -99,13 +100,15 @@ public class IRLExample {
 		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList("irlDemo", domain, new GridWorldStateParser(this.domain));
 
 		//differentiable sparse sampling is not yet in BURLAP proper
-		//DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, 10);
-		//dss.toggleDebugPrinting(false);
-		DifferentiableVI dvi = new DifferentiableVI(this.domain, rf, new NullTermination(), 0.99, 8, new DiscreteStateHashFactory(), 0.01, 100);
+		double beta = 10.;
+		//double beta = 10.;
+		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, beta);
+		dss.toggleDebugPrinting(false);
+		//DifferentiableVI dvi = new DifferentiableVI(this.domain, rf, new NullTermination(), 0.99, 8, new DiscreteStateHashFactory(), 0.01, 100);
 
 
-		MLIRLRequest request = new MLIRLRequest(domain, dvi, episodes, rf);
-		request.setBoltzmannBeta(10);
+		MLIRLRequest request = new MLIRLRequest(domain, dss, episodes, rf);
+		request.setBoltzmannBeta(beta);
 		//MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
 		//request.setBoltzmannBeta(20);
 
@@ -120,6 +123,52 @@ public class IRLExample {
 				allStates,
 				new StateRewardFunctionValue(domain, request.getRf()),
 				new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+
+		gui.initGUI();
+
+
+	}
+
+	/**
+	 * Runs MLIRL on the trajectories stored in the "irlDemo" directory and then visualizes the learned reward function on a novel environment.
+	 */
+	public void runIRLGeneralize(){
+
+		LocationFV fvg = new LocationFV(this.domain, 5);
+		LinearStateDifferentiableRF rf = new LinearStateDifferentiableRF(fvg, 5);
+
+		List<EpisodeAnalysis> episodes = EpisodeAnalysis.parseFilesIntoEAList("irlDemo", domain, new GridWorldStateParser(this.domain));
+
+		//differentiable sparse sampling is not yet in BURLAP proper
+		double beta = 10.;
+		//double beta = 10.;
+		DifferentiableSparseSampling dss = new DifferentiableSparseSampling(this.domain, rf, new NullTermination(), 1., new DiscreteStateHashFactory(), 8, -1, beta);
+		dss.toggleDebugPrinting(false);
+		//DifferentiableVI dvi = new DifferentiableVI(this.domain, rf, new NullTermination(), 0.99, 8, new DiscreteStateHashFactory(), 0.01, 100);
+
+
+		MLIRLRequest request = new MLIRLRequest(domain, dss, episodes, rf);
+		request.setBoltzmannBeta(beta);
+		//MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
+		//request.setBoltzmannBeta(20);
+
+		MLIRL irl = new MLIRL(request, 0.1, 0.1, 10);
+		irl.performIRL();
+
+		VisualExplorer exp = new VisualExplorer(this.domain, this.v, this.transferState());
+		exp.initGUI();
+
+		ValueIteration vi = new ValueIteration(this.domain, request.getRf(), new NullTermination(), 0.9, new DiscreteStateHashFactory(), 0.0001, 100);
+		vi.planFromState(transferState());
+
+		List<State> allStates = StateReachability.getReachableStates(transferState(), (SADomain)this.domain, new DiscreteStateHashFactory());
+
+		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QComputablePlanner)request.getPlanner(), new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
+				allStates,
+				new StateRewardFunctionValue(domain, request.getRf()),
+				//vi,
+				new GreedyQPolicy(vi));
 
 		gui.initGUI();
 
@@ -149,7 +198,7 @@ public class IRLExample {
 		//MLIRLRequest request = new MLIRLRequest(domain, episodes, rf, new DiscreteStateHashFactory());
 		//request.setBoltzmannBeta(20);
 
-		NMLIRL irl = new NMLIRL(request, 0.1, 0.1, 10);
+		NMLIRL irl = new NMLIRL(request, 0.0001, 0.0, 30);
 		irl.performIRL();
 
 
@@ -191,6 +240,25 @@ public class IRLExample {
 		GridWorldDomain.setLocation(s, 8, 3, 3, 0);
 
 		return s;
+	}
+
+	protected State transferState(){
+
+		State s = GridWorldDomain.getOneAgentNLocationState(this.domain, 8);
+		GridWorldDomain.setAgent(s, 0, 0);
+
+		GridWorldDomain.setLocation(s, 0, 3, 4, 1);
+		GridWorldDomain.setLocation(s, 1, 2, 4, 2);
+		GridWorldDomain.setLocation(s, 2, 1, 4, 3);
+		GridWorldDomain.setLocation(s, 3, 0, 4, 4);
+
+		GridWorldDomain.setLocation(s, 4, 0, 1, 0);
+		GridWorldDomain.setLocation(s, 5, 1, 1, 0);
+		GridWorldDomain.setLocation(s, 6, 2, 1, 0);
+		GridWorldDomain.setLocation(s, 7, 3, 1, 0);
+
+		return s;
+
 	}
 
 
@@ -356,7 +424,8 @@ public class IRLExample {
 		//ex.launchExplorer();
 		//ex.launchSavedEpisodeSequenceVis();
 		//ex.runIRL();
-		ex.runNIRL();
+		ex.runIRLGeneralize();
+		//ex.runNIRL();
 
 	}
 

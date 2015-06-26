@@ -272,7 +272,7 @@ public class FSSimple implements DomainGenerator {
 		State s = FSSimple.getInitialState(domain, "player0", "player1", 0, 0);
 		
 		SGTerminalExplorer exp = new SGTerminalExplorer(domain, jam);
-		exp.setTrackingRF(r);
+		exp.setRewardFunction(r);
 		
 		for(int i = 0; i < gen.nfalts; i++){
 			exp.addActionShortHand("f"+i, ACTIONFORAGEBASE+i);

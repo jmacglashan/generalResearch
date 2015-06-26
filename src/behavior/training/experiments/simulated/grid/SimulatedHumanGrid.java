@@ -12,6 +12,7 @@ import behavior.learning.DomainEnvironmentWrapper;
 import behavior.training.DynamicFeedbackGUI;
 import behavior.training.taskinduction.MAPMixtureModelPolicy;
 import behavior.training.taskinduction.NoopOnTermPolicy;
+import behavior.training.taskinduction.RewardValueVisualization;
 import behavior.training.taskinduction.TaskDescription;
 import behavior.training.taskinduction.strataware.FeedbackStrategy;
 import behavior.training.taskinduction.strataware.TaskInductionWithFeedbackStrategies;
@@ -39,7 +40,6 @@ import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.NullAction;
 import burlap.oomdp.singleagent.explorer.VisualExplorer;
 import burlap.oomdp.visualizer.Visualizer;
-import sun.management.resources.agent;
 
 public class SimulatedHumanGrid {
 
@@ -61,11 +61,11 @@ public class SimulatedHumanGrid {
 
 		SimulatedHumanGrid shg = new SimulatedHumanGrid();
 		//shg.runVisualExplorer();
-		//shg.runInteractiveTraining();
+		shg.runInteractiveTraining();
 		//shg.runInteractiveTrainingQLearning();
 
 		//shg.runSimulatedQLearning();
-		shg.runSimulatedQLearningPolicy();
+		//shg.runSimulatedQLearningPolicy();
 
 
 		//shg.experimentFixedCustomDriver("dataFiles/trainOutput/custom2/actual", 0.3, 0.7, 0.05);
@@ -163,6 +163,7 @@ public class SimulatedHumanGrid {
 		
 		DynamicFeedbackGUI gui = new DynamicFeedbackGUI(this.visualizer, env);
 		env.setGUI(gui);
+		gui.addRvis(new RewardValueVisualization(50, 50, 750, 750));
 		
 		List<TaskDescription> tasks = this.getTaskDescriptions();
 		//TaskInductionTraining agent = new TaskInductionTraining(domainEnvWrapper, trainerRF, trainerTF, hashingFactory, tasks, new MAPMixtureModelPolicy());
@@ -186,6 +187,11 @@ public class SimulatedHumanGrid {
 				hasInitedGUI = true;
 				gui.initGUI();
 				gui.launch();
+				try {
+					Thread.sleep(10000);
+				} catch(InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			try {
