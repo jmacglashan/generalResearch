@@ -423,8 +423,8 @@ public class IRLExample {
 
 		//ex.launchExplorer();
 		//ex.launchSavedEpisodeSequenceVis();
-		//ex.runIRL();
-		ex.runIRLGeneralize();
+		ex.runIRL();
+		//ex.runIRLGeneralize();
 		//ex.runNIRL();
 
 	}

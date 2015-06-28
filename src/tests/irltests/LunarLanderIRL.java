@@ -112,13 +112,13 @@ public class LunarLanderIRL {
 		timer.start();
 
 		LLDRFFV fvgen = new LLDRFFV();
-		//DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
-		LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
+		DifferentiableRF rf = new LinearStateDifferentiableRF(fvgen, fvgen.getDim());
+		/*LinearStateActionDifferentiableRF rf = new LinearStateActionDifferentiableRF(fvgen, fvgen.getDim(),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+0), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTHRUST+1), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONIDLE), ""),
 				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNL), ""),
-				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));
+				new GroundedAction(this.domain.getAction(LunarLanderDomain.ACTIONTURNR), ""));*/
 
 
 		List<EpisodeAnalysis> eas = EpisodeAnalysis.parseFilesIntoEAList(this.expertDir, domain, new LLStateParser(domain));
@@ -159,7 +159,7 @@ public class LunarLanderIRL {
 		EpisodeAnalysis trainedEpisode = p.evaluateBehavior(s, new NullRewardFunction(), new LunarLanderTF(domain), 500);
 
 		System.out.println("num steps in trained policy: " + trainedEpisode.numTimeSteps());
-		//trainedEpisode.writeToFile(trainedDir+"/irlTestH3", new LLStateParser(domain));
+		trainedEpisode.writeToFile(trainedDir+"/irlTestH3", new LLStateParser(domain));
 
 		new EpisodeSequenceVisualizer(v, domain, new LLStateParser(domain), trainedDir);
 
