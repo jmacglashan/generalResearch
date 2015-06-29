@@ -9,7 +9,7 @@ import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.LandmarkCol
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.PolicyGlyphPainter2D;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.StateValuePainter2D;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -1104,18 +1104,18 @@ public class EnvironmentMDP implements DomainGenerator{
 		planner.planFromState(initialState);
 
 		//create a Q-greedy policy from the planner
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 
 		//record the plan results to a file
 		EpisodeAnalysis ea = p.evaluateBehavior(initialState, rf, tf);
 		ea.writeToFile(outputPath + "planResult", sp);
 
 		//visualize the value function and policy
-		this.valueFunctionVisualize((QComputablePlanner)planner, p, initialState);
+		this.valueFunctionVisualize((QFunction)planner, p, initialState);
 
 	}
 
-	public void valueFunctionVisualize(QComputablePlanner planner, Policy p, State initialState){
+	public void valueFunctionVisualize(QFunction planner, Policy p, State initialState){
 		List <State> allStates = StateReachability.getReachableStates(initialState,
 				(SADomain) domain, hashingFactory);
 

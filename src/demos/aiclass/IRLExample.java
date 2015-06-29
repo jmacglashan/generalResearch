@@ -12,7 +12,7 @@ import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateDifferentiableRF;
 import burlap.behavior.singleagent.learnbydemo.mlirl.differentiableplanners.DifferentiableVI;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
@@ -118,11 +118,11 @@ public class IRLExample {
 
 		List<State> allStates = StateReachability.getReachableStates(basicState(), (SADomain)this.domain, new DiscreteStateHashFactory());
 
-		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QComputablePlanner)request.getPlanner(), new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QFunction)request.getPlanner(), new GreedyQPolicy((QFunction)request.getPlanner()));
 		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
 				allStates,
 				new StateRewardFunctionValue(domain, request.getRf()),
-				new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+				new GreedyQPolicy((QFunction)request.getPlanner()));
 
 		gui.initGUI();
 
@@ -163,7 +163,7 @@ public class IRLExample {
 
 		List<State> allStates = StateReachability.getReachableStates(transferState(), (SADomain)this.domain, new DiscreteStateHashFactory());
 
-		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QComputablePlanner)request.getPlanner(), new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QFunction)request.getPlanner(), new GreedyQPolicy((QFunction)request.getPlanner()));
 		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
 				allStates,
 				new StateRewardFunctionValue(domain, request.getRf()),
@@ -204,11 +204,11 @@ public class IRLExample {
 
 		List<State> allStates = StateReachability.getReachableStates(basicState(), (SADomain)this.domain, new DiscreteStateHashFactory());
 
-		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QComputablePlanner)request.getPlanner(), new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+		//ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(allStates, (QFunction)request.getPlanner(), new GreedyQPolicy((QFunction)request.getPlanner()));
 		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
 				allStates,
 				new StateRewardFunctionValue(domain, request.getRf()),
-				new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+				new GreedyQPolicy((QFunction)request.getPlanner()));
 
 		gui.initGUI();
 
@@ -383,7 +383,7 @@ public class IRLExample {
 	 * A "planning" algorithm that sets the value of the state to the reward function value. This is useeful
 	 * for visualizing the learned reward function weights from IRL.
 	 */
-	public static class StateRewardFunctionValue implements QComputablePlanner{
+	public static class StateRewardFunctionValue implements QFunction{
 
 		protected RewardFunction rf;
 		protected Domain domain;

@@ -3,7 +3,7 @@ package behavior.planning.vfa;
 
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.stochastic.sparsesampling.SparseSampling;
 import burlap.behavior.singleagent.vfa.ValueFunctionApproximation;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * @author James MacGlashan.
  */
-public class LookaheadVFATree implements QComputablePlanner{
+public class LookaheadVFATree implements QFunction{
 
 	protected SparseSampling tree;
 

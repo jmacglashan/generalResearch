@@ -4,7 +4,7 @@ import java.util.List;
 
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -216,7 +216,7 @@ public class DiscountFactorQuiz {
 		int maxIters = 1000;
 		OOMDPPlanner planner = new ValueIteration(domain, rf, tf, discountFactor, hashingFactory, delta, maxIters);
 		planner.planFromState(initialState);
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 		return p.getAction(initialState).actionName();
 	}
 

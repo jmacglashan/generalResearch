@@ -25,7 +25,7 @@ import burlap.behavior.singleagent.learning.actorcritic.actor.BoltzmannActor;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TDLambda;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TimeIndexedTDLambda;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
@@ -315,7 +315,7 @@ public class GridWorldTrainingTest {
 		planner.planFromState(initialState);
 		
 		//create a Q-greedy policy from the planner
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 		
 		return p;
 		

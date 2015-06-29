@@ -6,7 +6,7 @@ import burlap.behavior.learningrate.LearningRate;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.EpsilonGreedy;
 import burlap.behavior.singleagent.vfa.ApproximationResult;
 import burlap.behavior.singleagent.vfa.FunctionWeight;
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * @author James MacGlashan.
  */
-public class GradientDescentTDLambdaLookahead extends OOMDPPlanner implements QComputablePlanner{
+public class GradientDescentTDLambdaLookahead extends OOMDPPlanner implements QFunction{
 
 
 	protected ValueFunctionApproximation vfa;

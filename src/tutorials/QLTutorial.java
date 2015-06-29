@@ -12,7 +12,7 @@ import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.EpsilonGreedy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -28,7 +28,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 import burlap.oomdp.singleagent.common.UniformCostRF;
 
-public class QLTutorial extends OOMDPPlanner implements QComputablePlanner,
+public class QLTutorial extends OOMDPPlanner implements QFunction,
 		LearningAgent {
 
 	protected Map<StateHashTuple, List<QValue>> qValues;

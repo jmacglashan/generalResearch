@@ -3,7 +3,7 @@ package classexercises.vi;
 import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.domain.singleagent.gridworld.GridWorldDomain;
@@ -110,7 +110,7 @@ public class VITester {
 		planner.planFromState(initialState);
 		
 		//create a Q-greedy policy using the Q-values that the planner computes
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 		
 		//run a sample of the computed policy and write its results to the file "VIResult.episode" in the directory outputPath
 		//a '.episode' extension is automatically added by the writeToFileMethod

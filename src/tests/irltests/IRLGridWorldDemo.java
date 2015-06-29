@@ -9,7 +9,7 @@ import burlap.behavior.singleagent.EpisodeSequenceVisualizer;
 import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.learnbydemo.apprenticeship.ApprenticeshipLearning;
 import burlap.behavior.singleagent.learnbydemo.apprenticeship.ApprenticeshipLearningRequest;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
@@ -202,7 +202,7 @@ public class IRLGridWorldDemo {
 		planner.planFromState(initialState);
 
 		//create a Q-greedy policy using the Q-values that the planner computes
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 
 		//run a sample of the computed policy and write its results to the file "VIResult.episode" in the directory outputPath
 		//a '.episode' extension is automatically added by the writeToFileMethod

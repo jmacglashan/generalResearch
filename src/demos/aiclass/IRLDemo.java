@@ -10,7 +10,7 @@ import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnbydemo.mlirl.commonrfs.LinearStateDifferentiableRF;
 import burlap.behavior.singleagent.learnbydemo.mlirl.differentiableplanners.DifferentiableSparseSampling;
 import burlap.behavior.singleagent.learnbydemo.mlirl.differentiableplanners.DifferentiableVI;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.vfa.StateToFeatureVectorGenerator;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -126,7 +126,7 @@ public class IRLDemo {
 		ValueFunctionVisualizerGUI gui = GridWorldDomain.getGridWorldValueFunctionVisualization(
 				allStates,
 				new StateRewardFunctionValue(domain, request.getRf()),
-				new GreedyQPolicy((QComputablePlanner)request.getPlanner()));
+				new GreedyQPolicy((QFunction)request.getPlanner()));
 
 		gui.initGUI();
 
@@ -247,7 +247,7 @@ public class IRLDemo {
 	 * A "planning" algorithm that sets the value of the state to the reward function value. This is useful
 	 * for visualizing the learned reward function weights from IRL.
 	 */
-	public static class StateRewardFunctionValue implements QComputablePlanner{
+	public static class StateRewardFunctionValue implements QFunction{
 
 		protected RewardFunction rf;
 		protected Domain domain;

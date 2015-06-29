@@ -5,7 +5,7 @@ import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.options.Option;
 import burlap.behavior.singleagent.planning.ActionTransitions;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.*;
@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * @author James MacGlashan.
  */
-public class FlatVFPlanner extends OOMDPPlanner implements QComputablePlanner {
+public class FlatVFPlanner extends OOMDPPlanner implements QFunction {
 
 
 	protected Map<StateHashTuple, VFNode> valueFunction;

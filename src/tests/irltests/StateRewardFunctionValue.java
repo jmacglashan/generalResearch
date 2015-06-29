@@ -5,7 +5,7 @@ package tests.irltests;
  */
 
 import burlap.behavior.singleagent.QValue;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
@@ -20,7 +20,7 @@ import java.util.List;
  * A "planning" algorithm that sets the value of the state to the reward function value. This is useeful
  * for visualizing the learned reward function weights from IRL.
  */
-public class StateRewardFunctionValue implements QComputablePlanner {
+public class StateRewardFunctionValue implements QFunction {
 
 	protected RewardFunction rf;
 	protected Domain domain;

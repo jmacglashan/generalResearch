@@ -6,7 +6,7 @@ import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRL;
 import burlap.behavior.singleagent.learnbydemo.mlirl.MLIRLRequest;
 import burlap.behavior.singleagent.learnbydemo.mlirl.support.BoltzmannPolicyGradient;
 import burlap.behavior.singleagent.learnbydemo.mlirl.support.QGradientPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.BoltzmannQPolicy;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
@@ -55,7 +55,7 @@ public class NMLIRL extends MLIRL {
 			fisherData.add(new FisherActionData(ga, gradient.length));
 		}
 
-		Policy p = new BoltzmannQPolicy((QComputablePlanner)this.request.getPlanner(), 1./this.request.getBoltzmannBeta());
+		Policy p = new BoltzmannQPolicy((QFunction)this.request.getPlanner(), 1./this.request.getBoltzmannBeta());
 
 
 

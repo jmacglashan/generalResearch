@@ -8,7 +8,7 @@ import burlap.behavior.singleagent.learning.GoalBasedRF;
 import burlap.behavior.singleagent.learning.lspi.LSPI;
 import burlap.behavior.singleagent.learning.lspi.SARSCollector;
 import burlap.behavior.singleagent.learning.lspi.SARSData;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyDeterministicQPolicy;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
@@ -149,15 +149,15 @@ public class LSPIShaping {
 
 	public static class QPlannerValueInit implements ValueFunctionInitialization{
 
-		protected QComputablePlanner planner;
+		protected QFunction planner;
 
-		public QPlannerValueInit(QComputablePlanner planner) {
+		public QPlannerValueInit(QFunction planner) {
 			this.planner = planner;
 		}
 
 		@Override
 		public double value(State s) {
-			return QComputablePlanner.QComputablePlannerHelper.getOptimalValue(this.planner, s);
+			return QFunction.QFunctionHelper.getOptimalValue(this.planner, s);
 		}
 
 		@Override

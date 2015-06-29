@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import burlap.behavior.singleagent.QValue;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
@@ -22,7 +22,7 @@ import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
 public class DeterministicGoalDirectedPartialVI extends ValueFunctionPlanner
-		implements QComputablePlanner {
+		implements QFunction {
 	
 	
 	protected Map <StateHashTuple, Integer>							distanceFunction;

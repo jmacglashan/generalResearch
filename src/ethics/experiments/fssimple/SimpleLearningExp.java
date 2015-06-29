@@ -12,7 +12,7 @@ import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.ValueFunctionPlanner;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -205,7 +205,7 @@ public class SimpleLearningExp {
 		
 		State s = GraphDefinedDomain.getState(domain, 0);
 		
-		QComputablePlanner qSource = vi;
+		QFunction qSource = vi;
 		if(useVI){
 			vi.planFromState(s);
 		}
@@ -337,7 +337,7 @@ public class SimpleLearningExp {
 		
 		State s = GraphDefinedDomain.getState(domain, 0);
 		
-		QComputablePlanner qSource = vi;
+		QFunction qSource = vi;
 		if(useVI){
 			vi.planFromState(s);
 		}
@@ -494,7 +494,7 @@ public class SimpleLearningExp {
 		
 		State s = GraphDefinedDomain.getState(domain, 0);
 		
-		QComputablePlanner qSource = vi;
+		QFunction qSource = vi;
 		if(useVI){
 			vi.planFromState(s);
 		}
@@ -631,7 +631,7 @@ public class SimpleLearningExp {
 	
 	public static class OptPunisherQOnPessimisticOpponent implements ValueFunctionInitialization {
 
-		QComputablePlanner planner;
+		QFunction planner;
 		
 		public OptPunisherQOnPessimisticOpponent(){
 			
@@ -690,7 +690,7 @@ public class SimpleLearningExp {
 	
 	public static class PunisherQForContingent implements ValueFunctionInitialization {
 
-		QComputablePlanner planner;
+		QFunction planner;
 		
 		public PunisherQForContingent(){
 			

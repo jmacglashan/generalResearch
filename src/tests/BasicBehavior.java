@@ -27,7 +27,7 @@ import burlap.behavior.singleagent.learning.actorcritic.critics.TDLambda;
 import burlap.behavior.singleagent.learning.actorcritic.critics.TimeIndexedTDLambda;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
 import burlap.behavior.singleagent.learning.tdmethods.SarsaLam;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.StateConditionTest;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DeterministicPlanner;
@@ -375,7 +375,7 @@ public class BasicBehavior {
 		planner.planFromState(initialState);
 		
 		//create a Q-greedy policy from the planner
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 		
 		//record the plan results to a file
 		p.evaluateBehavior(initialState, rf, tf).writeToFile(outputPath + "planResult", sp);
@@ -466,12 +466,12 @@ public class BasicBehavior {
 			System.out.println(i + ": " + ea.numTimeSteps()); //print the performance of this episode
 		}
 		
-		this.valueFunctionVisualize((QComputablePlanner)agent);
+		this.valueFunctionVisualize((QFunction)agent);
 		
 	}
 	
 	
-	public void valueFunctionVisualize(QComputablePlanner planner){
+	public void valueFunctionVisualize(QFunction planner){
 		//Policy p = new BoltzmannQPolicy(planner, 0.1);
 		Policy p = new GreedyQPolicy(planner);
 		List <State> allStates = StateReachability.getReachableStates(initialState, (SADomain)domain, hashingFactory);

@@ -7,7 +7,7 @@ import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.ArrowAction
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.LandmarkColorBlendInterpolation;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.PolicyGlyphPainter2D;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.StateValuePainter2D;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
@@ -52,7 +52,7 @@ public class RVGW {
 	}
 
 
-	public static void valueFunctionVisualize(QComputablePlanner planner, Policy p, Domain domain, State initialState){
+	public static void valueFunctionVisualize(QFunction planner, Policy p, Domain domain, State initialState){
 		List<State> allStates = StateReachability.getReachableStates(initialState,
 				(SADomain) domain, new DiscreteStateHashFactory());
 

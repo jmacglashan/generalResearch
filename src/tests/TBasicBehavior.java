@@ -222,13 +222,13 @@ public class TBasicBehavior {
 		planner.planFromState(initialState);
 		
 		//create a Q-greedy policy from the planner
-		Policy p = new GreedyQPolicy((QComputablePlanner)planner);
+		Policy p = new GreedyQPolicy((QFunction)planner);
 		
 		//record the plan results to a file
 		p.evaluateBehavior(initialState, rf, tf).writeToFile(outputPath + "planResult", sp);
 		
 		//visualize the value function and policy
-		this.valueFunctionVisualize((QComputablePlanner)planner, p);
+		this.valueFunctionVisualize((QFunction)planner, p);
 		
 	}
 	
@@ -279,7 +279,7 @@ public class TBasicBehavior {
 	
 	
 	
-	public void valueFunctionVisualize(QComputablePlanner planner, Policy p){
+	public void valueFunctionVisualize(QFunction planner, Policy p){
 		List <State> allStates = StateReachability.getReachableStates(initialState, 
 			(SADomain)domain, hashingFactory);
 		LandmarkColorBlendInterpolation rb = new LandmarkColorBlendInterpolation();

@@ -8,7 +8,7 @@ import java.util.Map;
 
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.AbstractGroundedAction;
@@ -20,7 +20,7 @@ import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
 
-public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
+public class VIInClass extends OOMDPPlanner implements QFunction {
 
 	protected Map<StateHashTuple, Double>				v; //a mapping (e.g., dictionary) from states to their value
 	protected double									minDelta; //a minimum threshold until we're bored of VI iterations
@@ -43,7 +43,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 	@Override
 	public List<QValue> getQs(State s) {
 		
-		//this method is required to be implemented by the QComputablePlanner interface
+		//this method is required to be implemented by the QFunction interface
 		//it asks us to return a Q-value for each action this planner can take in the provided state
 		
 		//first get a list of all the grounded actions that can be applied in this state
@@ -63,7 +63,7 @@ public class VIInClass extends OOMDPPlanner implements QComputablePlanner {
 	@Override
 	public QValue getQ(State s, AbstractGroundedAction a) {
 		
-		//this method is required to be implemented by the QComputablePlanner interface
+		//this method is required to be implemented by the QFunction interface
 		//it asks us to return the Q-value for the specified action
 		
 		//Q-values are computed using the Bellman operator

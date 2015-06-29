@@ -8,7 +8,7 @@ import java.util.Map;
 
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.statehashing.StateHashFactory;
 import burlap.behavior.statehashing.StateHashTuple;
 import burlap.oomdp.core.AbstractGroundedAction;
@@ -19,7 +19,7 @@ import burlap.oomdp.core.TransitionProbability;
 import burlap.oomdp.singleagent.*;
 
 
-public class VIPreClass extends OOMDPPlanner implements QComputablePlanner {
+public class VIPreClass extends OOMDPPlanner implements QFunction {
 
 	protected Map<StateHashTuple, Double>				v;
 	protected double									minDelta;

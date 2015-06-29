@@ -6,12 +6,12 @@ import java.util.List;
 import burlap.behavior.singleagent.EpisodeAnalysis;
 import burlap.behavior.singleagent.QValue;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.oomdp.core.AbstractGroundedAction;
 import burlap.oomdp.core.State;
 import burlap.oomdp.singleagent.GroundedAction;
 
-public class TDPolicyIteration extends OOMDPPlanner implements QComputablePlanner{
+public class TDPolicyIteration extends OOMDPPlanner implements QFunction{
 
 	protected QTDLam						qSource;
 	protected QModifiablePolicy				policy;

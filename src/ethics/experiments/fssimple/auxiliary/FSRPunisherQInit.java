@@ -2,7 +2,7 @@ package ethics.experiments.fssimple.auxiliary;
 
 import burlap.behavior.singleagent.ValueFunctionInitialization;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.statehashing.DiscreteStateHashFactory;
 import burlap.debugtools.DPrint;
@@ -21,7 +21,7 @@ public class FSRPunisherQInit implements ValueFunctionInitialization {
 
 	protected FSSubjectiveRF		subjectiveRF;
 	protected FSSimpleJR			objectiveRF;
-	protected QComputablePlanner 	planner;
+	protected QFunction 	planner;
 	protected Domain				domain;
 	
 	

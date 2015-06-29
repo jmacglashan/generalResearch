@@ -7,7 +7,7 @@ import burlap.behavior.singleagent.auxiliary.StateReachability;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.common.StateValuePainter2D;
 import burlap.behavior.singleagent.learning.tdmethods.QLearning;
-import burlap.behavior.singleagent.planning.QComputablePlanner;
+import burlap.behavior.singleagent.planning.QFunction;
 import burlap.behavior.singleagent.planning.commonpolicies.GreedyQPolicy;
 import burlap.behavior.singleagent.planning.deterministic.DDPlannerPolicy;
 import burlap.behavior.singleagent.planning.deterministic.TFGoalCondition;
@@ -265,12 +265,12 @@ public class GWLearnNovel {
 	}
 
 
-	public static class CopiedQs implements QComputablePlanner{
+	public static class CopiedQs implements QFunction{
 
 		protected StateHashFactory hashingFactory;
 		protected Map<StateHashTuple, List<QValue>> qfunction;
 
-		public CopiedQs(List<State> states, QComputablePlanner qSource, StateHashFactory hashingFactory){
+		public CopiedQs(List<State> states, QFunction qSource, StateHashFactory hashingFactory){
 
 			this.hashingFactory = hashingFactory;
 
