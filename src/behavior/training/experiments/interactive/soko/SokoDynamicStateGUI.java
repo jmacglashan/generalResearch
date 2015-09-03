@@ -650,7 +650,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 	
 	protected void objectDrag(MouseEvent e){
 		
-		if(this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSAGENT) || this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSAGENT) || this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 			
 			int draggedCellX = this.getCellXForMouse(e.getX());
 			int draggedCellY = this.getCellYForMouse(e.getY());
@@ -708,7 +708,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 		if(this.selectedObject == null){
 			return ;
 		}
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSROOM)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSROOM)){
 			return ;
 		}
 		
@@ -772,7 +772,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			return;
 		}
 		
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSROOM) && !this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSROOM) && !this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 			return;
 		}
 		
@@ -799,7 +799,7 @@ public class SokoDynamicStateGUI extends JFrame implements StateVisualizingGUI,M
 			return;
 		}
 		
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 			return;
 		}
 		

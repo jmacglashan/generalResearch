@@ -549,7 +549,7 @@ public class TaxiDomain implements DomainGenerator {
 		v.getStateRenderLayer().addStaticPainter(new VictoryText());
 		VisualExplorer exp = new VisualExplorer(d, v, s);
 		
-		/*
+
 		exp.addKeyAction("w", TaxiDomain.NORTHACTION);
 		exp.addKeyAction("s", TaxiDomain.SOUTHACTION);
 		exp.addKeyAction("d", TaxiDomain.EASTACTION);
@@ -557,15 +557,15 @@ public class TaxiDomain implements DomainGenerator {
 		exp.addKeyAction("p", TaxiDomain.PICKUPACTION);
 		exp.addKeyAction(";", TaxiDomain.DROPOFFACTION);
 		exp.addKeyAction("f", TaxiDomain.FILLUPACTION);
-		*/
+
 		
-		exp.addKeyAction("1", TaxiDomain.NORTHACTION);
-		exp.addKeyAction("2", TaxiDomain.SOUTHACTION);
-		exp.addKeyAction("3", TaxiDomain.EASTACTION);
-		exp.addKeyAction("4", TaxiDomain.WESTACTION);
-		exp.addKeyAction("5", TaxiDomain.PICKUPACTION);
-		exp.addKeyAction("6", TaxiDomain.DROPOFFACTION);
-		exp.addKeyAction("7", TaxiDomain.FILLUPACTION);
+//		exp.addKeyAction("1", TaxiDomain.NORTHACTION);
+//		exp.addKeyAction("2", TaxiDomain.SOUTHACTION);
+//		exp.addKeyAction("3", TaxiDomain.EASTACTION);
+//		exp.addKeyAction("4", TaxiDomain.WESTACTION);
+//		exp.addKeyAction("5", TaxiDomain.PICKUPACTION);
+//		exp.addKeyAction("6", TaxiDomain.DROPOFFACTION);
+//		exp.addKeyAction("7", TaxiDomain.FILLUPACTION);
 		
 		exp.initGUI();
 		

@@ -20,6 +20,7 @@ import burlap.behavior.singleagent.vfa.rbf.RBFFeatureDatabase;
 import burlap.behavior.singleagent.vfa.rbf.functions.GaussianRBF;
 import burlap.behavior.singleagent.vfa.rbf.metrics.EuclideanDistance;
 import burlap.behavior.statehashing.NameDependentStateHashFactory;
+import burlap.debugtools.MyTimer;
 import burlap.domain.singleagent.cartpole.InvertedPendulum;
 import burlap.domain.singleagent.cartpole.InvertedPendulumStateParser;
 import burlap.domain.singleagent.cartpole.InvertedPendulumVisualizer;
@@ -48,8 +49,8 @@ public class ContinuousDomainTutorial {
 
 		//MCLSPIFB();
 		//MCLSPIRBF();
-		//IPSS();
-		LLSARSA();
+		IPSS();
+		//LLSARSA();
 	}
 
 
@@ -157,11 +158,16 @@ public class ContinuousDomainTutorial {
 		ss.toggleDebugPrinting(false);
 		Policy p = new GreedyQPolicy(ss);
 
+		MyTimer timer = new MyTimer();
+		timer.start();
 		EpisodeAnalysis ea = p.evaluateBehavior(initialState, rf, tf, 500);
+		timer.stop();
 		StateParser sp = new InvertedPendulumStateParser(domain);
+
 
 		ea.writeToFile("ip/ssPlan", sp);
 		System.out.println("Num Steps: " + ea.numTimeSteps());
+		System.out.println(timer.getTime());
 
 		Visualizer v = InvertedPendulumVisualizer.getInvertedPendulumVisualizer();
 		new EpisodeSequenceVisualizer(v, domain, sp, "ip");

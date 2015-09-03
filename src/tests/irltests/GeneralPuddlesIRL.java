@@ -69,8 +69,8 @@ public class GeneralPuddlesIRL {
 	protected int [][] puddleMap;
 
 	protected String expertDir = "oomdpResearch/irlGP";
-	//protected String trainedDir = "oomdpResearch/irlGPTrained";
-	protected String trainedDir = "oomdpResearch/irlGPTrained_test";
+	protected String trainedDir = "oomdpResearch/irlGPTrained";
+	//protected String trainedDir = "oomdpResearch/irlGPTrained_test";
 
 
 	public GeneralPuddlesIRL(){
@@ -79,7 +79,7 @@ public class GeneralPuddlesIRL {
 		this.gwd.setNumberOfLocationTypes(5);
 		this.domain = gwd.generateDomain();
 
-		this.puddleMap = this.generateCellMap(0, 0, 20, 20, 0, 56, 0.25);
+		this.puddleMap = generateCellMap(0, 0, 20, 20, 0, 56, 0.25);
 		this.initialState = GridWorldDomain.getOneAgentNoLocationState(this.domain);
 		GridWorldDomain.setAgent(this.initialState, 0, 0);
 
@@ -595,7 +595,7 @@ public class GeneralPuddlesIRL {
 		return s.toString();
 	}
 
-	protected int [][] generateCellMap(int ax, int ay, int gx, int gy, int gt, int seed, double p){
+	public static int [][] generateCellMap(int ax, int ay, int gx, int gy, int gt, int seed, double p){
 
 		int w = 30;
 		int h = 30;
@@ -612,7 +612,7 @@ public class GeneralPuddlesIRL {
 				}
 				double roll = rand.nextDouble();
 				if(roll < p){
-					map[x][y] = this.chooseType(rand, gt);
+					map[x][y] = chooseType(rand, gt);
 				}
 
 			}
@@ -670,7 +670,7 @@ public class GeneralPuddlesIRL {
 
 	}
 
-	protected int chooseType(Random rand, int gt){
+	protected static int chooseType(Random rand, int gt){
 		int type = gt;
 		while(type == gt){
 			type = rand.nextInt(5);
@@ -1207,14 +1207,14 @@ public class GeneralPuddlesIRL {
 		//exp.launchExplorer();
 		//exp.generateExpertTrajectories();
 		//exp.launchSavedEpisodeViewer();
-		exp.runIRL();
+		//exp.runIRL();
 		//exp.runSupervised();
 		//exp.runVFIRL();
 		//exp.runVFRFIRL();
 
 		//exp.launchTrajectoryRenderer();
 
-		//exp.launchTrainedViewer();
+		exp.launchTrainedViewer();
 		//exp.visualizeFunctions();
 	}
 

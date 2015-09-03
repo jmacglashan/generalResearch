@@ -135,7 +135,8 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 		FeedbackStrategy RMinusPPlus = new FeedbackStrategy(0.6, 0.95, 0.1);
 		*/
 
-		balanced.setProbOfStrategy(0.32);
+		balanced.setProbOfStrategy(1.0);
+		//balanced.setProbOfStrategy(0.32);
 		RPlusPMinus.setProbOfStrategy(0.36);
 		RMinusPPlus.setProbOfStrategy(0.32);
 
@@ -590,7 +591,7 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 
 	protected void objectDrag(MouseEvent e){
 
-		if(this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSAGENT) || this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSAGENT) || this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 
 			int draggedCellX = this.getCellXForMouse(e.getX());
 			int draggedCellY = this.getCellYForMouse(e.getY());
@@ -648,7 +649,7 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 		if(this.selectedObject == null){
 			return ;
 		}
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSROOM)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSROOM)){
 			return ;
 		}
 
@@ -712,7 +713,7 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 			return;
 		}
 
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSROOM) && !this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSROOM) && !this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 			return;
 		}
 
@@ -739,7 +740,7 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 			return;
 		}
 
-		if(!this.selectedObject.getTrueClassName().equals(Sokoban2Domain.CLASSBLOCK)){
+		if(!this.selectedObject.getClassName().equals(Sokoban2Domain.CLASSBLOCK)){
 			return;
 		}
 
