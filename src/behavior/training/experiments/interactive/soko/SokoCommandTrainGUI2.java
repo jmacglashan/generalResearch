@@ -133,10 +133,13 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 		FeedbackStrategy RMinusPPlus = new FeedbackStrategy(0.6, 0.95, 0.1);
 		*/
 
+		balanced.setProbOfStrategy(1.);
+
+		/*
 		balanced.setProbOfStrategy(0.32);
 		RPlusPMinus.setProbOfStrategy(0.36);
 		RMinusPPlus.setProbOfStrategy(0.32);
-
+		*/
 
 		/*
 		balanced.setProbOfStrategy(1./3.);
@@ -161,6 +164,7 @@ public class SokoCommandTrainGUI2 extends JFrame implements StateVisualizingGUI,
 
 
 		this.cti.intantiateDefaultAgent(hashingFactory, feedbackStrategies);
+		this.cti.setSpeedMode(2);
 
 
 

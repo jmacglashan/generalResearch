@@ -594,7 +594,7 @@ public class GeneralPuddlesIRL {
 		return s.toString();
 	}
 
-	protected int [][] generateCellMap(int ax, int ay, int gx, int gy, int gt, int seed, double p){
+	public static int [][] generateCellMap(int ax, int ay, int gx, int gy, int gt, int seed, double p){
 
 		int w = 30;
 		int h = 30;
@@ -611,7 +611,7 @@ public class GeneralPuddlesIRL {
 				}
 				double roll = rand.nextDouble();
 				if(roll < p){
-					map[x][y] = this.chooseType(rand, gt);
+					map[x][y] = chooseType(rand, gt);
 				}
 
 			}
@@ -669,7 +669,7 @@ public class GeneralPuddlesIRL {
 
 	}
 
-	protected int chooseType(Random rand, int gt){
+	protected static int chooseType(Random rand, int gt){
 		int type = gt;
 		while(type == gt){
 			type = rand.nextInt(5);

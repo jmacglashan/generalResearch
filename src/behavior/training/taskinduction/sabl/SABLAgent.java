@@ -1,5 +1,6 @@
 package behavior.training.taskinduction.sabl;
 
+import auxiliary.DynamicFeedbackEnvironment;
 import behavior.training.experiments.interactive.soko.PolicyGenerator;
 import behavior.training.taskinduction.NoopOnTermPolicy;
 import behavior.training.taskinduction.TaskDescription;
@@ -8,18 +9,22 @@ import behavior.training.taskinduction.sabl.extendedEpisode.SABLBelief;
 import behavior.training.taskinduction.sabl.extendedEpisode.SABLExtendedEA;
 import behavior.training.taskinduction.strataware.FeedbackStrategy;
 import burlap.behavior.singleagent.EpisodeAnalysis;
+import burlap.behavior.singleagent.Policy;
 import burlap.behavior.singleagent.learning.LearningAgent;
 import burlap.behavior.singleagent.planning.OOMDPPlanner;
 import burlap.behavior.statehashing.StateHashFactory;
+import burlap.debugtools.RandomFactory;
 import burlap.oomdp.core.Domain;
 import burlap.oomdp.core.State;
 import burlap.oomdp.core.TerminalFunction;
 import burlap.oomdp.singleagent.Action;
 import burlap.oomdp.singleagent.GroundedAction;
 import burlap.oomdp.singleagent.RewardFunction;
+import datastructures.HashedAggregator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author James MacGlashan.
@@ -38,6 +43,10 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 	protected Action noopAction = null;
 
 	protected LearningAgentBookKeeping bookKeeping = new LearningAgentBookKeeping();
+
+	protected DynamicFeedbackEnvironment env = null;
+
+	protected int speedMode = -1;
 
 
 	public SABLAgent(Domain domain, Domain planningDomain, RewardFunction rf, TerminalFunction tf,
@@ -124,6 +133,14 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 		}
 	}
 
+	public void setEnv(DynamicFeedbackEnvironment env) {
+		this.env = env;
+	}
+
+	public void setSpeedMode(int speedMode) {
+		this.speedMode = speedMode;
+	}
+
 	@Override
 	public EpisodeAnalysis runLearningEpisodeFrom(State initialState) {
 		return this.runLearningEpisodeFrom(initialState, this.bookKeeping.maxEpisodeSize);
@@ -139,10 +156,16 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 		System.out.println("\n\nStarting\n\n"+sb.toString()+"\n\n");
 
 		State curState = initialState;
+		SABLBelief curBelief = sb;
 		int numSteps = 0;
 		while(!this.tf.isTerminal(curState) && numSteps < maxSteps){
 
 			GroundedAction ga = this.worldAction(curState, (GroundedAction)this.mostLikelyTaskTuple().getPolicy().getAction(curState));
+			if(this.env != null && this.speedMode != -1){
+				long time = this.getSpeed(curBelief, curState);
+				System.out.println("delay: " + time);
+				this.env.setActionUpdateDelay(time);
+			}
 			State nextState = ga.executeIn(curState);
 			double trainerFeedback = this.rf.reward(curState, ga, nextState);
 
@@ -153,6 +176,7 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 
 			curState = nextState;
 			numSteps++;
+			curBelief = nextBelief;
 
 			System.out.println(nextBelief.toString()+"\n\n");
 
@@ -161,6 +185,83 @@ public class SABLAgent extends OOMDPPlanner implements LearningAgent {
 		this.bookKeeping.offerEpisodeToHistory(ea);
 
 		return ea;
+	}
+
+	protected long getSpeed(SABLBelief belief, State s){
+		if(this.speedMode == 0) {
+			return getLinearSpeed(belief, s);
+		}
+		else if(this.speedMode == 1){
+			return getSigmoidSpeed(belief, s);
+		}
+		else if(this.speedMode == 2){
+			return getThresholdSpeed(belief, s);
+		}
+		throw new RuntimeException("Cannot select speed mode for mode " + this.speedMode);
+	}
+
+	protected long getLinearSpeed(SABLBelief belief, State s){
+		//System.out.println("Linear");
+		double h = this.getPolicyEntropy(belief, s);
+		double speed = 500 + 1500*h;
+		return (int)speed;
+	}
+
+	protected long getSigmoidSpeed(SABLBelief belief, State s){
+		//System.out.println("Sigmoidal");
+		double h = this.getPolicyEntropy(belief, s);
+		double scale = 1. / (1 + Math.exp(-10. * (h-0.5)));
+		double speed = 500 + 1500*scale;
+		return (int)speed;
+	}
+
+	protected long getThresholdSpeed(SABLBelief belief, State s){
+		//System.out.println("Threshold");
+		double h = this.getPolicyEntropy(belief, s);
+		if(h > 0.1){
+			return 2000;
+		}
+		return 500;
+	}
+
+
+	public double getPolicyEntropy(SABLBelief belief, State s){
+
+		HashedAggregator<GroundedAction> policyDist = new HashedAggregator<GroundedAction>();
+		for(TaskProb tp : belief.taskProbs){
+			List<Policy.ActionProb> aps = tp.getPolicy().getActionDistributionForState(s);
+			for(Policy.ActionProb ap : aps){
+				double p = ap.pSelection*tp.getProb();
+				policyDist.add((GroundedAction)ap.ga, p);
+			}
+		}
+
+		int nActions = 0;
+//		for(Double d : policyDist.valueSet()){
+//			if(d > 0){
+//				nActions++;
+//			}
+//		}
+
+		List<GroundedAction> actions = this.getAllGroundedActions(s);
+		nActions = actions.size();
+
+		if(nActions == 1){
+			return 0.;
+		}
+
+		double h = 0.;
+		for(Double d : policyDist.valueSet()){
+			double el = d*this.log(nActions, d);
+			h += el;
+		}
+		h*=-1;
+		return h;
+
+	}
+
+	protected double log(double base, double x){
+		return Math.log(x) / Math.log(base);
 	}
 
 

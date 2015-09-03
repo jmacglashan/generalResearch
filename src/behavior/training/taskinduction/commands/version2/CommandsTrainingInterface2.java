@@ -103,6 +103,14 @@ public class CommandsTrainingInterface2 {
 		this.env.setActionUpdateDelay((long)delay);
 	}
 
+	/**
+	 * Sets the speed mode.
+	 * @param mode 0 = linear; 1 = sigmoid; 2 = threshold.
+	 */
+	public void setSpeedMode(int mode){
+		this.agent.setSpeedMode(mode);
+	}
+
 	public void setRemoveRPPMWhenTrueSatisfied(boolean removeRPPMWhenTrueSatisfied){
 		this.removeRPPMWhenTrueSatisfied = removeRPPMWhenTrueSatisfied;
 	}
@@ -122,12 +130,14 @@ public class CommandsTrainingInterface2 {
 		this.agent.setFeedbackStrategies(feedbackStrategies);
 		this.hashingFactory = hashingFactory;
 		this.agent.setNumEpisodesToStore(100);
+		this.agent.setEnv(this.env);
 
 
 	}
 
 	public void setAgent(SABLAgent agent){
 		this.agent = agent;
+		this.agent.setEnv(env);
 	}
 
 	public void instatiateCommandsLearning(StateHashFactory hashingFactory, Tokenizer tokenizer, List<GPConjunction> liftedTasks, int maxBindingConstraints){

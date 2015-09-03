@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class SABLBelief {
 
-	List<TaskProb> taskProbs;
-	List <FeedbackStrategy> stratProbs;
+	public List<TaskProb> taskProbs;
+	public List <FeedbackStrategy> stratProbs;
 
 	public SABLBelief(List<TaskProb> taskProbs, List<FeedbackStrategy> stratProbs) {
 		this.taskProbs = taskProbs;
